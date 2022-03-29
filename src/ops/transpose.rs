@@ -40,8 +40,6 @@ pub fn cl_transpose<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>) -> Resu
         .run()
 }
 
-
-
 pub trait Transpose<T> {
     #[allow(non_snake_case)]
     fn T(&self, x: Matrix<T>) -> Matrix<T>;
