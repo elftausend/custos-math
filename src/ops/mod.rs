@@ -2,12 +2,14 @@ mod activations;
 mod scalar;
 mod row_op;
 mod diagflat;
+mod transpose;
 
 pub use activations::*;
 use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead};
 pub use scalar::*;
 pub use row_op::*;
 pub use diagflat::*;
+pub use transpose::*;
 
 ///OpenCL
 fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {
