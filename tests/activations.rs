@@ -12,7 +12,7 @@ fn test_relu() {
 
     let res = device.relu_grad(x);
     assert_eq!(res.read(), [0., 1., 0., 1., 1.]);
-
+    
     
     let device = CLDevice::get(0).unwrap().select();
 

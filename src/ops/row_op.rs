@@ -1,7 +1,7 @@
-use custos::{Matrix, cpu::{InternCPU, CPU}, number::Number, opencl::{InternCLDevice, GenericOCL}, VecRead};
-
+use custos::{Matrix, cpu::InternCPU, number::Number, opencl::{InternCLDevice, GenericOCL}};
 use crate::cpu::row_op;
 
+use super::switch_to_cpu_help_lr;
 
 pub trait RowOp<T> {
     fn add_row(&self, lhs: Matrix<T>, rhs: Matrix<T>) -> Matrix<T>;
@@ -15,11 +15,6 @@ impl <T: Number>RowOp<T> for InternCPU {
 
 impl <T: GenericOCL>RowOp<T> for InternCLDevice {
     fn add_row(&self, lhs: Matrix<T>, rhs: Matrix<T>) -> Matrix<T> {
-        let device = CPU::new();
-        let lhs = Matrix::from((&device, lhs.dims(), self.read(lhs.data())));
-        let rhs = Matrix::from((&device, rhs.dims(), self.read(rhs.data())));
-        
-        let added = device.add_row(lhs, rhs);
-        Matrix::from( (self, added) )
+        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }
 }
