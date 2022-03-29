@@ -1,7 +1,5 @@
 mod opencl;
-mod activations;
-mod scalar;
+mod ops;
 mod cpu;
 
-pub use activations::*;
-pub use scalar::*;
+pub use ops::*;

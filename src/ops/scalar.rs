@@ -5,6 +5,7 @@ use crate::{opencl::scalar_op, cpu::scalar_apply};
 pub trait AdditionalOps<T> {
     fn adds(&self, lhs: Matrix<T>, rhs: T) -> Matrix<T>;
     fn muls(&self, lhs: Matrix<T>, rhs: T) -> Matrix<T>;
+    
 }
 
 impl <T: GenericOCL>AdditionalOps<T> for InternCLDevice {
