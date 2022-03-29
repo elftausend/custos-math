@@ -28,3 +28,4 @@ pub fn scalar_op<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, scalar: T,
         .with_output(x.dims())
         .run()
 }
+
