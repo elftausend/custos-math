@@ -1,6 +1,6 @@
 use custos::{Matrix, InternCPU, number::Number, cpu::CPUCache, opencl::GenericOCL, InternCLDevice};
 
-use super::switch_to_cpu_help_s;
+use super::{switch_to_cpu_help_s, switch_to_cpu_help_scalar};
 
 pub trait MaxOp<T> {
     fn max(&self, x: Matrix<T>) -> T;
@@ -66,8 +66,8 @@ impl <T: Number>MaxOp<T> for InternCPU {
 }
 
 impl <T: GenericOCL>MaxOp<T> for InternCLDevice {
-    fn max(&self, _: Matrix<T>) -> T {
-        todo!()
+    fn max(&self, x: Matrix<T>) -> T {
+        switch_to_cpu_help_scalar(self, x, |device, x| device.max(x))
     }
 
     fn max_rows(&self, x: Matrix<T>) -> Matrix<T> {

@@ -6,6 +6,7 @@ mod transpose;
 mod clip;
 mod fns;
 mod max;
+mod sum;
 
 pub use activations::*;
 use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead};
@@ -16,6 +17,7 @@ pub use transpose::*;
 pub use clip::*;
 pub use fns::*;
 pub use max::*;
+pub use sum::*;
 
 ///OpenCL
 fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {
@@ -34,4 +36,13 @@ fn switch_to_cpu_help_s<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> Matrix<T>
     
     let result = f(&cpu, x);
     Matrix::from( (device, result) )
+}
+
+///OpenCL
+fn switch_to_cpu_help_scalar<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> T>(device: &InternCLDevice, x: Matrix<T>, f: F) -> T {
+    let cpu = CPU::new();
+    let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
+    
+    let result = f(&cpu, x);
+    result
 }
