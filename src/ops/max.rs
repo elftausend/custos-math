@@ -2,7 +2,6 @@ use custos::{Matrix, InternCPU, number::Number, cpu::CPUCache, opencl::GenericOC
 
 use super::switch_to_cpu_help_s;
 
-
 pub trait MaxOp<T> {
     fn max(&self, x: Matrix<T>) -> T;
     fn max_rows(&self, x: Matrix<T>) -> Matrix<T>;
@@ -72,7 +71,7 @@ impl <T: GenericOCL>MaxOp<T> for InternCLDevice {
     }
 
     fn max_rows(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.max_cols(x))
+        switch_to_cpu_help_s(self, x, |device, x| device.max_rows(x))
     }
 
     fn max_cols(&self, x: Matrix<T>) -> Matrix<T> {
