@@ -1,6 +1,29 @@
-use custos::{Matrix, cpu::{InternCPU, each_op}, number::Float, opencl::{GenericOCL, InternCLDevice}};
+use custos::{Matrix, cpu::{InternCPU, each_op}, number::Float, opencl::{GenericOCL, InternCLDevice}, get_device};
 
 use crate::opencl::str_op;
+
+pub trait Fns<T> {
+    fn exp(&self) -> Matrix<T>;
+    fn ln(&self) -> Matrix<T>;
+    fn neg(&self) -> Matrix<T>;
+}
+
+impl <T: GenericOCL+Float>Fns<T> for Matrix<T> {
+    fn exp(&self) -> Matrix<T> {
+        let device = get_device!(FnsOps, T).unwrap();
+        device.exp(*self)
+    }
+
+    fn ln(&self) -> Matrix<T> {
+        let device = get_device!(FnsOps, T).unwrap();
+        device.ln(*self)
+    }
+
+    fn neg(&self) -> Matrix<T> {
+        let device = get_device!(FnsOps, T).unwrap();
+        device.neg(*self)
+    }
+}
 
 pub trait FnsOps<T> {
     fn exp(&self, x: Matrix<T>) -> Matrix<T>;

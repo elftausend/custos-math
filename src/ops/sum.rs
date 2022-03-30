@@ -1,15 +1,44 @@
-use custos::{Matrix, InternCPU, number::Number, cpu::CPUCache, opencl::GenericOCL, InternCLDevice};
+use custos::{Matrix, InternCPU, number::Number, cpu::CPUCache, opencl::GenericOCL, InternCLDevice, get_device};
 
 use super::{switch_to_cpu_help_scalar, switch_to_cpu_help_s};
 
-pub trait SumOp<T> {
+pub trait Sum<T> {
+    fn sum(&self) -> T;
+    fn mean(&self) -> T;
+    fn sum_rows(&self) -> Matrix<T>;
+    fn sum_cols(&self) -> Matrix<T>;
+}
+
+impl <T: GenericOCL>Sum<T> for Matrix<T> {
+    fn sum(&self) -> T {
+        let device = get_device!(SumOps, T).unwrap();
+        device.sum(*self)
+    }
+
+    fn mean(&self) -> T {
+        let device = get_device!(SumOps, T).unwrap();
+        device.mean(*self)
+    }
+
+    fn sum_rows(&self) -> Matrix<T> {
+        let device = get_device!(SumOps, T).unwrap();
+        device.sum_rows(*self)
+    }
+
+    fn sum_cols(&self) -> Matrix<T> {
+        let device = get_device!(SumOps, T).unwrap();
+        device.sum_cols(*self)
+    }
+}
+
+pub trait SumOps<T> {
     fn sum(&self, x: Matrix<T>) -> T;
     fn mean(&self, x: Matrix<T>) -> T;
     fn sum_rows(&self, x: Matrix<T>) -> Matrix<T>;
     fn sum_cols(&self, x: Matrix<T>) -> Matrix<T>;
 }
 
-impl <T: Number>SumOp<T> for InternCPU {
+impl <T: Number>SumOps<T> for InternCPU {
     fn sum(&self, x: Matrix<T>) -> T {
         let mut sum = T::default();
         for value in x.as_cpu_slice() {
@@ -64,7 +93,7 @@ impl <T: Number>SumOp<T> for InternCPU {
     }
 }
 
-impl <T: GenericOCL>SumOp<T> for InternCLDevice {
+impl <T: GenericOCL>SumOps<T> for InternCLDevice {
     fn sum(&self, x: Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.sum(x))
     }

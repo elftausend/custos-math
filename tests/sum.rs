@@ -1,5 +1,5 @@
 use custos::{CPU, Matrix, AsDev, CLDevice};
-use custos_math::SumOp;
+use custos_math::SumOps;
 
 #[test]
 fn test_sum_ops() {

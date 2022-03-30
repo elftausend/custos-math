@@ -1,6 +1,17 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice}};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice}, get_device};
 
 use super::switch_to_cpu_help_s;
+
+pub trait Diagflat<T> {
+    fn diagflat(&self) -> Matrix<T>;
+}
+
+impl <T: GenericOCL>Diagflat<T> for Matrix<T> {
+    fn diagflat(&self) -> Matrix<T> {
+        let device = get_device!(DiagflatOp, T).unwrap();
+        device.diagflat(*self)
+    }
+}  
 
 pub trait DiagflatOp<T> {
     fn diagflat(&self, x: Matrix<T>) -> Matrix<T>;

@@ -1,4 +1,15 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, number::Number, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, number::Number, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error, get_device};
+
+pub trait Clip<T> {
+    fn clip(&self, min: T, max: T) -> Matrix<T>;
+}
+
+impl <T: GenericOCL>Clip<T> for Matrix<T> {
+    fn clip(&self, min: T, max: T) -> Matrix<T> {
+        let device = get_device!(ClipOp, T).unwrap();
+        device.clip(*self, min, max)
+    }
+}
 
 pub trait ClipOp<T> {
     fn clip(&self, x: Matrix<T>, min: T, max: T) -> Matrix<T>;

@@ -9,7 +9,7 @@ mod max;
 mod sum;
 
 pub use activations::*;
-use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead};
+use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead, number::Number};
 pub use scalar::*;
 pub use row_op::*;
 pub use diagflat::*;
@@ -39,7 +39,7 @@ fn switch_to_cpu_help_s<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> Matrix<T>
 }
 
 ///OpenCL
-fn switch_to_cpu_help_scalar<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> T>(device: &InternCLDevice, x: Matrix<T>, f: F) -> T {
+fn switch_to_cpu_help_scalar<T: Number, F: Fn(&InternCPU, Matrix<T>) -> T>(device: &InternCLDevice, x: Matrix<T>, f: F) -> T {
     let cpu = CPU::new();
     let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
     
