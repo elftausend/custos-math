@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error, get_device};
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
@@ -42,20 +42,31 @@ pub fn cl_transpose<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>) -> Resu
 
 pub trait Transpose<T> {
     #[allow(non_snake_case)]
-    fn T(&self, x: Matrix<T>) -> Matrix<T>;
+    fn T(self) -> Matrix<T>;
 }
 
-impl <T: Default+Copy>Transpose<T> for InternCPU {
+impl <T: GenericOCL>Transpose<T> for Matrix<T> {
     #[allow(non_snake_case)]
-    fn T(&self, x: Matrix<T>) -> Matrix<T> {
+    fn T(self) -> Matrix<T> {
+        let device = get_device!(TransposeOp, T).unwrap();
+        device.transpose(self)
+    }
+}
+
+pub trait TransposeOp<T> {
+    fn transpose(&self, x: Matrix<T>) -> Matrix<T>;
+}
+
+impl <T: Default+Copy>TransposeOp<T> for InternCPU {
+    fn transpose(&self, x: Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), (x.cols(), x.rows()));
         slice_transpose(x.rows(), x.cols(), x.as_cpu_slice(), y.as_cpu_slice_mut());
         y
     }
 }
 
-impl <T: GenericOCL>Transpose<T> for InternCLDevice {
-    fn T(&self, x: Matrix<T>) -> Matrix<T> {
+impl <T: GenericOCL>TransposeOp<T> for InternCLDevice {
+    fn transpose(&self, x: Matrix<T>) -> Matrix<T> {
         cl_transpose(self.clone(), x).unwrap()
     }
 }

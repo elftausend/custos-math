@@ -1,11 +1,15 @@
-use custos::{Matrix, libs::{opencl::{GenericOCL, cl_device::InternCLDevice}, cpu::{each_op, InternCPU}}, number::Float};
+use custos::{Matrix, libs::{opencl::{GenericOCL, cl_device::InternCLDevice}, cpu::{each_op, InternCPU}}, number::Float, get_device};
 
 use crate::opencl::str_op;
 
 pub trait Activations<T> {
-    fn relu(&self) -> Matrix<T> where Self: Copy {
-        //let device = get_device!(ActivationOps, T).unwrap();
-        todo!()
+    fn relu(&self) -> Matrix<T>;
+}
+
+impl <T: GenericOCL+Float>Activations<T> for Matrix<T> {
+    fn relu(&self) -> Matrix<T> {
+        let device = get_device!(ActivationOps, T).unwrap();
+        device.relu(*self)
     }
 }
 

@@ -2,7 +2,6 @@ use custos::{Matrix, cpu::{InternCPU, each_op}, number::Float, opencl::{GenericO
 
 use crate::opencl::str_op;
 
-
 pub trait FnsOps<T> {
     fn exp(&self, x: Matrix<T>) -> Matrix<T>;
     fn ln(&self, x: Matrix<T>) -> Matrix<T>;

@@ -16,3 +16,9 @@ impl <T: Copy>GetAxis<T> for (Matrix<T>, Axis) {
         *self
     }
 }
+
+impl <T: Copy>GetAxis<T> for Matrix<T> {
+    fn get_axis(&self) -> (Matrix<T>, Axis) {
+        (*self, Axis::All)
+    }
+}
