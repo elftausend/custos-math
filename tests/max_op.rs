@@ -22,7 +22,7 @@ fn test_max_ops() {
     let device = CLDevice::get(0).unwrap().select();
 
     let a = Matrix::from((&device, (3, 3),
-    [-10., -2., -3., 
+    [-10f32, -2., -3., 
     -4., -5., -6., 
     -7., -8., -9.,]));
 

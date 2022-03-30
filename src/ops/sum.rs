@@ -4,6 +4,7 @@ use super::{switch_to_cpu_help_scalar, switch_to_cpu_help_s};
 
 pub trait SumOp<T> {
     fn sum(&self, x: Matrix<T>) -> T;
+    fn mean(&self, x: Matrix<T>) -> T;
     fn sum_rows(&self, x: Matrix<T>) -> Matrix<T>;
     fn sum_cols(&self, x: Matrix<T>) -> Matrix<T>;
 }
@@ -15,6 +16,11 @@ impl <T: Number>SumOp<T> for InternCPU {
             sum += *value;
         }
         sum
+    }
+
+    fn mean(&self, x: Matrix<T>) -> T {
+        let sum = self.sum(x);
+        sum/T::from_usize(x.size())
     }
 
     fn sum_rows(&self, x: Matrix<T>) -> Matrix<T> {
@@ -61,6 +67,10 @@ impl <T: Number>SumOp<T> for InternCPU {
 impl <T: GenericOCL>SumOp<T> for InternCLDevice {
     fn sum(&self, x: Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.sum(x))
+    }
+
+    fn mean(&self, x: Matrix<T>) -> T {
+        switch_to_cpu_help_scalar(self, x, |device, x| device.mean(x))
     }
 
     fn sum_rows(&self, x: Matrix<T>) -> Matrix<T> {
