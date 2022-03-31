@@ -28,3 +28,23 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(device: &InternCPU, lhs: Matrix<T>
     }
     y
 }
+
+pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(device: &InternCPU, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {    
+    let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
+    
+    let lhs_data = lhs.as_cpu_slice();
+    let rhs_data = rhs.as_cpu_slice();
+    let y_slice = y.as_cpu_slice_mut();
+
+    //rows
+    let mut i = 0;
+    for (idx, rdata_value) in rhs_data.iter().enumerate().take(lhs.rows()) {
+        let index = idx*lhs.cols();
+        let row = &lhs_data[index..index+lhs.cols()];
+        for data in row {
+            f(&mut y_slice[i], *data, *rdata_value);
+            i+=1;
+        }
+    }    
+    y
+}

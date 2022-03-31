@@ -2,6 +2,7 @@ pub mod nn;
 
 mod scalar;
 mod row_op;
+mod col_op;
 mod diagflat;
 mod transpose;
 mod clip;
@@ -12,6 +13,7 @@ mod sum;
 use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead, number::Number};
 pub use scalar::*;
 pub use row_op::*;
+pub use col_op::*;
 pub use diagflat::*;
 pub use transpose::*;
 pub use clip::*;
