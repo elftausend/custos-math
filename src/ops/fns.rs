@@ -51,7 +51,7 @@ impl <T: GenericOCL>FnsOps<T> for InternCLDevice {
     }
 
     fn ln(&self, x: Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "ln(I)").unwrap()
+        str_op(self.clone(), x, "log(I)").unwrap()
     }
 
     fn neg(&self, x: Matrix<T>) -> Matrix<T> {

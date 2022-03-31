@@ -23,7 +23,7 @@ pub use sum::*;
 
 
 ///OpenCL
-fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {
+pub fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {
     let cpu = CPU::new();
     let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs.data())));
     let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs.data())));
@@ -33,7 +33,7 @@ fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) 
 }
 
 ///OpenCL
-fn switch_to_cpu_help_s<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, x: Matrix<T>, f: F) -> Matrix<T> {
+pub fn switch_to_cpu_help_s<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, x: Matrix<T>, f: F) -> Matrix<T> {
     let cpu = CPU::new();
     let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
     

@@ -3,12 +3,18 @@ use crate::opencl::str_op;
 
 pub trait Activations<T> {
     fn relu(&self) -> Matrix<T>;
+    fn relu_grad(&self) -> Matrix<T>;
 }
 
 impl <T: GenericOCL+Float>Activations<T> for Matrix<T> {
     fn relu(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps, T).unwrap();
         device.relu(*self)
+    }
+
+    fn relu_grad(&self) -> Matrix<T> {
+        let device = get_device!(ActivationOps, T).unwrap();
+        device.relu_grad(*self)
     }
 }
 
