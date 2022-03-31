@@ -1,4 +1,5 @@
-mod activations;
+pub mod nn;
+
 mod scalar;
 mod row_op;
 mod diagflat;
@@ -8,7 +9,6 @@ mod fns;
 mod max;
 mod sum;
 
-pub use activations::*;
 use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead, number::Number};
 pub use scalar::*;
 pub use row_op::*;
@@ -18,6 +18,7 @@ pub use clip::*;
 pub use fns::*;
 pub use max::*;
 pub use sum::*;
+
 
 ///OpenCL
 fn switch_to_cpu_help_lr<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>, Matrix<T>) -> Matrix<T>>(device: &InternCLDevice, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {

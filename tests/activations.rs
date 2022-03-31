@@ -1,6 +1,5 @@
 use custos::{libs::cpu::CPU, AsDev, Matrix, opencl::CLDevice};
-use custos_math::ActivationOps;
-
+use custos_math::nn::ActivationOps;
 
 #[test]
 fn test_relu() {
