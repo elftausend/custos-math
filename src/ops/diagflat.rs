@@ -11,7 +11,15 @@ impl <T: GenericOCL>Diagflat<T> for Matrix<T> {
         let device = get_device!(DiagflatOp, T).unwrap();
         device.diagflat(*self)
     }
-}  
+}
+
+pub fn diagflat<T: Copy>(size: usize, a: &[T], b: &mut [T]) {
+    for idx in 0..size {
+        let index = idx*size;
+        let row = &mut b[index..index+size];
+        row[idx] = a[idx];
+    }
+}
 
 pub trait DiagflatOp<T> {
     fn diagflat(&self, x: Matrix<T>) -> Matrix<T>;
@@ -24,11 +32,7 @@ impl <T: Default+Copy>DiagflatOp<T> for InternCPU {
         
         let mut y = CPUCache::get::<T>(self.clone(), (size, size));
 
-        for idx in 0..size {
-            let index = idx*size;
-            let row = &mut y.as_cpu_slice_mut()[index..index+size];
-            row[idx] = x.as_cpu_slice()[idx];
-        }
+        diagflat(size, x.as_cpu_slice(), y.as_cpu_slice_mut());
         y
     }
 }
