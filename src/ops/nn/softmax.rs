@@ -1,5 +1,5 @@
-use custos::{Matrix, InternCPU, number::{Number, Float}, range, Gemm, cpu::TBlas, BaseOps, opencl::GenericOCL, InternCLDevice};
-use crate::{SumOps, MaxOps, ColOp, FnsOps, DiagflatOp, TransposeOp, ops::{switch_to_cpu_help_s, switch_to_cpu_help_lr}};
+use custos::{Matrix, InternCPU, number::Float, range, Gemm, cpu::TBlas, BaseOps, opencl::GenericOCL, InternCLDevice};
+use crate::{SumOps, MaxOps, ColOp, FnsOps, DiagflatOp, TransposeOp, ops::{switch_to_cpu_help_s, switch_to_cpu_help_lr}, cached};
 
 pub trait Softmax<T> {
     fn softmax(&self, inputs: Matrix<T>) -> Matrix<T>;
@@ -13,7 +13,7 @@ impl <T: Float+TBlas>Softmax<T> for InternCPU {
     }
 
     fn softmax_grad(&self, mut activated: Matrix<T>, mut grads: Matrix<T>) -> Matrix<T> {
-        let mut data = Matrix::new(self.clone(), grads.dims());
+        let mut data = cached(self, grads.dims());
 
         let rows = grads.rows();
         let cols = grads.cols();
@@ -23,11 +23,11 @@ impl <T: Float+TBlas>Softmax<T> for InternCPU {
 
         let data_slice = data.as_cpu_slice_mut();
 
-        for idx in range(rows) {
+        for idx in range(rows-1) {
             let index = idx*cols;
             
-            let single_out = Matrix::from(( (&mut activated_data[index..index+cols]).as_mut_ptr(), (1, cols)));    
-            let single_gard = Matrix::from(( (&mut grad_data[index..index+cols]).as_mut_ptr(), (1, cols)));
+            let single_out = Matrix::from(( (&mut activated_data[index..index+cols]).as_mut_ptr(), (cols, 1)));    
+            let single_gard = Matrix::from(( (&mut grad_data[index..index+cols]).as_mut_ptr(), (cols, 1)));
         
             let diagflat = self.diagflat(single_out);
 

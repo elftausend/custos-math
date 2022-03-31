@@ -1,5 +1,9 @@
 use custos::{cpu::{CPUCache, InternCPU}, Matrix, number::Number};
 
+pub fn cached<T: Default+Copy>(device: &InternCPU, dims: (usize, usize)) -> Matrix<T> {
+    CPUCache::get::<T>(device.clone(), dims)
+}
+
 pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(device: &InternCPU, lhs: Matrix<T>, scalar: T, f: F) -> Matrix<T> {
     let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
     let lhs = lhs.as_cpu_slice();
