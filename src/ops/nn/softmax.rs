@@ -1,12 +1,29 @@
-use custos::{Matrix, InternCPU, number::Float, range, Gemm, cpu::TBlas, BaseOps, opencl::GenericOCL, InternCLDevice};
+use custos::{Matrix, InternCPU, number::Float, range, Gemm, cpu::TBlas, BaseOps, opencl::GenericOCL, InternCLDevice, get_device};
 use crate::{SumOps, MaxOps, ColOp, FnsOps, DiagflatOp, TransposeOp, ops::{switch_to_cpu_help_s, switch_to_cpu_help_lr}, cached};
 
 pub trait Softmax<T> {
+    fn softmax(&self) -> Matrix<T>;
+    fn softmax_grad(&self, activated: Matrix<T>) -> Matrix<T>;
+}
+
+impl <T: GenericOCL+TBlas+Float>Softmax<T> for Matrix<T> {
+    fn softmax(&self) -> Matrix<T> {
+        let device = get_device!(SoftmaxOps, T).unwrap();
+        device.softmax(*self)
+    }
+
+    fn softmax_grad(&self, activated: Matrix<T>) -> Matrix<T> {
+        let device = get_device!(SoftmaxOps, T).unwrap();
+        device.softmax_grad(activated, *self)
+    }
+}
+
+pub trait SoftmaxOps<T> {
     fn softmax(&self, inputs: Matrix<T>) -> Matrix<T>;
     fn softmax_grad(&self, activated: Matrix<T>, grads: Matrix<T>) -> Matrix<T>;
 }
 
-impl <T: Float+TBlas>Softmax<T> for InternCPU {
+impl <T: Float+TBlas>SoftmaxOps<T> for InternCPU {
     fn softmax(&self, inputs: Matrix<T>) -> Matrix<T> {
         let exp = self.exp(self.sub_col(inputs, self.max_cols(inputs)));
         self.div_col(exp, self.sum_cols(exp))
@@ -42,7 +59,7 @@ impl <T: Float+TBlas>Softmax<T> for InternCPU {
     }
 }
 
-impl <T: GenericOCL+TBlas+Float>Softmax<T> for InternCLDevice {
+impl <T: GenericOCL+TBlas+Float>SoftmaxOps<T> for InternCLDevice {
     fn softmax(&self, inputs: Matrix<T>) -> Matrix<T> {
         switch_to_cpu_help_s(self, inputs, |device, inputs| device.softmax(inputs))
     }

@@ -1,5 +1,5 @@
 use custos::{CPU, AsDev, Matrix, range, CLDevice};
-use custos_math::nn::{cce_grad, Softmax};
+use custos_math::nn::{cce_grad, SoftmaxOps};
 
 #[test]
 fn test_softmax_cpu() {
