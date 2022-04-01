@@ -8,7 +8,7 @@ pub trait Softmax<T> {
 
 impl <T: Float+TBlas>Softmax<T> for InternCPU {
     fn softmax(&self, inputs: Matrix<T>) -> Matrix<T> {
-        let exp = self.sub_col(inputs, self.exp(self.max_cols(inputs)));
+        let exp = self.exp(self.sub_col(inputs, self.max_cols(inputs)));
         self.div_col(exp, self.sum_cols(exp))
     }
 
