@@ -27,13 +27,13 @@ impl <T: Float+TBlas>Softmax<T> for InternCPU {
             let index = idx*cols;
             
             let single_out = Matrix::from(( (&mut activated_data[index..index+cols]).as_mut_ptr(), (cols, 1)));    
-            let single_gard = Matrix::from(( (&mut grad_data[index..index+cols]).as_mut_ptr(), (cols, 1)));
+            let single_grad = Matrix::from(( (&mut grad_data[index..index+cols]).as_mut_ptr(), (cols, 1)));
         
             let diagflat = self.diagflat(single_out);
 
             let jacobian_matrix = self.sub(diagflat, self.gemm(single_out, self.transpose(single_out)));
 
-            let res = self.gemm(jacobian_matrix, single_gard);
+            let res = self.gemm(jacobian_matrix, single_grad);
 
             let data_row = &mut data_slice[index..index+cols];
             data_row.copy_from_slice(res.as_cpu_slice());
