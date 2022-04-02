@@ -14,14 +14,14 @@ pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(device: &InternCPU, lhs: Mat
 }
 
 pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(device: &InternCPU, lhs: Matrix<T>, rhs: Matrix<T>, f: F) -> Matrix<T> {
-    assert!(rhs.dims().0 == 1);
+    assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
     
     let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
     let lhs_data = lhs.as_cpu_slice();
     let rhs_data = rhs.as_cpu_slice();
 
     //rows
-    for i in 0..lhs.dims().0 {
+    for i in 0..lhs.rows() {
 
         let index = i*lhs.dims().1;
         let x = &lhs_data[index..index+lhs.dims().1];    
