@@ -45,7 +45,5 @@ pub fn switch_to_cpu_help_s<T: GenericOCL, F: Fn(&InternCPU, Matrix<T>) -> Matri
 fn switch_to_cpu_help_scalar<T: Number, F: Fn(&InternCPU, Matrix<T>) -> T>(device: &InternCLDevice, x: Matrix<T>, f: F) -> T {
     let cpu = CPU::new();
     let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
-    
-    let result = f(&cpu, x);
-    result
+    f(&cpu, x)
 }

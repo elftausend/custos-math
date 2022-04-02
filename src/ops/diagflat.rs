@@ -14,10 +14,9 @@ impl <T: GenericOCL>Diagflat<T> for Matrix<T> {
 }
 
 pub fn diagflat<T: Copy>(size: usize, a: &[T], b: &mut [T]) {
-    for idx in 0..size {
-        let index = idx*size;
-        let row = &mut b[index..index+size];
-        row[idx] = a[idx];
+    for (row, a) in a.iter().enumerate() {
+        let index = row*size+row;
+        b[index] = *a;
     }
 }
 

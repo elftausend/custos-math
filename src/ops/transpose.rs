@@ -5,9 +5,9 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
         let index = i*cols;
         let row = &a[index..index+cols];
         
-        for index in 0..row.len() {
+        for (index, row) in row.iter().enumerate() {
             let idx = rows*index+i;
-            b[idx] = row[index];
+            b[idx] = *row;
         } 
     }
 }
