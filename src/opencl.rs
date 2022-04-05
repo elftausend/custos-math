@@ -9,7 +9,7 @@ pub fn str_op<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, op: &str) -> 
         }}
     ", datatype=T::as_ocl_type_str());
 
-    KernelOptions::new(device, x, [x.size(), 0, 0], &src)
+    KernelOptions::new(&device, x, [x.size(), 0, 0], &src)
         .with_output(x.dims())
         .run()
 }
@@ -23,7 +23,7 @@ pub fn scalar_op<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, scalar: T,
         }}
     ", datatype=T::as_ocl_type_str());
 
-    KernelOptions::new(device, x, [x.size(), 0, 0], &src)
+    KernelOptions::new(&device, x, [x.size(), 0, 0], &src)
         .add_arg(&scalar)
         .with_output(x.dims())
         .run()
