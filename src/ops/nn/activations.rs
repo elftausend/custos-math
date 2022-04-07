@@ -1,4 +1,4 @@
-use custos::{Matrix, libs::{opencl::{GenericOCL, cl_device::InternCLDevice}, cpu::{each_op, InternCPU}}, number::Float, get_device};
+use custos::{Matrix, libs::{opencl::cl_device::InternCLDevice, cpu::{each_op, InternCPU}}, number::Float, get_device, GenericOCL};
 use crate::opencl::str_op;
 
 pub trait Activations<T> {

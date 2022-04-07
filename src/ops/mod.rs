@@ -10,7 +10,7 @@ mod fns;
 mod max;
 mod sum;
 
-use custos::{opencl::{GenericOCL, InternCLDevice}, cpu::{InternCPU, CPU}, Matrix, VecRead, number::Number};
+use custos::{opencl::InternCLDevice, cpu::{InternCPU, CPU}, Matrix, VecRead, number::Number, GenericOCL};
 pub use scalar::*;
 pub use row_op::*;
 pub use col_op::*;

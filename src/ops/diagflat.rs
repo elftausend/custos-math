@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice}, get_device};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::InternCLDevice, get_device, GenericOCL};
 
 use super::switch_to_cpu_help_s;
 

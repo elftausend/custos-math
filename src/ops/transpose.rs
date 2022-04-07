@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error, get_device};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, opencl::{InternCLDevice, KernelOptions}, Error, get_device, GenericOCL};
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {

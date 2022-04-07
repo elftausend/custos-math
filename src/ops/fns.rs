@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::{InternCPU, each_op}, number::Float, opencl::{GenericOCL, InternCLDevice}, get_device};
+use custos::{Matrix, cpu::{InternCPU, each_op}, number::Float, opencl::InternCLDevice, get_device, GenericOCL};
 
 use crate::opencl::str_op;
 

@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::InternCPU, number::Number, opencl::{InternCLDevice, GenericOCL}, get_device};
+use custos::{Matrix, cpu::InternCPU, number::Number, opencl::InternCLDevice, get_device, GenericOCL};
 use crate::cpu::row_op;
 
 use super::switch_to_cpu_help_lr;

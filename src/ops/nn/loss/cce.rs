@@ -1,4 +1,4 @@
-use custos::{Matrix, number::Float, BaseOps, get_device, InternCPU, InternCLDevice, opencl::GenericOCL};
+use custos::{Matrix, number::Float, BaseOps, get_device, InternCPU, InternCLDevice, GenericOCL};
 use crate::{FnsOps, ClipOp, SumOps, AdditionalOps};
 
 pub trait CCE<T> {

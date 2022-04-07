@@ -1,4 +1,4 @@
-use custos::{Matrix, cpu::{InternCPU, CPUCache}, number::Number, opencl::{GenericOCL, InternCLDevice, KernelOptions}, Error, get_device};
+use custos::{Matrix, cpu::{InternCPU, CPUCache}, number::Number, opencl::{InternCLDevice, KernelOptions}, Error, get_device, GenericOCL};
 
 pub trait Clip<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T>;

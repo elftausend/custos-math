@@ -1,4 +1,4 @@
-use custos::{Matrix, opencl::{InternCLDevice, GenericOCL}, cpu::InternCPU, get_device};
+use custos::{Matrix, opencl::InternCLDevice, cpu::InternCPU, get_device, GenericOCL};
 
 use crate::{opencl::scalar_op, cpu::scalar_apply};
 
