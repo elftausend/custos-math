@@ -1,4 +1,4 @@
-use custos::{libs::opencl::{cl_device::InternCLDevice, GenericOCL, KernelOptions}, Matrix, Error,};
+use custos::{libs::opencl::{cl_device::InternCLDevice, KernelOptions}, Matrix, Error, GenericOCL,};
 
 pub fn str_op<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, op: &str) -> Result<Matrix<T>, Error> {
     let src = format!("

@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 #custos = {git = "https://github.com/elftausend/custos"}
-custos = {path = "../custos"}
+custos = {path = "../custos", features=["opencl"]}

@@ -1,4 +1,4 @@
-use custos::{Matrix, InternCPU, number::Float, range, Gemm, cpu::TBlas, BaseOps, opencl::GenericOCL, InternCLDevice, get_device};
+use custos::{Matrix, InternCPU, number::Float, range, Gemm, cpu::TBlas, BaseOps, InternCLDevice, get_device, GenericOCL};
 use crate::{SumOps, MaxOps, ColOp, FnsOps, DiagflatOp, TransposeOp, ops::{switch_to_cpu_help_s, switch_to_cpu_help_lr}, cached};
 
 pub trait Softmax<T> {
