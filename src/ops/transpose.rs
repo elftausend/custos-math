@@ -35,7 +35,7 @@ pub fn cl_transpose<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>) -> Resu
    ", rows=x.rows(), cols=x.cols(), datatype=T::as_ocl_type_str());
 
     let gws = [x.size(), 0, 0];
-    KernelOptions::new(&device, x, gws, &src)
+    KernelOptions::new(&device, &x, gws, &src)
         .with_output((x.cols(), x.rows()))
         .run()
 }
