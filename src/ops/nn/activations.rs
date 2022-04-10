@@ -9,45 +9,45 @@ pub trait Activations<T> {
 impl <T: GenericOCL+Float>Activations<T> for Matrix<T> {
     fn relu(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps, T).unwrap();
-        device.relu(*self)
+        device.relu(self)
     }
 
     fn relu_grad(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps, T).unwrap();
-        device.relu_grad(*self)
+        device.relu_grad(self)
     }
 }
 
 pub trait ActivationOps<T> {
-    fn sigmoid(&self, x: Matrix<T>) -> Matrix<T>;
-    fn relu(&self, x: Matrix<T>) -> Matrix<T>;
-    fn relu_grad(&self, x: Matrix<T>) -> Matrix<T>;
+    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
 impl <T: GenericOCL+Float>ActivationOps<T> for InternCLDevice {
-    fn sigmoid(&self, x: Matrix<T>) -> Matrix<T> {
+    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "1.0 / (1.0 + exp(-I))").unwrap()
     }
 
-    fn relu(&self, x: Matrix<T>) -> Matrix<T> {
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "I * (I >= 0)").unwrap()
     }
 
-    fn relu_grad(&self, x: Matrix<T>) -> Matrix<T> {
+    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "(I >= 0)").unwrap()
     }
 }
 
 impl <T: Float>ActivationOps<T> for InternCPU {
-    fn sigmoid(&self, x: Matrix<T>) -> Matrix<T> {
+    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
     }
 
-    fn relu(&self, x: Matrix<T>) -> Matrix<T> {
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
-    fn relu_grad(&self, x: Matrix<T>) -> Matrix<T> {
+    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize))
     }
 }

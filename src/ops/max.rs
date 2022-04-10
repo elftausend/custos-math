@@ -11,28 +11,28 @@ pub trait Max<T> {
 impl <T: GenericOCL>Max<T> for Matrix<T> {
     fn max(&self) -> T {
         let device = get_device!(MaxOps, T).unwrap();
-        device.max(*self)
+        device.max(self)
     }
 
     fn max_rows(&self) -> Matrix<T> {
         let device = get_device!(MaxOps, T).unwrap();
-        device.max_rows(*self)
+        device.max_rows(self)
     }
 
     fn max_cols(&self) -> Matrix<T> {
         let device = get_device!(MaxOps, T).unwrap();
-        device.max_cols(*self)
+        device.max_cols(self)
     }
 }
 
 pub trait MaxOps<T> {
-    fn max(&self, x: Matrix<T>) -> T;
-    fn max_rows(&self, x: Matrix<T>) -> Matrix<T>;
-    fn max_cols(&self, x: Matrix<T>) -> Matrix<T>;
+    fn max(&self, x: &Matrix<T>) -> T;
+    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
 impl <T: Number>MaxOps<T> for InternCPU {
-    fn max(&self, x: Matrix<T>) -> T {
+    fn max(&self, x: &Matrix<T>) -> T {
         let slice = x.as_cpu_slice();
         let mut max = slice[0];
         
@@ -44,7 +44,7 @@ impl <T: Number>MaxOps<T> for InternCPU {
         max
     }
 
-    fn max_rows(&self, x: Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), (1, x.cols()));
         
         let data = x.as_cpu_slice();
@@ -65,7 +65,7 @@ impl <T: Number>MaxOps<T> for InternCPU {
         y
     }
 
-    fn max_cols(&self, x: Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let data = x.as_cpu_slice();
         let mut y = CPUCache::get::<T>(self.clone(), (x.rows(), 1));
                 
@@ -89,15 +89,15 @@ impl <T: Number>MaxOps<T> for InternCPU {
 }
 
 impl <T: GenericOCL>MaxOps<T> for InternCLDevice {
-    fn max(&self, x: Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.max(x))
+    fn max(&self, x: &Matrix<T>) -> T {
+        switch_to_cpu_help_scalar(self, x, |device, x| device.max(&x))
     }
 
-    fn max_rows(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.max_rows(x))
+    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+        switch_to_cpu_help_s(self, x, |device, x| device.max_rows(&x))
     }
 
-    fn max_cols(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.max_cols(x))
+    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+        switch_to_cpu_help_s(self, x, |device, x| device.max_cols(&x))
     }
 }

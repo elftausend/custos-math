@@ -15,10 +15,11 @@ fn test_softmax_cpu() {
          0.9, 0.05, 0.05])
     );
 
-    let grads = cce_grad(&device, activated, targets);
+    let grads = cce_grad(&device, &activated, &targets);
 
+    println!("hi");
     for _ in range(1000) {
-        device.softmax_grad(activated, grads);
+        device.softmax_grad(&activated, &grads);
     }
 }
 
@@ -37,9 +38,9 @@ fn test_softmax_cl() {
          0.9, 0.05, 0.05])
     );
 
-    let grads = cce_grad(&device, activated, targets);
+    let grads = cce_grad(&device, &activated, &targets);
 
     for _ in range(1000) {
-        device.softmax_grad(activated, grads);
+        device.softmax_grad(&activated, &grads);
     }
 }

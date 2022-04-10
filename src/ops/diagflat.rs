@@ -9,7 +9,7 @@ pub trait Diagflat<T> {
 impl <T: GenericOCL>Diagflat<T> for Matrix<T> {
     fn diagflat(&self) -> Matrix<T> {
         let device = get_device!(DiagflatOp, T).unwrap();
-        device.diagflat(*self)
+        device.diagflat(self)
     }
 }
 
@@ -20,11 +20,11 @@ pub fn diagflat<T: Copy>(size: usize, a: &[T], b: &mut [T]) {
 }
 
 pub trait DiagflatOp<T> {
-    fn diagflat(&self, x: Matrix<T>) -> Matrix<T>;
+    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
 impl <T: Default+Copy>DiagflatOp<T> for InternCPU {
-    fn diagflat(&self, x: Matrix<T>) -> Matrix<T> {
+    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
         
@@ -36,8 +36,8 @@ impl <T: Default+Copy>DiagflatOp<T> for InternCPU {
 }
 
 impl <T: GenericOCL>DiagflatOp<T> for InternCLDevice {
-    fn diagflat(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.diagflat(x))
+    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+        switch_to_cpu_help_s(self, x, |device, x| device.diagflat(&x))
     }
 }
 

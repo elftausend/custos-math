@@ -9,13 +9,13 @@ fn test_max_ops() {
     -4., -5., -6., 
     -7., -8., -9.,]));
 
-    let res = device.max(a);
+    let res = device.max(&a);
     assert!(res == -2.);
 
-    let res = device.max_cols(a);
+    let res = device.max_cols(&a);
     assert_eq!(res.read(), vec![-2., -4., -7.]);
 
-    let res = device.max_rows(a);
+    let res = device.max_rows(&a);
     assert_eq!(res.read(), vec![-4., -2., -3.]);
 
     
@@ -26,12 +26,12 @@ fn test_max_ops() {
     -4., -5., -6., 
     -7., -8., -9.,]));
 
-    let res = device.max(a);
+    let res = device.max(&a);
     assert!(res == -2.);
 
-    let res = device.max_cols(a);
+    let res = device.max_cols(&a);
     assert_eq!(res.read(), vec![-2., -4., -7.]);
 
-    let res = device.max_rows(a);
+    let res = device.max_rows(&a);
     assert_eq!(res.read(), vec![-4., -2., -3.])
 }
