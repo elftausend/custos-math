@@ -9,16 +9,16 @@ fn test_sum_ops() {
     -4., -5., -6., 
     -7., -8., -9.,]));
 
-    let res = device.sum(a);
+    let res = device.sum(&a);
     assert!(res == -54.);
 
-    let res = device.mean(a);
+    let res = device.mean(&a);
     assert!(res == -54. / a.size() as f32);
 
-    let res = device.sum_cols(a);
+    let res = device.sum_cols(&a);
     assert_eq!(res.read(), vec![-15., -15., -24.]);
 
-    let res = device.sum_rows(a);
+    let res = device.sum_rows(&a);
     assert_eq!(res.read(), vec![-21., -15., -18.]);
 
     
@@ -29,15 +29,15 @@ fn test_sum_ops() {
     -4., -5., -6., 
     -7., -8., -9.,]));
 
-    let res = device.sum(a);
+    let res = device.sum(&a);
     assert!(res == -54.);
 
-    let res = device.mean(a);
+    let res = device.mean(&a);
     assert!(res == -54. / a.size() as f32);
 
-    let res = device.sum_cols(a);
+    let res = device.sum_cols(&a);
     assert_eq!(res.read(), vec![-15., -15., -24.]);
 
-    let res = device.sum_rows(a);
+    let res = device.sum_rows(&a);
     assert_eq!(res.read(), vec![-21., -15., -18.])
 }

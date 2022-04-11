@@ -7,16 +7,16 @@ pub trait Clip<T> {
 impl <T: GenericOCL>Clip<T> for Matrix<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T> {
         let device = get_device!(ClipOp, T).unwrap();
-        device.clip(*self, min, max)
+        device.clip(self, min, max)
     }
 }
 
 pub trait ClipOp<T> {
-    fn clip(&self, x: Matrix<T>, min: T, max: T) -> Matrix<T>;
+    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T>;
 }
 
 impl <T: Number>ClipOp<T> for InternCPU {
-    fn clip(&self, x: Matrix<T>, min: T, max: T) -> Matrix<T> {
+    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), x.dims());
         let y_slice = y.as_cpu_slice_mut();
 
@@ -33,7 +33,7 @@ impl <T: Number>ClipOp<T> for InternCPU {
     }
 }
 
-fn ocl_clip<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, min: T, max: T) -> Result<Matrix<T>, Error> {
+fn ocl_clip<T: GenericOCL>(device: InternCLDevice, x: &Matrix<T>, min: T, max: T) -> Result<Matrix<T>, Error> {
     let src = format!("
         #define MIN {min}
         #define MAX {max}
@@ -50,14 +50,14 @@ fn ocl_clip<T: GenericOCL>(device: InternCLDevice, x: Matrix<T>, min: T, max: T)
         }}
     ", datatype=T::as_ocl_type_str());
 
-    KernelOptions::new(&device, &x, [x.size(), 0, 0], &src)
+    KernelOptions::new(&device, x, [x.size(), 0, 0], &src)
         .with_output(x.dims())
         .run()
 
 }
 
 impl <T: GenericOCL>ClipOp<T> for InternCLDevice {
-    fn clip(&self, x: Matrix<T>, min: T, max: T) -> Matrix<T> {
+    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()
     }
 }

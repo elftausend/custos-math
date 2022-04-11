@@ -15,7 +15,7 @@ fn test_cce() {
         [0., 0., 1.,
         0., 1., 0.])
     );
-    let res = cce(&device, x, y);
+    let res = cce(&device, &x, &y);
     println!("res: {:?}", res);
     
 }

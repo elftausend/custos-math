@@ -12,34 +12,34 @@ pub trait Sum<T> {
 impl <T: GenericOCL>Sum<T> for Matrix<T> {
     fn sum(&self) -> T {
         let device = get_device!(SumOps, T).unwrap();
-        device.sum(*self)
+        device.sum(self)
     }
 
     fn mean(&self) -> T {
         let device = get_device!(SumOps, T).unwrap();
-        device.mean(*self)
+        device.mean(self)
     }
 
     fn sum_rows(&self) -> Matrix<T> {
         let device = get_device!(SumOps, T).unwrap();
-        device.sum_rows(*self)
+        device.sum_rows(self)
     }
 
     fn sum_cols(&self) -> Matrix<T> {
         let device = get_device!(SumOps, T).unwrap();
-        device.sum_cols(*self)
+        device.sum_cols(self)
     }
 }
 
 pub trait SumOps<T> {
-    fn sum(&self, x: Matrix<T>) -> T;
-    fn mean(&self, x: Matrix<T>) -> T;
-    fn sum_rows(&self, x: Matrix<T>) -> Matrix<T>;
-    fn sum_cols(&self, x: Matrix<T>) -> Matrix<T>;
+    fn sum(&self, x: &Matrix<T>) -> T;
+    fn mean(&self, x: &Matrix<T>) -> T;
+    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
 impl <T: Number>SumOps<T> for InternCPU {
-    fn sum(&self, x: Matrix<T>) -> T {
+    fn sum(&self, x: &Matrix<T>) -> T {
         let mut sum = T::default();
         for value in x.as_cpu_slice() {
             sum += *value;
@@ -47,12 +47,12 @@ impl <T: Number>SumOps<T> for InternCPU {
         sum
     }
 
-    fn mean(&self, x: Matrix<T>) -> T {
+    fn mean(&self, x: &Matrix<T>) -> T {
         let sum = self.sum(x);
         sum/T::from_usize(x.size())
     }
 
-    fn sum_rows(&self, x: Matrix<T>) -> Matrix<T> {
+    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get(self.clone(), (1, x.cols()));
 
         let data = x.as_cpu_slice();
@@ -73,7 +73,7 @@ impl <T: Number>SumOps<T> for InternCPU {
         y
     }
 
-    fn sum_cols(&self, x: Matrix<T>) -> Matrix<T> {
+    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get(self.clone(), (x.rows(), 1));
  
         let data = x.as_cpu_slice();
@@ -94,19 +94,19 @@ impl <T: Number>SumOps<T> for InternCPU {
 }
 
 impl <T: GenericOCL>SumOps<T> for InternCLDevice {
-    fn sum(&self, x: Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.sum(x))
+    fn sum(&self, x: &Matrix<T>) -> T {
+        switch_to_cpu_help_scalar(self, x, |device, x| device.sum(&x))
     }
 
-    fn mean(&self, x: Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.mean(x))
+    fn mean(&self, x: &Matrix<T>) -> T {
+        switch_to_cpu_help_scalar(self, x, |device, x| device.mean(&x))
     }
 
-    fn sum_rows(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.sum_rows(x))
+    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+        switch_to_cpu_help_s(self, x, |device, x| device.sum_rows(&x))
     }
 
-    fn sum_cols(&self, x: Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.sum_cols(x))
+    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+        switch_to_cpu_help_s(self, x, |device, x| device.sum_cols(&x))
     }
 }

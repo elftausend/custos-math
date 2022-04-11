@@ -8,5 +8,17 @@ pub use ops::*;
 pub use cpu::*;
 
 pub trait Mat<T> {
-    fn as_slice(&self) -> Matrix<T>;
+    fn as_mat(&self) -> &Matrix<T>;
+}
+
+impl <T>Mat<T> for Matrix<T> {
+    fn as_mat(&self) -> &Matrix<T> {
+        self
+    }
+}
+
+impl <T>Mat<T> for &Matrix<T> {
+    fn as_mat(&self) -> &Matrix<T> {
+        self
+    }
 }
