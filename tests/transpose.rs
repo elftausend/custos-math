@@ -24,3 +24,17 @@ fn test_transpose_cl() {
         5.0, 2.0, 
         4.0, 1.0], res.read());
 }
+
+
+#[cfg(not(target_os="macos"))]
+#[test]
+fn test_transpose_cl_f64() {
+    let device = CLDevice::get(0).unwrap().select();
+
+    let a = Matrix::from((&device, (2, 3), [6f64, 5., 4., 3., 2., 1.]));
+    let res = a.T();
+
+    assert_eq!(vec![6.0, 3.0, 
+        5.0, 2.0, 
+        4.0, 1.0], res.read());
+}
