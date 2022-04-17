@@ -1,13 +1,14 @@
-use custos::{CPU, Matrix, AsDev, CLDevice};
+use custos::{AsDev, CLDevice, Matrix, CPU};
 use custos_math::MaxOps;
 
 #[test]
 fn test_max_ops() {
     let device = CPU::new().select();
-    let a = Matrix::from((&device, (3, 3),
-    [-10., -2., -3., 
-    -4., -5., -6., 
-    -7., -8., -9.,]));
+    let a = Matrix::from((
+        &device,
+        (3, 3),
+        [-10., -2., -3., -4., -5., -6., -7., -8., -9.],
+    ));
 
     let res = device.max(&a);
     assert!(res == -2.);
@@ -18,13 +19,13 @@ fn test_max_ops() {
     let res = device.max_rows(&a);
     assert_eq!(res.read(), vec![-4., -2., -3.]);
 
-    
     let device = CLDevice::get(0).unwrap().select();
 
-    let a = Matrix::from((&device, (3, 3),
-    [-10f32, -2., -3., 
-    -4., -5., -6., 
-    -7., -8., -9.,]));
+    let a = Matrix::from((
+        &device,
+        (3, 3),
+        [-10f32, -2., -3., -4., -5., -6., -7., -8., -9.],
+    ));
 
     let res = device.max(&a);
     assert!(res == -2.);

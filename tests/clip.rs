@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, Matrix, AsDev, opencl::CLDevice};
+use custos::{cpu::CPU, opencl::CLDevice, AsDev, Matrix};
 use custos_math::ClipOp;
 
 #[test]

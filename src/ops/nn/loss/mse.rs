@@ -1,15 +1,24 @@
-use custos::{Matrix, BaseOps, number::Number};
+use custos::{number::Number, BaseOps, Matrix};
 
-use crate::{SumOps, AdditionalOps};
+use crate::{AdditionalOps, SumOps};
 
-
-pub fn mse<T: Copy, D: BaseOps<T>+SumOps<T>>(device: &D, preds: Matrix<T>, targets: Matrix<T>) -> T {
+pub fn mse<T: Copy, D: BaseOps<T> + SumOps<T>>(
+    device: &D,
+    preds: Matrix<T>,
+    targets: Matrix<T>,
+) -> T {
     let x = device.sub(&preds, &targets);
     device.mean(&device.mul(&x, &x))
 }
 
-pub fn mse_grad<T: Number, D: BaseOps<T>+AdditionalOps<T>>(device: &D, preds: Matrix<T>, targets: Matrix<T>) -> Matrix<T> {
+pub fn mse_grad<T: Number, D: BaseOps<T> + AdditionalOps<T>>(
+    device: &D,
+    preds: Matrix<T>,
+    targets: Matrix<T>,
+) -> Matrix<T> {
     let x = device.sub(&preds, &targets);
-    device.divs(&device.divs(&device.muls(&x, T::two()), T::from_usize(preds.cols())), T::from_usize(preds.rows()))
+    device.divs(
+        &device.divs(&device.muls(&x, T::two()), T::from_usize(preds.cols())),
+        T::from_usize(preds.rows()),
+    )
 }
-
