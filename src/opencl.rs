@@ -9,9 +9,10 @@ pub fn str_op<T: GenericOCL>(device: InternCLDevice, x: &Matrix<T>, op: &str) ->
         }}
     ", datatype=T::as_ocl_type_str());
 
-    KernelOptions::new(&device, &x, [x.size(), 0, 0], &src)
-        .with_output(x.dims())
-        .run()
+    let buf = KernelOptions::new(&device, x.data(), [x.size(), 0, 0], &src)
+        .with_output(x.size())
+        .run();
+    buf.map(|buf| (buf, x.dims()).into())
 }
 
 pub fn scalar_op<T: GenericOCL>(device: InternCLDevice, x: &Matrix<T>, scalar: T, op: &str) -> Result<Matrix<T>, Error> {
@@ -23,9 +24,10 @@ pub fn scalar_op<T: GenericOCL>(device: InternCLDevice, x: &Matrix<T>, scalar: T
         }}
     ", datatype=T::as_ocl_type_str());
 
-    KernelOptions::new(&device, &x, [x.size(), 0, 0], &src)
+    let buf = KernelOptions::new(&device, x.data(), [x.size(), 0, 0], &src)
         .add_arg(&scalar)
-        .with_output(x.dims())
-        .run()
+        .with_output(x.size())
+        .run();
+    buf.map(|buf| (buf, x.dims()).into())
 }
 

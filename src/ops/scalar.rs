@@ -1,4 +1,4 @@
-use custos::{Matrix, opencl::InternCLDevice, cpu::InternCPU, get_device, GenericOCL};
+use custos::{Matrix, opencl::InternCLDevice, cpu::InternCPU, get_device, GenericOCL, number::Number};
 
 use crate::{opencl::scalar_op, cpu::scalar_apply};
 
@@ -45,7 +45,7 @@ impl <T: GenericOCL>AdditionalOps<T> for InternCLDevice {
     }
 }
 
-impl <T: GenericOCL>AdditionalOps<T> for InternCPU {
+impl <T: Number>AdditionalOps<T> for InternCPU {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a + b)
     }

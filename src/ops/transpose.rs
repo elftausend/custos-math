@@ -35,9 +35,10 @@ pub fn cl_transpose<T: GenericOCL>(device: InternCLDevice, x: &Matrix<T>) -> Res
    ", rows=x.rows(), cols=x.cols(), datatype=T::as_ocl_type_str());
 
     let gws = [x.size(), 0, 0];
-    KernelOptions::new(&device, x, gws, &src)
-        .with_output((x.cols(), x.rows()))
-        .run()
+    let buf = KernelOptions::new(&device, x.data(), gws, &src)
+        .with_output(x.cols() * x.rows())
+        .run();
+    buf.map(|buf| (buf, x.dims()).into())
 }
 
 pub trait Transpose<T> {
