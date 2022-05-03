@@ -1,12 +1,20 @@
-use custos::{Matrix, libs::{opencl::cl_device::InternCLDevice, cpu::{each_op, InternCPU}}, number::Float, get_device, GenericOCL};
 use crate::opencl::str_op;
+use custos::{
+    get_device,
+    libs::{
+        cpu::{each_op, InternCPU},
+        opencl::cl_device::InternCLDevice,
+    },
+    number::Float,
+    GenericOCL, Matrix,
+};
 
 pub trait Activations<T> {
     fn relu(&self) -> Matrix<T>;
     fn relu_grad(&self) -> Matrix<T>;
 }
 
-impl <T: GenericOCL+Float>Activations<T> for Matrix<T> {
+impl<T: GenericOCL + Float> Activations<T> for Matrix<T> {
     fn relu(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps, T).unwrap();
         device.relu(self)
@@ -24,7 +32,7 @@ pub trait ActivationOps<T> {
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl <T: GenericOCL+Float>ActivationOps<T> for InternCLDevice {
+impl<T: GenericOCL + Float> ActivationOps<T> for InternCLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "1.0 / (1.0 + exp(-I))").unwrap()
     }
@@ -38,7 +46,7 @@ impl <T: GenericOCL+Float>ActivationOps<T> for InternCLDevice {
     }
 }
 
-impl <T: Float>ActivationOps<T> for InternCPU {
+impl<T: Float> ActivationOps<T> for InternCPU {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
     }
@@ -51,6 +59,3 @@ impl <T: Float>ActivationOps<T> for InternCPU {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize))
     }
 }
-
-
-

@@ -1,11 +1,14 @@
-use custos::{Matrix, cpu::CPU, AsDev, number::Float};
+use custos::{cpu::CPU, number::Float, AsDev, Matrix};
 use custos_math::FnsOps;
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
     for (a, b) in lhs.iter().zip(rhs) {
         let abs = (*a - *b).abs();
         if abs > diff {
-            panic!("\n left: '{:?}',\n right: '{:?}', \n left elem.: {} != right elem. {}", lhs, rhs, a, b)
+            panic!(
+                "\n left: '{:?}',\n right: '{:?}', \n left elem.: {} != right elem. {}",
+                lhs, rhs, a, b
+            )
         }
     }
 }
@@ -14,8 +17,8 @@ pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
 fn test_fns_cpu() {
     let device = CPU::new().select();
 
-    let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3., ]));
-    
+    let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
+
     let res = device.neg(&x);
     assert_eq!(res.read(), vec![-1.5, -2., -6., 3.]);
 

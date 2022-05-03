@@ -1,4 +1,4 @@
-use custos::{Matrix, InternCPU, number::Number, InternCLDevice, GenericOCL};
+use custos::{number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix};
 
 use crate::cpu::col_op;
 
@@ -10,7 +10,7 @@ pub trait ColOp<T> {
     fn div_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
 }
 
-impl <T: Number>ColOp<T> for InternCPU {
+impl<T: Number> ColOp<T> for InternCPU {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a + b)
     }
@@ -24,16 +24,16 @@ impl <T: Number>ColOp<T> for InternCPU {
     }
 }
 
-impl <T: GenericOCL>ColOp<T> for InternCLDevice {
+impl<T: GenericOCL> ColOp<T> for InternCLDevice {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))   
+        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }
 
     fn sub_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.sub_col(lhs, rhs))   
+        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.sub_col(lhs, rhs))
     }
 
     fn div_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.div_col(lhs, rhs))   
+        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.div_col(lhs, rhs))
     }
 }
