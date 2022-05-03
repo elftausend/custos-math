@@ -64,18 +64,12 @@ fn ocl_clip<T: GenericOCL>(
         datatype = T::as_ocl_type_str()
     );
 
-<<<<<<< HEAD
     let buf = KernelOptions::new(&device, x.data(), [x.size(), 0, 0], &src)
         .with_output(x.size())
         .run();
 
     buf.map(|buf| (buf, x.dims()).into())
 
-=======
-    KernelOptions::new(&device, x, [x.size(), 0, 0], &src)
-        .with_output(x.dims())
-        .run()
->>>>>>> bcbd8754e90ba59f895285a056a50bd8f569cacf
 }
 
 impl<T: GenericOCL> ClipOp<T> for InternCLDevice {
