@@ -43,10 +43,10 @@ impl<T: Float + TBlas> SoftmaxOps<T> for InternCPU {
         let rows = grads.rows();
         let cols = grads.cols();
 
-        let activated_data = activated.as_cpu_slice();
-        let grad_data = grads.as_cpu_slice();
+        let activated_data = activated.as_slice();
+        let grad_data = grads.as_slice();
 
-        let data_slice = data.as_cpu_slice_mut();
+        let data_slice = data.as_mut_slice();
 
         for idx in range(rows - 1) {
             let index = idx * cols;
@@ -70,7 +70,7 @@ impl<T: Float + TBlas> SoftmaxOps<T> for InternCPU {
             let res = self.gemm(&jacobian_matrix, &single_grad);
 
             let data_row = &mut data_slice[index..index + cols];
-            data_row.copy_from_slice(res.as_cpu_slice());
+            data_row.copy_from_slice(res.as_slice());
         }
         data
     }
@@ -83,10 +83,10 @@ impl<T: Float + TBlas> SoftmaxOps<T> for InternCPU {
         let rows = grads.rows();
         let cols = grads.cols();
 
-        let activated_data = activated.as_cpu_slice();
-        let grad_data = grads.as_cpu_slice();
+        let activated_data = activated.as_slice();
+        let grad_data = grads.as_slice();
 
-        let data_slice = data.as_cpu_slice_mut();
+        let data_slice = data.as_slice_mut();
 
         for idx in range(rows - 1) {
             let index = idx * cols;
@@ -111,7 +111,7 @@ impl<T: Float + TBlas> SoftmaxOps<T> for InternCPU {
             let res = self.gemm(&jacobian_matrix, &single_grad);
 
             let data_row = &mut data_slice[index..index + cols];
-            data_row.copy_from_slice(res.as_cpu_slice());
+            data_row.copy_from_slice(res.as_slice());
         }
         data
     }

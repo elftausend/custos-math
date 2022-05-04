@@ -24,9 +24,9 @@ pub trait ClipOp<T> {
 impl<T: Number> ClipOp<T> for InternCPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), x.dims());
-        let y_slice = y.as_cpu_slice_mut();
+        let y_slice = y.as_mut_slice();
 
-        for (idx, value) in x.as_cpu_slice().iter().enumerate() {
+        for (idx, value) in x.as_slice().iter().enumerate() {
             if *value < min {
                 y_slice[idx] = min;
             } else if *value > max {

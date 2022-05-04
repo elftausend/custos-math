@@ -15,8 +15,8 @@ pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
     f: F,
 ) -> Matrix<T> {
     let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
-    let lhs = lhs.as_cpu_slice();
-    for (idx, value) in y.as_cpu_slice_mut().iter_mut().enumerate() {
+    let lhs = lhs.as_slice();
+    for (idx, value) in y.as_mut_slice().iter_mut().enumerate() {
         f(value, lhs[idx], scalar)
     }
     y
@@ -31,8 +31,8 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
     let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
-    let lhs_data = lhs.as_cpu_slice();
-    let rhs_data = rhs.as_cpu_slice();
+    let lhs_data = lhs.as_slice();
+    let rhs_data = rhs.as_slice();
 
     //rows
     for i in 0..lhs.rows() {
@@ -40,7 +40,7 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
         let x = &lhs_data[index..index + lhs.dims().1];
 
         for (idx, value) in rhs_data.iter().enumerate() {
-            f(&mut y.as_cpu_slice_mut()[index + idx], x[idx], *value);
+            f(&mut y.as_mut_slice()[index + idx], x[idx], *value);
         }
     }
     y
@@ -54,9 +54,9 @@ pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
 ) -> Matrix<T> {
     let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
 
-    let lhs_data = lhs.as_cpu_slice();
-    let rhs_data = rhs.as_cpu_slice();
-    let y_slice = y.as_cpu_slice_mut();
+    let lhs_data = lhs.as_slice();
+    let rhs_data = rhs.as_slice();
+    let y_slice = y.as_mut_slice();
 
     //rows
     let mut i = 0;

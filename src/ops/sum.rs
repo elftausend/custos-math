@@ -43,7 +43,7 @@ pub trait SumOps<T> {
 impl<T: Number> SumOps<T> for InternCPU {
     fn sum(&self, x: &Matrix<T>) -> T {
         let mut sum = T::default();
-        for value in x.as_cpu_slice() {
+        for value in x.as_slice() {
             sum += *value;
         }
         sum
@@ -57,8 +57,8 @@ impl<T: Number> SumOps<T> for InternCPU {
     fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get(self.clone(), (1, x.cols()));
 
-        let data = x.as_cpu_slice();
-        let sum_slice = y.as_cpu_slice_mut();
+        let data = x.as_slice();
+        let sum_slice = y.as_mut_slice();
 
         for value in sum_slice.iter_mut() {
             *value = T::default();
@@ -78,8 +78,8 @@ impl<T: Number> SumOps<T> for InternCPU {
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get(self.clone(), (x.rows(), 1));
 
-        let data = x.as_cpu_slice();
-        let sum_slice = y.as_cpu_slice_mut();
+        let data = x.as_slice();
+        let sum_slice = y.as_mut_slice();
 
         for (idx, col_vec_value) in sum_slice.iter_mut().enumerate().take(x.rows()) {
             let index = idx * x.cols();

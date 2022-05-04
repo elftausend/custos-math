@@ -51,7 +51,7 @@ pub fn cl_transpose<T: GenericOCL>(
     let buf = KernelOptions::new(&device, x.data(), gws, &src)
         .with_output(x.cols() * x.rows())
         .run();
-    buf.map(|buf| (buf, x.dims()).into())
+    buf.map(|buf| (buf, (x.cols(), x.rows())).into())
 }
 
 pub trait Transpose<T> {
@@ -74,7 +74,7 @@ pub trait TransposeOp<T> {
 impl<T: Default + Copy> TransposeOp<T> for InternCPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), (x.cols(), x.rows()));
-        slice_transpose(x.rows(), x.cols(), x.as_cpu_slice(), y.as_cpu_slice_mut());
+        slice_transpose(x.rows(), x.cols(), x.as_slice(), y.as_mut_slice());
         y
     }
 }

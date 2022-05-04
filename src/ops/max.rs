@@ -35,7 +35,7 @@ pub trait MaxOps<T> {
 
 impl<T: Number> MaxOps<T> for InternCPU {
     fn max(&self, x: &Matrix<T>) -> T {
-        let slice = x.as_cpu_slice();
+        let slice = x.as_slice();
         let mut max = slice[0];
 
         for value in slice {
@@ -49,8 +49,8 @@ impl<T: Number> MaxOps<T> for InternCPU {
     fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = CPUCache::get::<T>(self.clone(), (1, x.cols()));
 
-        let data = x.as_cpu_slice();
-        let max_rows = y.as_cpu_slice_mut();
+        let data = x.as_slice();
+        let max_rows = y.as_mut_slice();
 
         max_rows.copy_from_slice(&data[..max_rows.len()]);
 
@@ -68,10 +68,10 @@ impl<T: Number> MaxOps<T> for InternCPU {
     }
 
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
-        let data = x.as_cpu_slice();
+        let data = x.as_slice();
         let mut y = CPUCache::get::<T>(self.clone(), (x.rows(), 1));
 
-        let max_cols = y.as_cpu_slice_mut();
+        let max_cols = y.as_mut_slice();
 
         for (idx, max_cols_val) in max_cols.iter_mut().enumerate().take(x.rows()) {
             let index = idx * x.cols();
