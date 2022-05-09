@@ -9,6 +9,7 @@ mod row_op;
 mod scalar;
 mod sum;
 mod transpose;
+mod random;
 
 pub use clip::*;
 pub use col_op::*;
@@ -25,6 +26,7 @@ pub use row_op::*;
 pub use scalar::*;
 pub use sum::*;
 pub use transpose::*;
+pub use random::*;
 
 ///OpenCL
 pub fn switch_to_cpu_help_lr<
