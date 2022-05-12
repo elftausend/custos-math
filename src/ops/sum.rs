@@ -1,6 +1,8 @@
 use custos::{
-    cpu::CPUCache, get_device, number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix,
+    get_device, number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix,
 };
+
+use crate::cached;
 
 use super::{switch_to_cpu_help_s, switch_to_cpu_help_scalar};
 
@@ -55,7 +57,7 @@ impl<T: Number> SumOps<T> for InternCPU {
     }
 
     fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = CPUCache::get(self.clone(), (1, x.cols()));
+        let mut y = cached(self, (1, x.cols()));
 
         let data = x.as_slice();
         let sum_slice = y.as_mut_slice();
@@ -76,7 +78,7 @@ impl<T: Number> SumOps<T> for InternCPU {
     }
 
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = CPUCache::get(self.clone(), (x.rows(), 1));
+        let mut y = cached(self, (x.rows(), 1));
 
         let data = x.as_slice();
         let sum_slice = y.as_mut_slice();

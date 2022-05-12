@@ -47,7 +47,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
     }
 
     fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = CPUCache::get::<T>(self.clone(), (1, x.cols()));
+        let mut y = CPUCache::get::<T>(self.clone(), x.cols());
 
         let data = x.as_slice();
         let max_rows = y.as_mut_slice();
@@ -64,12 +64,12 @@ impl<T: Number> MaxOps<T> for InternCPU {
                 }
             }
         }
-        y
+        (y, 1, x.cols()).into()
     }
 
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let data = x.as_slice();
-        let mut y = CPUCache::get::<T>(self.clone(), (x.rows(), 1));
+        let mut y = CPUCache::get::<T>(self.clone(), x.rows());
 
         let max_cols = y.as_mut_slice();
 
@@ -86,7 +86,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
             }
             *max_cols_val = max;
         }
-        y
+        (y, x.rows(), 1).into()
     }
 }
 

@@ -1,9 +1,11 @@
 use custos::{
-    cpu::{CPUCache, InternCPU},
+    cpu::InternCPU,
     get_device,
     opencl::{InternCLDevice, KernelOptions},
     Error, GenericOCL, Matrix,
 };
+
+use crate::cached;
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
@@ -73,7 +75,7 @@ pub trait TransposeOp<T> {
 
 impl<T: Default + Copy> TransposeOp<T> for InternCPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = CPUCache::get::<T>(self.clone(), (x.cols(), x.rows()));
+        let mut y = cached(self, (x.cols(), x.rows()));
         slice_transpose(x.rows(), x.cols(), x.as_slice(), y.as_mut_slice());
         y
     }

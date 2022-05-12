@@ -33,9 +33,9 @@ impl<T: Default + Copy> DiagflatOp<T> for InternCPU {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
 
-        let mut y = CPUCache::get::<T>(self.clone(), (size, size));
+        let mut y = CPUCache::get::<T>(self.clone(), size*size);
         diagflat(size, x.as_slice(), y.as_mut_slice());
-        y
+        (y, (size,size)).into()
     }
 }
 

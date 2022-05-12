@@ -5,7 +5,7 @@ use custos::{
 };
 
 pub fn cached<T: Default + Copy>(device: &InternCPU, dims: (usize, usize)) -> Matrix<T> {
-    CPUCache::get::<T>(device.clone(), dims)
+    (CPUCache::get::<T>(device.clone(), dims.0*dims.1), dims).into()
 }
 
 pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
@@ -14,7 +14,7 @@ pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
     scalar: T,
     f: F,
 ) -> Matrix<T> {
-    let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
+    let mut y = cached(device, lhs.dims());
     let lhs = lhs.as_slice();
     for (idx, value) in y.as_mut_slice().iter_mut().enumerate() {
         f(value, lhs[idx], scalar)
@@ -30,7 +30,7 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
 ) -> Matrix<T> {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
-    let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
+    let mut y = cached(device, lhs.dims());
     let lhs_data = lhs.as_slice();
     let rhs_data = rhs.as_slice();
 
@@ -52,7 +52,7 @@ pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
     rhs: &Matrix<T>,
     f: F,
 ) -> Matrix<T> {
-    let mut y = CPUCache::get::<T>(device.clone(), lhs.dims());
+    let mut y = cached(device, lhs.dims());
 
     let lhs_data = lhs.as_slice();
     let rhs_data = rhs.as_slice();

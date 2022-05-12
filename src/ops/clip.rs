@@ -23,7 +23,7 @@ pub trait ClipOp<T> {
 
 impl<T: Number> ClipOp<T> for InternCPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = CPUCache::get::<T>(self.clone(), x.dims());
+        let mut y = CPUCache::get::<T>(self.clone(), x.size());
         let y_slice = y.as_mut_slice();
 
         for (idx, value) in x.as_slice().iter().enumerate() {
@@ -35,7 +35,7 @@ impl<T: Number> ClipOp<T> for InternCPU {
                 y_slice[idx] = *value;
             }
         }
-        y
+        (y, x.dims()).into()
     }
 }
 
