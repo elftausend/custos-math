@@ -86,7 +86,7 @@ impl<T: Float + TBlas> SoftmaxOps<T> for InternCPU {
         let activated_data = activated.as_slice();
         let grad_data = grads.as_slice();
 
-        let data_slice = data.as_slice_mut();
+        let data_slice = data.as_mut_slice();
 
         for idx in range(rows - 1) {
             let index = idx * cols;
