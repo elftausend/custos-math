@@ -29,7 +29,7 @@ impl<T: Float + SampleUniform> RandOp<T> for InternCPU {
 impl<T: Float + SampleUniform> RandOp<T> for InternCLDevice {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
         let mut rng = thread_rng();
-        let mut data = self.read(x.data());
+        let mut data = self.read(x.as_buf());
 
         for value in data.iter_mut() {
             *value = rng.gen_range(lo..hi);

@@ -64,7 +64,7 @@ fn ocl_clip<T: GenericOCL>(
         datatype = T::as_ocl_type_str()
     );
 
-    let buf = KernelOptions::new(&device, x.data(), [x.size(), 0, 0], &src)
+    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)
         .with_output(x.size())
         .run();
 

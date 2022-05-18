@@ -35,8 +35,8 @@ pub fn switch_to_cpu_help_lr<
 >(device: &InternCLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> {
 
     let cpu = CPU::new();
-    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs.data())));
-    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs.data())));
+    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs.as_buf())));
+    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs.as_buf())));
 
     let result = f(&cpu, &lhs, &rhs);
     Matrix::from((device, result))
@@ -49,7 +49,7 @@ pub fn switch_to_cpu_help_s<
 >(device: &InternCLDevice, x: &Matrix<T>, f: F) -> Matrix<T> {
     
     let cpu = CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
+    let x = Matrix::from((&cpu, x.dims(), device.read(x.as_buf())));
 
     let result = f(&cpu, x);
     Matrix::from((device, result))
@@ -62,6 +62,6 @@ fn switch_to_cpu_help_scalar<T: Number, F: Fn(&InternCPU, Matrix<T>) -> T>(
     f: F,
 ) -> T {
     let cpu = CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x.data())));
+    let x = Matrix::from((&cpu, x.dims(), device.read(x.as_buf())));
     f(&cpu, x)
 }
