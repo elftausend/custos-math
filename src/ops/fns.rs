@@ -12,6 +12,7 @@ pub trait Fns<T> {
     fn exp(&self) -> Matrix<T>;
     fn ln(&self) -> Matrix<T>;
     fn neg(&self) -> Matrix<T>;
+    fn powf(&self, rhs: T) -> Matrix<T>;
 }
 
 impl<T: GenericOCL + Float> Fns<T> for Matrix<T> {
@@ -29,12 +30,19 @@ impl<T: GenericOCL + Float> Fns<T> for Matrix<T> {
         let device = get_device!(FnsOps, T).unwrap();
         device.neg(self)
     }
+
+    fn powf(&self, rhs: T) -> Matrix<T> {
+        let device = get_device!(FnsOps, T).unwrap();
+        device.powf(self, rhs)
+    }
 }
 
 pub trait FnsOps<T> {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T>;
     fn ln(&self, x: &Matrix<T>) -> Matrix<T>;
     fn neg(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>; 
+    
 }
 
 impl<T: Float> FnsOps<T> for InternCPU {
@@ -49,6 +57,10 @@ impl<T: Float> FnsOps<T> for InternCPU {
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| x.negate())
     }
+
+    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+        each_op(self, x, |x| x.powf(rhs))
+    }
 }
 
 impl<T: GenericOCL> FnsOps<T> for InternCLDevice {
@@ -62,5 +74,9 @@ impl<T: GenericOCL> FnsOps<T> for InternCLDevice {
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "-I").unwrap()
+    }
+
+    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+        str_op(self.clone(), x, &format!("pow(I, {rhs})")).unwrap()
     }
 }
