@@ -2,7 +2,7 @@ use custos::{
     cpu::InternCPU,
     get_device,
     opencl::{InternCLDevice, KernelOptions},
-    Error, GenericOCL, Matrix,
+    GenericOCL, Matrix,
 };
 
 use crate::cached;
@@ -22,7 +22,7 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 pub fn cl_transpose<T: GenericOCL>(
     device: InternCLDevice,
     x: &Matrix<T>,
-) -> Result<Matrix<T>, Error> {
+) -> custos::Result<Matrix<T>> {
     let src = format!(
         "
         #define MODULO(x,N) (x % N)
@@ -50,7 +50,7 @@ pub fn cl_transpose<T: GenericOCL>(
     );
 
     let gws = [x.size(), 0, 0];
-    let buf = KernelOptions::new(&device, x.as_buf(), gws, &src)
+    let buf = KernelOptions::new(&device, x.as_buf(), gws, &src)?
         .with_output(x.cols() * x.rows())
         .run();
     buf.map(|buf| (buf, (x.cols(), x.rows())).into())

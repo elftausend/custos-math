@@ -3,7 +3,6 @@ use custos::{
 };
 
 use crate::cached;
-
 use super::{switch_to_cpu_help_s, switch_to_cpu_help_scalar};
 
 pub trait Sum<T> {

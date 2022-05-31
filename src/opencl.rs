@@ -19,7 +19,7 @@ pub fn str_op<T: GenericOCL>(
         datatype = T::as_ocl_type_str()
     );
 
-    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)
+    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
         .with_output(x.size())
         .run();
     buf.map(|buf| (buf, x.dims()).into())
@@ -39,7 +39,7 @@ pub fn scalar_op<T: GenericOCL>(
         }}
     ", datatype=T::as_ocl_type_str());
 
-    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)
+    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
         .add_arg(&scalar)
         .with_output(x.size())
         .run();

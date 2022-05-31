@@ -3,7 +3,7 @@ use custos::{
     get_device,
     number::Number,
     opencl::{InternCLDevice, KernelOptions},
-    Error, GenericOCL, Matrix,
+    GenericOCL, Matrix,
 };
 
 pub trait Clip<T> {
@@ -44,7 +44,7 @@ fn ocl_clip<T: GenericOCL>(
     x: &Matrix<T>,
     min: T,
     max: T,
-) -> Result<Matrix<T>, Error> {
+) -> custos::Result<Matrix<T>> {
     let src = format!(
         "
         #define MIN {min}
@@ -64,7 +64,7 @@ fn ocl_clip<T: GenericOCL>(
         datatype = T::as_ocl_type_str()
     );
 
-    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)
+    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
         .with_output(x.size())
         .run();
 
