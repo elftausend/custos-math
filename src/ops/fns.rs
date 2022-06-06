@@ -9,9 +9,13 @@ use custos::{
 use crate::opencl::str_op;
 
 pub trait Fns<T> {
+    #[must_use]
     fn exp(&self) -> Matrix<T>;
+    #[must_use]
     fn ln(&self) -> Matrix<T>;
+    #[must_use]
     fn neg(&self) -> Matrix<T>;
+    #[must_use]
     fn powf(&self, rhs: T) -> Matrix<T>;
 }
 
