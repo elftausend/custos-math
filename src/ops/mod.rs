@@ -14,10 +14,10 @@ mod random;
 pub use clip::*;
 pub use col_op::*;
 use custos::{
-    cpu::{InternCPU, CPU},
+    cpu::InternCPU,
     number::Number,
     opencl::InternCLDevice,
-    GenericOCL, Matrix, VecRead,
+    GenericOCL, Matrix,
 };
 pub use diagflat::*;
 pub use fns::*;
