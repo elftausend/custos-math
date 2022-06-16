@@ -13,7 +13,7 @@ fn test_transpose_cpu() {
 
 #[test]
 fn test_transpose_cl() {
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
     let res = a.T();
@@ -24,7 +24,7 @@ fn test_transpose_cl() {
 #[cfg(not(target_os = "macos"))]
 #[test]
 fn test_transpose_cl_f64() {
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((&device, (2, 3), [6f64, 5., 4., 3., 2., 1.]));
     let res = a.T();

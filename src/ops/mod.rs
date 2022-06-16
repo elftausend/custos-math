@@ -17,7 +17,7 @@ use custos::{
     cpu::InternCPU,
     number::Number,
     opencl::InternCLDevice,
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 pub use diagflat::*;
 pub use fns::*;
@@ -30,7 +30,7 @@ pub use random::*;
 
 ///OpenCL
 pub fn switch_to_cpu_help_lr<
-    T: GenericOCL,
+    T: CDatatype,
     F: Fn(&InternCPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
 >(device: &InternCLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
 {
@@ -48,7 +48,7 @@ pub fn switch_to_cpu_help_lr<
 
 ///OpenCL
 pub fn switch_to_cpu_help_s<
-    T: GenericOCL, F: 
+    T: CDatatype, F: 
     Fn(&InternCPU, Matrix<T>) -> Matrix<T>
 >(device: &InternCLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
 {

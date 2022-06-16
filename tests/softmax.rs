@@ -19,7 +19,7 @@ fn test_softmax_cpu() {
 
 #[test]
 fn test_softmax_cl() {
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
 

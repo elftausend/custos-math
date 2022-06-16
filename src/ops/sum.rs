@@ -1,5 +1,5 @@
 use custos::{
-    get_device, number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix,
+    get_device, number::Number, CDatatype, InternCLDevice, InternCPU, Matrix,
 };
 
 use crate::cached;
@@ -12,7 +12,7 @@ pub trait Sum<T> {
     fn sum_cols(&self) -> Matrix<T>;
 }
 
-impl<T: GenericOCL> Sum<T> for Matrix<T> {
+impl<T: CDatatype> Sum<T> for Matrix<T> {
     fn sum(&self) -> T {
         let device = get_device!(SumOps, T).unwrap();
         device.sum(self)
@@ -96,7 +96,7 @@ impl<T: Number> SumOps<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> SumOps<T> for InternCLDevice {
+impl<T: CDatatype> SumOps<T> for InternCLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.sum(&x))
     }

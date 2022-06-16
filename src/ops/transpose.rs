@@ -2,7 +2,7 @@ use custos::{
     cpu::InternCPU,
     get_device,
     opencl::{InternCLDevice, KernelOptions},
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 
 use crate::cached;
@@ -19,7 +19,7 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
     }
 }
 
-pub fn cl_transpose<T: GenericOCL>(
+pub fn cl_transpose<T: CDatatype>(
     device: InternCLDevice,
     x: &Matrix<T>,
 ) -> custos::Result<Matrix<T>> {
@@ -46,7 +46,7 @@ pub fn cl_transpose<T: GenericOCL>(
    ",
         rows = x.rows(),
         cols = x.cols(),
-        datatype = T::as_ocl_type_str()
+        datatype = T::as_c_type_str()
     );
 
     let gws = [x.size(), 0, 0];
@@ -61,7 +61,7 @@ pub trait Transpose<T> {
     fn T(&self) -> Matrix<T>;
 }
 
-impl<T: GenericOCL> Transpose<T> for Matrix<T> {
+impl<T: CDatatype> Transpose<T> for Matrix<T> {
     #[allow(non_snake_case)]
     fn T(&self) -> Matrix<T> {
         let device = get_device!(TransposeOp, T).unwrap();
@@ -81,7 +81,7 @@ impl<T: Default + Copy> TransposeOp<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> TransposeOp<T> for InternCLDevice {
+impl<T: CDatatype> TransposeOp<T> for InternCLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_transpose(self.clone(), x).unwrap()
     }

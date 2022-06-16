@@ -1,4 +1,4 @@
-use custos::{number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix};
+use custos::{number::Number, CDatatype, InternCLDevice, InternCPU, Matrix};
 
 use crate::cpu::col_op;
 
@@ -24,7 +24,7 @@ impl<T: Number> ColOp<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> ColOp<T> for InternCLDevice {
+impl<T: CDatatype> ColOp<T> for InternCLDevice {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }

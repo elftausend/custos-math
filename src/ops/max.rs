@@ -1,5 +1,5 @@
 use custos::{
-    cpu::CPUCache, get_device, number::Number, GenericOCL, InternCLDevice, InternCPU, Matrix,
+    cpu::CPUCache, get_device, number::Number, CDatatype, InternCLDevice, InternCPU, Matrix,
 };
 
 use super::{switch_to_cpu_help_s, switch_to_cpu_help_scalar};
@@ -10,7 +10,7 @@ pub trait Max<T> {
     fn max_cols(&self) -> Matrix<T>;
 }
 
-impl<T: GenericOCL> Max<T> for Matrix<T> {
+impl<T: CDatatype> Max<T> for Matrix<T> {
     fn max(&self) -> T {
         let device = get_device!(MaxOps, T).unwrap();
         device.max(self)
@@ -90,7 +90,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> MaxOps<T> for InternCLDevice {
+impl<T: CDatatype> MaxOps<T> for InternCLDevice {
     fn max(&self, x: &Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.max(&x))
     }

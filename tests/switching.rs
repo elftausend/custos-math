@@ -4,7 +4,7 @@ use custos_math::{FnsOps, nn::SoftmaxOps, switch_to_cpu_help_s};
 
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
-    let device = CLDevice::get(0)?.select();
+    let device = CLDevice::new(0)?.select();
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
 
@@ -21,7 +21,7 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
 }
 #[test]
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
-    let device = CLDevice::get(0)?.select();
+    let device = CLDevice::new(0)?.select();
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
 

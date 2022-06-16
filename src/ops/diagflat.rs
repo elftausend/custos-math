@@ -2,7 +2,7 @@ use custos::{
     cpu::{CPUCache, InternCPU},
     get_device,
     opencl::InternCLDevice,
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 
 use super::switch_to_cpu_help_s;
@@ -11,7 +11,7 @@ pub trait Diagflat<T> {
     fn diagflat(&self) -> Matrix<T>;
 }
 
-impl<T: GenericOCL> Diagflat<T> for Matrix<T> {
+impl<T: CDatatype> Diagflat<T> for Matrix<T> {
     fn diagflat(&self) -> Matrix<T> {
         let device = get_device!(DiagflatOp, T).unwrap();
         device.diagflat(self)
@@ -39,7 +39,7 @@ impl<T: Default + Copy> DiagflatOp<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> DiagflatOp<T> for InternCLDevice {
+impl<T: CDatatype> DiagflatOp<T> for InternCLDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         switch_to_cpu_help_s(self, x, |device, x| device.diagflat(&x))
     }

@@ -3,14 +3,14 @@ use custos::{
     get_device,
     number::Number,
     opencl::{InternCLDevice, KernelOptions},
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 
 pub trait Clip<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T>;
 }
 
-impl<T: GenericOCL> Clip<T> for Matrix<T> {
+impl<T: CDatatype> Clip<T> for Matrix<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T> {
         let device = get_device!(ClipOp, T).unwrap();
         device.clip(self, min, max)
@@ -39,7 +39,7 @@ impl<T: Number> ClipOp<T> for InternCPU {
     }
 }
 
-fn ocl_clip<T: GenericOCL>(
+fn ocl_clip<T: CDatatype>(
     device: InternCLDevice,
     x: &Matrix<T>,
     min: T,
@@ -61,7 +61,7 @@ fn ocl_clip<T: GenericOCL>(
             }} 
         }}
     ",
-        datatype = T::as_ocl_type_str()
+        datatype = T::as_c_type_str()
     );
 
     let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
@@ -72,7 +72,7 @@ fn ocl_clip<T: GenericOCL>(
 
 }
 
-impl<T: GenericOCL> ClipOp<T> for InternCLDevice {
+impl<T: CDatatype> ClipOp<T> for InternCLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()
     }

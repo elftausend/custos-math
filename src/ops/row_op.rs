@@ -1,6 +1,6 @@
 use crate::{cpu::row_op, Mat};
 use custos::{
-    cpu::InternCPU, get_device, number::Number, opencl::InternCLDevice, GenericOCL, Matrix,
+    cpu::InternCPU, get_device, number::Number, opencl::InternCLDevice, CDatatype, Matrix,
 };
 
 use super::switch_to_cpu_help_lr;
@@ -9,7 +9,7 @@ pub trait Row<T, R: Mat<T>> {
     fn add_row(self, rhs: R) -> Matrix<T>;
 }
 
-impl<T: GenericOCL, L: Mat<T>, R: Mat<T>> Row<T, R> for L {
+impl<T: CDatatype, L: Mat<T>, R: Mat<T>> Row<T, R> for L {
     fn add_row(self, rhs: R) -> Matrix<T> {
         let device = get_device!(RowOp, T).unwrap();
         device.add_row(self.as_mat(), rhs.as_mat())
@@ -26,7 +26,7 @@ impl<T: Number> RowOp<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> RowOp<T> for InternCLDevice {
+impl<T: CDatatype> RowOp<T> for InternCLDevice {
     fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }

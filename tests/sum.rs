@@ -22,7 +22,7 @@ fn test_sum_ops() {
     let res = device.sum_rows(&a);
     assert_eq!(res.read(), vec![-21., -15., -18.]);
 
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((
         &device,
