@@ -36,14 +36,14 @@ pub fn switch_to_cpu_help_lr<
 {
     use custos::opencl::cpu_exec_lhs_rhs;
     cpu_exec_lhs_rhs(device, lhs, rhs, f).unwrap()
-    /*
-    let cpu = CPU::new();
-    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs.as_buf())));
-    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs.as_buf())));
+    /* 
+    let cpu = custos::CPU::new();
+    let lhs = Matrix::from((&cpu, lhs.dims(), custos::VecRead::read(device, lhs)));
+    let rhs = Matrix::from((&cpu, rhs.dims(), custos::VecRead::read(device, rhs)));
 
     let result = f(&cpu, &lhs, &rhs);
-    Matrix::from((device, result))
-    */
+    Matrix::from((device, result))*/
+    
 }
 
 ///OpenCL
@@ -54,9 +54,9 @@ pub fn switch_to_cpu_help_s<
 {
     use custos::opencl::cpu_exec;
     cpu_exec(device, x, f).unwrap()
-    /*
-    let cpu = CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x.as_buf())));
+    
+    /*let cpu = custos::CPU::new();
+    let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
 
     let result = f(&cpu, x);
     Matrix::from((device, result))*/
@@ -70,10 +70,10 @@ fn switch_to_cpu_help_scalar<T: Number, F: Fn(&InternCPU, Matrix<T>) -> T>(
 ) -> T {
     use custos::opencl::cpu_exec_scalar;
     cpu_exec_scalar(device, x, f)
-    /*
-    let cpu = CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x.as_buf())));
-    f(&cpu, x)
-    */
+    
+    /*let cpu = custos::CPU::new();
+    let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
+    f(&cpu, x)*/
+    
 }
 
