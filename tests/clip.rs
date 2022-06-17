@@ -13,7 +13,7 @@ fn test_clip_cpu() {
 
 #[test]
 fn test_clip_cl() {
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 

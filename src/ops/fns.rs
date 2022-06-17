@@ -3,7 +3,7 @@ use custos::{
     get_device,
     number::Float,
     opencl::InternCLDevice,
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 
 use crate::opencl::str_op;
@@ -19,7 +19,7 @@ pub trait Fns<T> {
     fn powf(&self, rhs: T) -> Matrix<T>;
 }
 
-impl<T: GenericOCL + Float> Fns<T> for Matrix<T> {
+impl<T: CDatatype + Float> Fns<T> for Matrix<T> {
     fn exp(&self) -> Matrix<T> {
         let device = get_device!(FnsOps, T).unwrap();
         device.exp(self)
@@ -67,7 +67,7 @@ impl<T: Float> FnsOps<T> for InternCPU {
     }
 }
 
-impl<T: GenericOCL> FnsOps<T> for InternCLDevice {
+impl<T: CDatatype> FnsOps<T> for InternCLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "exp(I)").unwrap()
     }

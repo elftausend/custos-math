@@ -34,7 +34,7 @@ fn test_fns_cpu() {
 
 #[test]
 fn test_fns_cl() -> Result<(), custos::Error> {
-    let device = CLDevice::get(0)?.select();
+    let device = CLDevice::new(0)?.select();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 

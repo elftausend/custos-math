@@ -17,7 +17,7 @@ fn test_diagflat_cpu() {
 
 #[test]
 fn test_diagflat_cl() {
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., 4.]));
     let result = device.diagflat(&x);

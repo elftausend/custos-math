@@ -19,7 +19,7 @@ fn test_max_ops() {
     let res = device.max_rows(&a);
     assert_eq!(res.read(), vec![-4., -2., -3.]);
 
-    let device = CLDevice::get(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((
         &device,

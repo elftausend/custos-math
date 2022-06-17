@@ -6,7 +6,7 @@ use custos::{
         opencl::cl_device::InternCLDevice,
     },
     number::Float,
-    GenericOCL, Matrix,
+    CDatatype, Matrix,
 };
 
 pub trait Activations<T> {
@@ -16,7 +16,7 @@ pub trait Activations<T> {
     fn relu_grad(&self) -> Matrix<T>;
 }
 
-impl<T: GenericOCL + Float> Activations<T> for Matrix<T> {
+impl<T: CDatatype + Float> Activations<T> for Matrix<T> {
     fn tanh(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps, T).unwrap();
         device.tanh(self)
@@ -46,7 +46,7 @@ pub trait ActivationOps<T> {
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: GenericOCL + Float> ActivationOps<T> for InternCLDevice {
+impl<T: CDatatype + Float> ActivationOps<T> for InternCLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         str_op(self.clone(), x, "1.0 / (1.0 + exp(-I))").unwrap()
     }

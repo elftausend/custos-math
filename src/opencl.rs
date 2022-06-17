@@ -1,9 +1,9 @@
 use custos::{
     libs::opencl::{cl_device::InternCLDevice, KernelOptions},
-    Error, GenericOCL, Matrix,
+    Error, CDatatype, Matrix,
 };
 
-pub fn str_op<T: GenericOCL>(
+pub fn str_op<T: CDatatype>(
     device: InternCLDevice,
     x: &Matrix<T>,
     op: &str,
@@ -16,7 +16,7 @@ pub fn str_op<T: GenericOCL>(
             out[id] = {op};
         }}
     ",
-        datatype = T::as_ocl_type_str()
+        datatype = T::as_c_type_str()
     );
 
     let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
@@ -25,7 +25,7 @@ pub fn str_op<T: GenericOCL>(
     buf.map(|buf| (buf, x.dims()).into())
 }
 
-pub fn scalar_op<T: GenericOCL>(
+pub fn scalar_op<T: CDatatype>(
     device: InternCLDevice,
     x: &Matrix<T>,
     scalar: T,
@@ -37,7 +37,7 @@ pub fn scalar_op<T: GenericOCL>(
             
             out[id] = x[id]{op}scalar;
         }}
-    ", datatype=T::as_ocl_type_str());
+    ", datatype=T::as_c_type_str());
 
     let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
         .add_arg(&scalar)
