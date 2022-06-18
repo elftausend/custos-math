@@ -1,6 +1,6 @@
 use crate::{
     cached,
-    ops::{switch_to_cpu_help_lr, switch_to_cpu_help_s},
+    ops::{cl_to_cpu_lr, cl_to_cpu_s},
     ColOp, DiagflatOp, FnsOps, Mat, MaxOps, SumOps, TransposeOp, cl_diagflat,
 };
 use custos::{
@@ -108,13 +108,14 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for InternCPU {
     }
 }
 
+// TODO: Softmax running on the opencl device
 impl<T: CDatatype + GenericBlas + Float> SoftmaxOps<T> for InternCLDevice {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, inputs, |device, inputs| device.softmax(&inputs))
+        cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(&inputs))
     }
 
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_lr(self, activated, &grads, |device, activated, grads| {
+        cl_to_cpu_lr(self, activated, &grads, |device, activated, grads| {
             device.softmax_grad(activated, &grads)
         })
     }

@@ -5,7 +5,7 @@ use custos::{
     CDatatype, Matrix, Buffer,
 };
 
-use super::switch_to_cpu_help_s;
+use super::cl_to_cpu_s;
 
 pub trait Diagflat<T> {
     fn diagflat(&self) -> Matrix<T>;
@@ -41,7 +41,7 @@ impl<T: Default + Copy> DiagflatOp<T> for InternCPU {
 
 impl<T: CDatatype> DiagflatOp<T> for InternCLDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_s(self, x, |device, x| device.diagflat(&x))
+        cl_to_cpu_s(self, x, |device, x| device.diagflat(&x))
     }
 }
 

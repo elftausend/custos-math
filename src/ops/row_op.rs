@@ -3,7 +3,7 @@ use custos::{
     cpu::InternCPU, get_device, number::Number, opencl::InternCLDevice, CDatatype, Matrix,
 };
 
-use super::switch_to_cpu_help_lr;
+use super::cl_to_cpu_lr;
 
 pub trait Row<T, R: Mat<T>> {
     fn add_row(self, rhs: R) -> Matrix<T>;
@@ -28,6 +28,6 @@ impl<T: Number> RowOp<T> for InternCPU {
 
 impl<T: CDatatype> RowOp<T> for InternCLDevice {
     fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
-        switch_to_cpu_help_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
+        cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }
 }

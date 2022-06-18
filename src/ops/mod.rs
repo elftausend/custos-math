@@ -29,7 +29,7 @@ pub use transpose::*;
 pub use random::*;
 
 ///OpenCL
-pub fn switch_to_cpu_help_lr<
+pub fn cl_to_cpu_lr<
     T: CDatatype,
     F: Fn(&InternCPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
 >(device: &InternCLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
@@ -47,7 +47,7 @@ pub fn switch_to_cpu_help_lr<
 }
 
 ///OpenCL
-pub fn switch_to_cpu_help_s<
+pub fn cl_to_cpu_s<
     T: CDatatype, F: 
     Fn(&InternCPU, Matrix<T>) -> Matrix<T>
 >(device: &InternCLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
