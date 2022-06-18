@@ -1,11 +1,11 @@
 use crate::{
     cached,
     ops::{switch_to_cpu_help_lr, switch_to_cpu_help_s},
-    ColOp, DiagflatOp, FnsOps, Mat, MaxOps, SumOps, TransposeOp,
+    ColOp, DiagflatOp, FnsOps, Mat, MaxOps, SumOps, TransposeOp, cl_diagflat,
 };
 use custos::{
     GenericBlas, get_device, number::Float, range, BaseOps, Gemm, CDatatype, InternCLDevice,
-    InternCPU, Matrix,
+    InternCPU, Matrix, opencl::cl_tew,
 };
 
 pub trait Softmax<T> {
@@ -43,25 +43,21 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for InternCPU {
         let rows = grads.rows();
         let cols = grads.cols();
 
-        let activated_data = activated.as_slice();
-        let grad_data = grads.as_slice();
-
-        let data_slice = data.as_mut_slice();
-
         for idx in range(rows - 1) {
             let index = idx * cols;
 
             let single_out = Matrix::from((
-                (&activated_data[index..index + cols]).as_ptr() as *mut T,
+                (&activated[index..index + cols]).as_ptr() as *mut T,
                 (cols, 1),
             ));
             let single_grad = Matrix::from((
-                (&grad_data[index..index + cols]).as_ptr() as *mut T,
+                (&grads[index..index + cols]).as_ptr() as *mut T,
                 (cols, 1),
             ));
 
             let diagflat = self.diagflat(&single_out);
 
+            // cols 1 x 1 cols
             let jacobian_matrix = self.sub(
                 &diagflat,
                 &self.gemm(&single_out, &self.transpose(&single_out)),
@@ -69,11 +65,12 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for InternCPU {
 
             let res = self.gemm(&jacobian_matrix, &single_grad);
 
-            let data_row = &mut data_slice[index..index + cols];
-            data_row.copy_from_slice(res.as_slice());
+            let data_row = &mut data[index..index + cols];
+            data_row.copy_from_slice(&res);
         }
         data
     }
+
     #[cfg(feature = "safe")]
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
         use custos::CPU;
@@ -83,34 +80,28 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for InternCPU {
         let rows = grads.rows();
         let cols = grads.cols();
 
-        let activated_data = activated.as_slice();
-        let grad_data = grads.as_slice();
-
-        let data_slice = data.as_mut_slice();
-
         for idx in range(rows - 1) {
             let index = idx * cols;
 
             let single_out = Matrix::from((
                 &device,
                 (cols, 1),
-                activated_data[index..index + cols].to_vec(),
+                &activated[index..index + cols].to_vec(),
             ));
-            //let single_out = Matrix::from(( (&activated_data[index..index+cols]).as_ptr() as *mut T, (cols, 1)));
-            let single_grad =
-                Matrix::from((&device, (cols, 1), grad_data[index..index + cols].to_vec()));
-            //let single_grad = Matrix::from(( (&grad_data[index..index+cols]).as_ptr() as *mut T, (cols, 1)));
 
+            let single_grad =
+                Matrix::from((&device, (cols, 1), &grad[index..index + cols].to_vec()));
+        
             let diagflat = self.diagflat(&single_out);
 
             let jacobian_matrix = self.sub(
                 &diagflat,
                 &self.gemm(&single_out, &self.transpose(&single_out)),
             );
-
+            //cols cols x cols 1
             let res = self.gemm(&jacobian_matrix, &single_grad);
-
-            let data_row = &mut data_slice[index..index + cols];
+            
+            let data_row = &mut data[index..index + cols];
             data_row.copy_from_slice(res.as_slice());
         }
         data
@@ -127,4 +118,32 @@ impl<T: CDatatype + GenericBlas + Float> SoftmaxOps<T> for InternCLDevice {
             device.softmax_grad(activated, &grads)
         })
     }
+}
+
+pub fn cl_softmax<T: CDatatype>(device: &InternCLDevice, mut activated: Matrix<T>, grads: &Matrix<T>) -> custos::Result<Matrix<T>> {
+    let rows = grads.rows();
+    let cols = grads.cols();
+
+    let diag = cl_diagflat(device, &activated)?;
+
+    //println!("diag: {diag:?}");
+    activated.reshape((cols, rows));
+
+    //cols rows x rows cols
+
+    let jacobian = cl_tew(
+        device, 
+        &diag, 
+        &device.gemm(&activated, &device.transpose(&activated)), "-"
+    )?;
+
+    println!("jacobian: {jacobian:?}");
+
+    let jacobian = (jacobian, rows, cols*cols).into();
+    let mut jacobian = device.sum_rows(&jacobian);
+    jacobian.reshape((cols, cols));
+    
+    // rows cols x cols cols
+    let res = device.gemm(&grads, &jacobian);
+    Ok(res)
 }

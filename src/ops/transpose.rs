@@ -50,7 +50,7 @@ pub fn cl_transpose<T: CDatatype>(
     );
 
     let gws = [x.size(), 0, 0];
-    let buf = KernelOptions::new(&device, x.as_buf(), gws, &src)?
+    let buf = KernelOptions::new(&device, x, gws, &src)?
         .with_output(x.cols() * x.rows())
         .run();
     buf.map(|buf| (buf, (x.cols(), x.rows())).into())

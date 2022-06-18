@@ -1,8 +1,8 @@
 use custos::{
     cpu::{CPUCache, InternCPU},
     get_device,
-    opencl::InternCLDevice,
-    CDatatype, Matrix,
+    opencl::{InternCLDevice, KernelOptions},
+    CDatatype, Matrix, Buffer,
 };
 
 use super::switch_to_cpu_help_s;
@@ -18,9 +18,9 @@ impl<T: CDatatype> Diagflat<T> for Matrix<T> {
     }
 }
 
-pub fn diagflat<T: Copy>(size: usize, a: &[T], b: &mut [T]) {
-    for (row, a) in a.iter().enumerate() {
-        b[row * size + row] = *a;
+pub fn diagflat<T: Copy>(a: &[T], b: &mut [T]) {
+    for (row, x) in a.iter().enumerate() {
+        b[row * a.len() + row] = *x;
     }
 }
 
@@ -34,7 +34,7 @@ impl<T: Default + Copy> DiagflatOp<T> for InternCPU {
         let size = x.size();
 
         let mut y = CPUCache::get::<T>(self.clone(), size*size);
-        diagflat(size, x.as_slice(), y.as_mut_slice());
+        diagflat(x.as_slice(), y.as_mut_slice());
         (y, (size,size)).into()
     }
 }
@@ -43,4 +43,22 @@ impl<T: CDatatype> DiagflatOp<T> for InternCLDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         switch_to_cpu_help_s(self, x, |device, x| device.diagflat(&x))
     }
+}
+
+pub fn cl_diagflat<T: CDatatype>(device: &InternCLDevice, x: &Matrix<T>) -> custos::Result<Buffer<T>> {
+    let src = format!(
+        r#"__kernel void diagflat(__global const {datatype}* input, const {datatype} co, __global {datatype}* output) {{
+            size_t x = get_global_id(0);
+            size_t y = get_global_id(1);
+            
+            int cols = (int) co;
+            output[x * cols + x + y * cols * cols] = input[x + y*cols];
+            
+        }}"#, datatype = T::as_c_type_str()
+    );
+
+    KernelOptions::new(device, x, [x.cols(), x.rows(), 0], &src)?
+        .add_arg(&T::from_usize(x.cols()))
+        .with_output(x.cols() * x.cols() * x.rows())
+        .run()
 }
