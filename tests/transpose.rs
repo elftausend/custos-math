@@ -13,11 +13,11 @@ fn test_transpose_cpu() {
 
 #[test]
 fn test_transpose_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = custos::CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
-    let res = a.T();
 
+    let res = a.T();
     assert_eq!(vec![6.0, 3.0, 5.0, 2.0, 4.0, 1.0], res.read());
 }
 

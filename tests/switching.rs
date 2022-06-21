@@ -9,7 +9,7 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
 
     let start = std::time::Instant::now();
-    for _ in range(1000000) {
+    for _ in range(100000) {
         let _m = cpu_exec(&device, &a, |cpu, m| cpu.ln(&m))?;
     }
 
@@ -26,7 +26,7 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
 
     let start = std::time::Instant::now();
-    for _ in range(100000) {
+    for _ in range(10000) {
         //let x: Matrix<f32> = (cached::<f32>(6), 2, 3).into();
         cl_to_cpu_s(&device, &a, |cpu, m| cpu.softmax(&m));
         //cpu_exec(&device, &a, |cpu, m| cpu.softmax(&m))?;
