@@ -2,8 +2,8 @@ use crate::opencl::str_op;
 use custos::{
     get_device,
     libs::{
-        cpu::{each_op, InternCPU},
-        opencl::cl_device::InternCLDevice,
+        cpu::{each_op, CPU},
+        opencl::cl_device::CLDevice,
     },
     number::Float,
     CDatatype, Matrix,
@@ -46,29 +46,29 @@ pub trait ActivationOps<T> {
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: CDatatype + Float> ActivationOps<T> for InternCLDevice {
+impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "1.0 / (1.0 + exp(-I))").unwrap()
+        str_op(self, x, "1.0 / (1.0 + exp(-I))").unwrap()
     }
 
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "tanh(I)").unwrap()
+        str_op(self, x, "tanh(I)").unwrap()
     }
 
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "1.0 - pow(tanh(I), 2)").unwrap()
+        str_op(self, x, "1.0 - pow(tanh(I), 2)").unwrap()
     }
 
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "I * (I >= 0)").unwrap()
+        str_op(self, x, "I * (I >= 0)").unwrap()
     }
 
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "(I >= 0)").unwrap()
+        str_op(self, x, "(I >= 0)").unwrap()
     }
 }
 
-impl<T: Float> ActivationOps<T> for InternCPU {
+impl<T: Float> ActivationOps<T> for CPU {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
     }

@@ -1,7 +1,7 @@
 use custos::{
-    cpu::InternCPU,
+    cpu::CPU,
     get_device,
-    opencl::{InternCLDevice, KernelOptions},
+    opencl::{CLDevice, KernelOptions},
     CDatatype, Matrix,
 };
 
@@ -20,7 +20,7 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 }
 
 pub fn cl_transpose<T: CDatatype>(
-    device: InternCLDevice,
+    device: CLDevice,
     x: &Matrix<T>,
 ) -> custos::Result<Matrix<T>> {
     let src = format!(
@@ -73,7 +73,7 @@ pub trait TransposeOp<T> {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: Default + Copy> TransposeOp<T> for InternCPU {
+impl<T: Default + Copy> TransposeOp<T> for CPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         let mut y = cached(self, (x.cols(), x.rows()));
         slice_transpose(x.rows(), x.cols(), x.as_slice(), y.as_mut_slice());
@@ -81,7 +81,7 @@ impl<T: Default + Copy> TransposeOp<T> for InternCPU {
     }
 }
 
-impl<T: CDatatype> TransposeOp<T> for InternCLDevice {
+impl<T: CDatatype> TransposeOp<T> for CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_transpose(self.clone(), x).unwrap()
     }

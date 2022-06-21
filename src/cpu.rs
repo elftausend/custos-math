@@ -1,15 +1,15 @@
 use custos::{
-    cpu::{CPUCache, InternCPU},
+    cpu::{CPUCache, CPU},
     number::Number,
     Matrix,
 };
 
-pub fn cached<T: Default + Copy>(device: &InternCPU, dims: (usize, usize)) -> Matrix<T> {
-    (CPUCache::get::<T>(device.clone(), dims.0*dims.1), dims).into()
+pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
+    (CPUCache::get::<T>(device, dims.0*dims.1), dims).into()
 }
 
 pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
-    device: &InternCPU,
+    device: &CPU,
     lhs: &Matrix<T>,
     scalar: T,
     f: F,
@@ -23,7 +23,7 @@ pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
 }
 
 pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
-    device: &InternCPU,
+    device: &CPU,
     lhs: &Matrix<T>,
     rhs: &Matrix<T>,
     f: F,
@@ -47,7 +47,7 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
 }
 
 pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
-    device: &InternCPU,
+    device: &CPU,
     lhs: &Matrix<T>,
     rhs: &Matrix<T>,
     f: F,

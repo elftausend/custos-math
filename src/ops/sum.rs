@@ -1,5 +1,5 @@
 use custos::{
-    get_device, number::Number, CDatatype, InternCLDevice, InternCPU, Matrix,
+    get_device, number::Number, CDatatype, CLDevice, CPU, Matrix,
 };
 
 use crate::cached;
@@ -41,7 +41,7 @@ pub trait SumOps<T> {
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: Number> SumOps<T> for InternCPU {
+impl<T: Number> SumOps<T> for CPU {
     fn sum(&self, x: &Matrix<T>) -> T {
         let mut sum = T::default();
         for value in x.as_slice() {
@@ -96,7 +96,7 @@ impl<T: Number> SumOps<T> for InternCPU {
     }
 }
 
-impl<T: CDatatype> SumOps<T> for InternCLDevice {
+impl<T: CDatatype> SumOps<T> for CLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.sum(&x))
     }

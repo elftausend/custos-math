@@ -1,4 +1,4 @@
-use custos::{number::Number, CDatatype, InternCLDevice, InternCPU, Matrix};
+use custos::{number::Number, CDatatype, CLDevice, CPU, Matrix};
 
 use crate::cpu::col_op;
 
@@ -10,7 +10,7 @@ pub trait ColOp<T> {
     fn div_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: Number> ColOp<T> for InternCPU {
+impl<T: Number> ColOp<T> for CPU {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a + b)
     }
@@ -24,7 +24,7 @@ impl<T: Number> ColOp<T> for InternCPU {
     }
 }
 
-impl<T: CDatatype> ColOp<T> for InternCLDevice {
+impl<T: CDatatype> ColOp<T> for CLDevice {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }

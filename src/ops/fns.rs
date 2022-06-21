@@ -1,8 +1,8 @@
 use custos::{
-    cpu::{each_op, InternCPU},
+    cpu::{each_op, CPU},
     get_device,
     number::Float,
-    opencl::InternCLDevice,
+    opencl::CLDevice,
     CDatatype, Matrix,
 };
 
@@ -49,7 +49,7 @@ pub trait FnsOps<T> {
     
 }
 
-impl<T: Float> FnsOps<T> for InternCPU {
+impl<T: Float> FnsOps<T> for CPU {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| x.exp())
     }
@@ -67,20 +67,20 @@ impl<T: Float> FnsOps<T> for InternCPU {
     }
 }
 
-impl<T: CDatatype> FnsOps<T> for InternCLDevice {
+impl<T: CDatatype> FnsOps<T> for CLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "exp(I)").unwrap()
+        str_op(self, x, "exp(I)").unwrap()
     }
 
     fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "log(I)").unwrap()
+        str_op(self, x, "log(I)").unwrap()
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self.clone(), x, "-I").unwrap()
+        str_op(self, x, "-I").unwrap()
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
-        str_op(self.clone(), x, &format!("pow(I, {rhs})")).unwrap()
+        str_op(self, x, &format!("pow(I, {rhs})")).unwrap()
     }
 }

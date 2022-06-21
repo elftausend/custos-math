@@ -39,11 +39,11 @@ fn test_softmax_kernel_cl() -> custos::Result<()> {
 
     let grads = cce_grad(&device, &activated, &targets);
 
-    let out = device.softmax_grad(&activated, &grads);
+    let _out = device.softmax_grad(&activated, &grads);
     //println!("out: {out:?}");
 
     //println!("grads: {:?}", grads.dims());
-    let out = cl_softmax(&device, activated, &grads)?;
+    let _out = cl_softmax(&device, activated, &grads)?;
     //println!("out: {out:?}");
     Ok(())
 }

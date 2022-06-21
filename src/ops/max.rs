@@ -1,5 +1,5 @@
 use custos::{
-    cpu::CPUCache, get_device, number::Number, CDatatype, InternCLDevice, InternCPU, Matrix,
+    cpu::CPUCache, get_device, number::Number, CDatatype, CLDevice, CPU, Matrix,
 };
 
 use super::{cl_to_cpu_s, switch_to_cpu_help_scalar};
@@ -33,7 +33,7 @@ pub trait MaxOps<T> {
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: Number> MaxOps<T> for InternCPU {
+impl<T: Number> MaxOps<T> for CPU {
     fn max(&self, x: &Matrix<T>) -> T {
         let slice = x.as_slice();
         let mut max = slice[0];
@@ -47,7 +47,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
     }
 
     fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = CPUCache::get::<T>(self.clone(), x.cols());
+        let mut y = CPUCache::get::<T>(self, x.cols());
 
         let data = x.as_slice();
         let max_rows = y.as_mut_slice();
@@ -69,7 +69,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
 
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let data = x.as_slice();
-        let mut y = CPUCache::get::<T>(self.clone(), x.rows());
+        let mut y = CPUCache::get::<T>(self, x.rows());
 
         let max_cols = y.as_mut_slice();
 
@@ -90,7 +90,7 @@ impl<T: Number> MaxOps<T> for InternCPU {
     }
 }
 
-impl<T: CDatatype> MaxOps<T> for InternCLDevice {
+impl<T: CDatatype> MaxOps<T> for CLDevice {
     fn max(&self, x: &Matrix<T>) -> T {
         switch_to_cpu_help_scalar(self, x, |device, x| device.max(&x))
     }

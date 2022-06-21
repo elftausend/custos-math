@@ -1,8 +1,8 @@
 use custos::{
-    cpu::{CPUCache, InternCPU},
+    cpu::{CPUCache, CPU},
     get_device,
     number::Number,
-    opencl::{InternCLDevice, KernelOptions},
+    opencl::{CLDevice, KernelOptions},
     CDatatype, Matrix,
 };
 
@@ -21,9 +21,9 @@ pub trait ClipOp<T> {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T>;
 }
 
-impl<T: Number> ClipOp<T> for InternCPU {
+impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = CPUCache::get::<T>(self.clone(), x.size());
+        let mut y = CPUCache::get::<T>(self, x.size());
         let y_slice = y.as_mut_slice();
 
         for (idx, value) in x.as_slice().iter().enumerate() {
@@ -40,7 +40,7 @@ impl<T: Number> ClipOp<T> for InternCPU {
 }
 
 fn ocl_clip<T: CDatatype>(
-    device: InternCLDevice,
+    device: CLDevice,
     x: &Matrix<T>,
     min: T,
     max: T,
@@ -72,7 +72,7 @@ fn ocl_clip<T: CDatatype>(
 
 }
 
-impl<T: CDatatype> ClipOp<T> for InternCLDevice {
+impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()
     }

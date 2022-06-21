@@ -1,10 +1,10 @@
 use custos::{
-    libs::opencl::{cl_device::InternCLDevice, KernelOptions},
+    libs::opencl::{cl_device::CLDevice, KernelOptions},
     Error, CDatatype, Matrix,
 };
 
 pub fn str_op<T: CDatatype>(
-    device: InternCLDevice,
+    device: &CLDevice,
     x: &Matrix<T>,
     op: &str,
 ) -> Result<Matrix<T>, Error> {
@@ -19,14 +19,14 @@ pub fn str_op<T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
+    let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
         .with_output(x.size())
         .run();
     buf.map(|buf| (buf, x.dims()).into())
 }
 
 pub fn scalar_op<T: CDatatype>(
-    device: InternCLDevice,
+    device: &CLDevice,
     x: &Matrix<T>,
     scalar: T,
     op: &str,
@@ -39,7 +39,7 @@ pub fn scalar_op<T: CDatatype>(
         }}
     ", datatype=T::as_c_type_str());
 
-    let buf = KernelOptions::new(&device, x.as_buf(), [x.size(), 0, 0], &src)?
+    let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
         .add_arg(&scalar)
         .with_output(x.size())
         .run();

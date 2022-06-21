@@ -1,4 +1,4 @@
-use custos::{cpu::InternCPU, get_device, opencl::InternCLDevice, CDatatype, Matrix, number::Number};
+use custos::{cpu::CPU, get_device, opencl::CLDevice, CDatatype, Matrix, number::Number};
 
 use crate::{cpu::scalar_apply, opencl::scalar_op};
 
@@ -31,21 +31,21 @@ pub trait AdditionalOps<T> {
     fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T>;
 }
 
-impl<T: CDatatype> AdditionalOps<T> for InternCLDevice {
+impl<T: CDatatype> AdditionalOps<T> for CLDevice {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self.clone(), lhs, rhs, "+").unwrap()
+        scalar_op(self, lhs, rhs, "+").unwrap()
     }
 
     fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self.clone(), lhs, rhs, "*").unwrap()
+        scalar_op(self, lhs, rhs, "*").unwrap()
     }
 
     fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self.clone(), lhs, rhs, "/").unwrap()
+        scalar_op(self, lhs, rhs, "/").unwrap()
     }
 }
 
-impl <T: Number>AdditionalOps<T> for InternCPU {
+impl <T: Number>AdditionalOps<T> for CPU {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a + b)
     }

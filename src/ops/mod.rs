@@ -14,9 +14,9 @@ mod random;
 pub use clip::*;
 pub use col_op::*;
 use custos::{
-    cpu::InternCPU,
+    cpu::CPU,
     number::Number,
-    opencl::InternCLDevice,
+    opencl::CLDevice,
     CDatatype, Matrix,
 };
 pub use diagflat::*;
@@ -31,8 +31,8 @@ pub use random::*;
 ///OpenCL
 pub fn cl_to_cpu_lr<
     T: CDatatype,
-    F: Fn(&InternCPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
->(device: &InternCLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
+    F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
+>(device: &CLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
 {
     use custos::opencl::cpu_exec_lhs_rhs;
     cpu_exec_lhs_rhs(device, lhs, rhs, f).unwrap()
@@ -49,8 +49,8 @@ pub fn cl_to_cpu_lr<
 ///OpenCL
 pub fn cl_to_cpu_s<
     T: CDatatype, F: 
-    Fn(&InternCPU, Matrix<T>) -> Matrix<T>
->(device: &InternCLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
+    Fn(&CPU, Matrix<T>) -> Matrix<T>
+>(device: &CLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
 {
     use custos::opencl::cpu_exec;
     cpu_exec(device, x, f).unwrap()
@@ -63,8 +63,8 @@ pub fn cl_to_cpu_s<
 }
 
 ///OpenCL
-fn switch_to_cpu_help_scalar<T: Number, F: Fn(&InternCPU, Matrix<T>) -> T>(
-    device: &InternCLDevice,
+fn switch_to_cpu_help_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
+    device: &CLDevice,
     x: &Matrix<T>,
     f: F,
 ) -> T {
