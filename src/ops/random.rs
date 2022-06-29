@@ -1,5 +1,5 @@
 use custos::{
-    get_device, number::Float, opencl::cl_write, Device, CPU, Matrix, VecRead, CLDevice,
+    get_device, number::Float, opencl::cl_write, Device, CPU, Matrix, CLDevice,
 };
 use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
@@ -46,7 +46,7 @@ use custos::{CudaDevice, cuda::api::cu_write};
 
 impl<T: Float + SampleUniform> RandOp<T> for CudaDevice {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
-        let mut data = self.read(x.as_buf());
+        let mut data = vec![T::default(); x.len()];
         rand_slice(&mut data, lo, hi);
         cu_write(x.ptr.2, &mut data).unwrap();
     }
