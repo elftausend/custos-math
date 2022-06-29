@@ -3,7 +3,7 @@ use custos::{
 };
 
 use crate::cached;
-use super::{cl_to_cpu_s, switch_to_cpu_help_scalar};
+use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 
 pub trait Sum<T> {
     fn sum(&self) -> T;
@@ -98,11 +98,11 @@ impl<T: Number> SumOps<T> for CPU {
 
 impl<T: CDatatype> SumOps<T> for CLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.sum(&x))
+        cl_to_cpu_scalar(self, x, |device, x| device.sum(&x))
     }
 
     fn mean(&self, x: &Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.mean(&x))
+        cl_to_cpu_scalar(self, x, |device, x| device.mean(&x))
     }
 
     fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {

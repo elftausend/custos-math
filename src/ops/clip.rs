@@ -68,7 +68,8 @@ fn ocl_clip<T: CDatatype>(
         .with_output(x.size())
         .run();
 
-    buf.map(|buf| (buf, x.dims()).into())
+    // TODO: unwrap, Ok()?
+    buf.map(|buf| (buf.unwrap(), x.dims()).into())
 
 }
 

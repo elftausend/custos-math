@@ -53,7 +53,7 @@ pub fn cl_transpose<T: CDatatype>(
     let buf = KernelOptions::new(&device, x, gws, &src)?
         .with_output(x.cols() * x.rows())
         .run();
-    buf.map(|buf| (buf, (x.cols(), x.rows())).into())
+    buf.map(|buf| (buf.unwrap(), (x.cols(), x.rows())).into())
 }
 
 pub trait Transpose<T> {

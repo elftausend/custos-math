@@ -1,6 +1,10 @@
 use custos::{cpu::CPU, get_device, opencl::CLDevice, CDatatype, Matrix, number::Number};
+use crate::{cpu::scalar_apply, opencl::cl_scalar_op};
 
-use crate::{cpu::scalar_apply, opencl::scalar_op};
+#[cfg(feature="cuda")]
+use crate::cuda::cu_scalar_op;
+#[cfg(feature="cuda")]
+use custos::CudaDevice;
 
 pub trait Additional<T> {
     fn adds(&self, rhs: T) -> Matrix<T>;
@@ -31,17 +35,32 @@ pub trait AdditionalOps<T> {
     fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T>;
 }
 
-impl<T: CDatatype> AdditionalOps<T> for CLDevice {
+#[cfg(feature="cuda")]
+impl<T: CDatatype> AdditionalOps<T> for CudaDevice {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self, lhs, rhs, "+").unwrap()
+        (cu_scalar_op(self, lhs, rhs, "+").unwrap(), lhs.dims()).into()
     }
 
     fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self, lhs, rhs, "*").unwrap()
+        (cu_scalar_op(self, lhs, rhs, "*").unwrap(), lhs.dims()).into()
     }
 
     fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        scalar_op(self, lhs, rhs, "/").unwrap()
+        (cu_scalar_op(self, lhs, rhs, "/").unwrap(), lhs.dims()).into()
+    }
+}
+
+impl<T: CDatatype> AdditionalOps<T> for CLDevice {
+    fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+        cl_scalar_op(self, lhs, rhs, "+").unwrap()
+    }
+
+    fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+        cl_scalar_op(self, lhs, rhs, "*").unwrap()
+    }
+
+    fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+        cl_scalar_op(self, lhs, rhs, "/").unwrap()
     }
 }
 

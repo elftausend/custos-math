@@ -21,11 +21,11 @@ pub fn str_op<T: CDatatype>(
 
     let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
         .with_output(x.size())
-        .run();
-    buf.map(|buf| (buf, x.dims()).into())
+        .run()?.unwrap();
+    Ok((buf, x.dims()).into())
 }
 
-pub fn scalar_op<T: CDatatype>(
+pub fn cl_scalar_op<T: CDatatype>(
     device: &CLDevice,
     x: &Matrix<T>,
     scalar: T,
@@ -43,5 +43,6 @@ pub fn scalar_op<T: CDatatype>(
         .add_arg(&scalar)
         .with_output(x.size())
         .run();
-    buf.map(|buf| (buf, x.dims()).into())
+    // TODO: unwrap, Ok()?
+    buf.map(|buf| (buf.unwrap(), x.dims()).into())
 }

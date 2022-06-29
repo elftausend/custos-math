@@ -63,7 +63,7 @@ pub fn cl_to_cpu_s<
 }
 
 ///OpenCL
-fn switch_to_cpu_help_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
+fn cl_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
     device: &CLDevice,
     x: &Matrix<T>,
     f: F,
@@ -74,6 +74,17 @@ fn switch_to_cpu_help_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
     /*let cpu = custos::CPU::new();
     let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
     f(&cpu, x)*/
-    
 }
 
+//#[cfg(feauture="cuda")]
+use custos::CudaDevice;
+
+pub fn cu_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
+    device: &CudaDevice,
+    x: &Matrix<T>,
+    f: F,
+) -> T {
+    let cpu = custos::CPU::new();
+    let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
+    f(&cpu, x)
+}

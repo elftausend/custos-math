@@ -1,5 +1,5 @@
-use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec};
-use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s};
+use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec, CudaDevice};
+use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
 
 #[test]
@@ -9,7 +9,7 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
 
     let start = std::time::Instant::now();
-    for _ in range(100000) {
+    for _ in range(10000) {
         let _m = cpu_exec(&device, &a, |cpu, m| cpu.ln(&m))?;
     }
 
@@ -40,4 +40,11 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 }
 
 
-
+#[test]
+fn test_basic_switch_cuda() -> custos::Result<()> {
+    let device = CudaDevice::new(0)?;
+    let a = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6,]));
+    let sum = cu_to_cpu_scalar(&device, &a, |cpu, x| cpu.sum(&x));
+    println!("sum: {sum}");
+    Ok(())
+}

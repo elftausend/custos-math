@@ -2,7 +2,7 @@ use custos::{
     cpu::CPUCache, get_device, number::Number, CDatatype, CLDevice, CPU, Matrix,
 };
 
-use super::{cl_to_cpu_s, switch_to_cpu_help_scalar};
+use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 
 pub trait Max<T> {
     fn max(&self) -> T;
@@ -92,7 +92,7 @@ impl<T: Number> MaxOps<T> for CPU {
 
 impl<T: CDatatype> MaxOps<T> for CLDevice {
     fn max(&self, x: &Matrix<T>) -> T {
-        switch_to_cpu_help_scalar(self, x, |device, x| device.max(&x))
+        cl_to_cpu_scalar(self, x, |device, x| device.max(&x))
     }
 
     fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {

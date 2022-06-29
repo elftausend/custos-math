@@ -90,7 +90,7 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
             ));
 
             let single_grad =
-                Matrix::from((&device, (cols, 1), &grad[index..index + cols].to_vec()));
+                Matrix::from((&device, (cols, 1), &grads[index..index + cols].to_vec()));
         
             let diagflat = self.diagflat(&single_out);
 

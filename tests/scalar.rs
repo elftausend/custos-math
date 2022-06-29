@@ -36,3 +36,9 @@ fn test_scalar_apply() {
     let res = scalar_apply(&device, &x, 0., |c, a, _| *c = a.abs() + 1.);
     assert_eq!(res.read(), vec![2.31, 3.12, 2., 6., 5.,]);
 }
+
+#[cfg(feature="cuda")]
+#[test]
+fn test_scalar_op_cuda() {
+
+}

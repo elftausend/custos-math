@@ -57,8 +57,9 @@ pub fn cl_diagflat<T: CDatatype>(device: &CLDevice, x: &Matrix<T>) -> custos::Re
         }}"#, datatype = T::as_c_type_str()
     );
 
-    KernelOptions::new(device, x, [x.cols(), x.rows(), 0], &src)?
+    let buf = KernelOptions::new(device, x, [x.cols(), x.rows(), 0], &src)?
         .add_arg(&T::from_usize(x.cols()))
         .with_output(x.cols() * x.cols() * x.rows())
-        .run()
+        .run()?.unwrap();
+    Ok(buf)
 }

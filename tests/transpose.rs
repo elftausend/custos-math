@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, opencl::CLDevice, AsDev, Matrix};
+use custos::{cpu::CPU, AsDev, Matrix};
 use custos_math::Transpose;
 
 #[test]
