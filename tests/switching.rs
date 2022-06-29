@@ -1,5 +1,5 @@
-use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec, CudaDevice};
-use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s, cu_to_cpu_scalar, SumOps};
+use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec, CudaDevice, VecRead, BaseOps};
+use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s, cu_to_cpu_scalar, SumOps, cu_to_cpu_s, cu_to_cpu_lr};
 
 
 #[test]
@@ -41,10 +41,32 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 
 
 #[test]
-fn test_basic_switch_cuda() -> custos::Result<()> {
+fn test_scalar_switch_cuda() -> custos::Result<()> {
     let device = CudaDevice::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6,]));
     let sum = cu_to_cpu_scalar(&device, &a, |cpu, x| cpu.sum(&x));
-    println!("sum: {sum}");
+    
+    assert_eq!(sum, 21);
+
+    Ok(())
+}
+
+#[test]
+fn test_single_switch_cuda() -> custos::Result<()> {
+    let device = CudaDevice::new(0)?;
+    let a = Matrix::from((&device, 3, 2, [1., 2., 3., 4., 5., 6.]));
+    let res = cu_to_cpu_s(&device, &a, |cpu, x| cpu.neg(&x));
+    assert_eq!(device.read(&res), vec![-1., -2., -3., -4., -5., -6.]);
+    Ok(())
+}
+
+#[test]
+fn test_lr_switch_cuda() -> custos::Result<()> {
+    let device = CudaDevice::new(0)?;
+    let lhs = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6,]));
+    let rhs = Matrix::from((&device, 3, 2, [2, 2, 3, 4, 5, 7,]));
+    
+    let out = cu_to_cpu_lr(&device, &lhs, &rhs, |cpu, l, r| cpu.add(l, r));
+    assert_eq!(device.read(&out), vec![3, 4, 6, 8, 10, 13]);
     Ok(())
 }

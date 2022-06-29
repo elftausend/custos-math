@@ -5,6 +5,11 @@ use custos::{
 use crate::cached;
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 
+#[cfg(feature="cuda")]
+use super::{cu_to_cpu_s, cu_to_cpu_scalar};
+#[cfg(feature="cuda")]
+use custos::CudaDevice;
+
 pub trait Sum<T> {
     fn sum(&self) -> T;
     fn mean(&self) -> T;
@@ -111,5 +116,25 @@ impl<T: CDatatype> SumOps<T> for CLDevice {
 
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
+    }
+}
+
+#[cfg(feature="cuda")]
+impl<T: CDatatype> SumOps<T> for CLDevice {
+    
+    fn sum(&self, x: &Matrix<T>) -> T {
+        cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
+    }
+
+    fn mean(&self, x: &Matrix<T>) -> T {
+        cu_to_cpu_scalar(self, x, |device, x| device.mean(&x))
+    }
+
+    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+        cu_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
+    }
+
+    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+        cu_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
     }
 }

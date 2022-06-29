@@ -2,8 +2,12 @@ use crate::{cpu::row_op, Mat};
 use custos::{
     cpu::CPU, get_device, number::Number, opencl::CLDevice, CDatatype, Matrix,
 };
-
 use super::cl_to_cpu_lr;
+
+#[cfg(feature="cuda")]
+use custos::CudaDevice;
+#[cfg(feature="cuda")]
+use super::cu_to_cpu_lr;
 
 pub trait Row<T, R: Mat<T>> {
     fn add_row(self, rhs: R) -> Matrix<T>;
@@ -31,3 +35,11 @@ impl<T: CDatatype> RowOp<T> for CLDevice {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }
 }
+
+#[cfg(feature="cuda")]
+impl<T: CDatatype> RowOp<T> for CudaDevice {
+    fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+        cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
+    }
+}
+

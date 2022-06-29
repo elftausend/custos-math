@@ -17,23 +17,37 @@ pub trait RandOp<T>: Device<T> {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T);
 }
 
+pub fn rand_slice<T: SampleUniform + PartialOrd + Copy>(slice: &mut [T], lo: T, hi: T) {
+    let mut rng = thread_rng();
+    for value in slice {
+        *value = rng.gen_range(lo..hi);
+    }
+}
+
 impl<T: Float + SampleUniform> RandOp<T> for CPU {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
-        let mut rng = thread_rng();
-        for value in x.as_mut_slice() {
-            *value = rng.gen_range(lo..hi);
-        }
+        rand_slice(x, lo, hi)
     }
 }
 
 impl<T: Float + SampleUniform> RandOp<T> for CLDevice {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
-        let mut rng = thread_rng();
-        let mut data = self.read(x.as_buf());
-
-        for value in data.iter_mut() {
-            *value = rng.gen_range(lo..hi);
+        if self.unified_mem() {
+            return rand_slice(x, lo, hi)
         }
+        let mut data = vec![T::default(); x.len()];
+        rand_slice(&mut data, lo, hi);
         cl_write(self, x, &data);
+    }
+}
+
+//#[cfg(feature="cuda")]
+use custos::{CudaDevice, cuda::api::cu_write};
+
+impl<T: Float + SampleUniform> RandOp<T> for CudaDevice {
+    fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
+        let mut data = self.read(x.as_buf());
+        rand_slice(&mut data, lo, hi);
+        cu_write(x.ptr.2, &mut data).unwrap();
     }
 }
