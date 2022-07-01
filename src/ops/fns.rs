@@ -3,7 +3,7 @@ use custos::{
     get_device,
     number::Float,
     opencl::CLDevice,
-    CDatatype, Matrix,
+    CDatatype, Matrix, CudaDevice,
 };
 
 use crate::opencl::str_op;
@@ -82,5 +82,23 @@ impl<T: CDatatype> FnsOps<T> for CLDevice {
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
         str_op(self, x, &format!("pow(I, {rhs})")).unwrap()
+    }
+}
+
+impl<T> FnsOps<T> for CudaDevice {
+    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+        todo!()
     }
 }

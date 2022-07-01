@@ -3,7 +3,7 @@ use custos::{
     get_device,
     number::Number,
     opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix,
+    CDatatype, Matrix, CudaDevice,
 };
 
 pub trait Clip<T> {
@@ -76,5 +76,11 @@ fn ocl_clip<T: CDatatype>(
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()
+    }
+}
+
+impl<T> ClipOp<T> for CudaDevice {
+    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+        todo!()
     }
 }

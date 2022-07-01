@@ -6,7 +6,7 @@ use custos::{
         opencl::cl_device::CLDevice,
     },
     number::Float,
-    CDatatype, Matrix,
+    CDatatype, Matrix, CudaDevice,
 };
 
 pub trait Activations<T> {
@@ -87,5 +87,27 @@ impl<T: Float> ActivationOps<T> for CPU {
 
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize))
+    }
+}
+
+impl<T> ActivationOps<T> for CudaDevice {
+    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
     }
 }

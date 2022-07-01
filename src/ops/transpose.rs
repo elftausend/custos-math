@@ -1,8 +1,10 @@
+use std::ptr::null_mut;
+
 use custos::{
     cpu::CPU,
     get_device,
     opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix,
+    CDatatype, Matrix, cuda::{api::cublas::{CublasHandle, cublasSgeam, cublasOperation_t, cublasDgeam}, CudaCache}, CUdeviceptr, CudaDevice,
 };
 
 use crate::cached;
@@ -61,7 +63,7 @@ pub trait Transpose<T> {
     fn T(&self) -> Matrix<T>;
 }
 
-impl<T: CDatatype> Transpose<T> for Matrix<T> {
+impl<T: CDatatype + CudaTranspose> Transpose<T> for Matrix<T> {
     #[allow(non_snake_case)]
     fn T(&self) -> Matrix<T> {
         let device = get_device!(TransposeOp, T).unwrap();
@@ -75,14 +77,60 @@ pub trait TransposeOp<T> {
 
 impl<T: Default + Copy> TransposeOp<T> for CPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = cached(self, (x.cols(), x.rows()));
-        slice_transpose(x.rows(), x.cols(), x.as_slice(), y.as_mut_slice());
-        y
+        let mut out = cached(self, (x.cols(), x.rows()));
+        slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
+        out
     }
 }
 
 impl<T: CDatatype> TransposeOp<T> for CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_transpose(self.clone(), x).unwrap()
+    }
+}
+
+impl<T: CudaTranspose> TransposeOp<T> for CudaDevice {
+    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+        let out = CudaCache::get(self, x.len());
+        T::transpose(
+            &self.handle(), x.rows(), x.cols(), x.ptr.2, out.ptr.2
+        ).unwrap();
+        (out, x.cols(), x.rows()).into()
+    }
+}
+
+pub trait CudaTranspose {
+    fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()>;
+}
+
+impl CudaTranspose for f32 {
+    fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()> {
+        unsafe {
+            // TODO: better casting than: usize as i32
+            cublasSgeam(
+                handle.0, cublasOperation_t::CUBLAS_OP_T, 
+                cublasOperation_t::CUBLAS_OP_N, m as i32, n as i32, 
+                &1f32 as *const f32, a as *const CUdeviceptr as *const f32, n as i32, 
+                &0f32 as *const f32, null_mut(), m as i32, 
+                c as *mut CUdeviceptr as *mut f32, m as i32
+            ).to_result()?;
+        }
+        Ok(())
+    }
+}
+
+impl CudaTranspose for f64 {
+    fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()> {
+        unsafe {
+            // TODO: better casting than: usize as i32
+            cublasDgeam(
+                handle.0, cublasOperation_t::CUBLAS_OP_T, 
+                cublasOperation_t::CUBLAS_OP_N, m as i32, n as i32, 
+                &1f64 as *const f64, a as *const CUdeviceptr as *const f64, n as i32, 
+                &0f64 as *const f64, null_mut(), m as i32, 
+                c as *mut CUdeviceptr as *mut f64, m as i32
+            ).to_result()?;
+        }
+        Ok(())
     }
 }

@@ -5,7 +5,7 @@ use crate::{
 };
 use custos::{
     GenericBlas, get_device, number::Float, range, BaseOps, Gemm, CDatatype, CLDevice,
-    CPU, Matrix, opencl::cl_tew,
+    CPU, Matrix, opencl::cl_tew, CudaDevice,
 };
 
 pub trait Softmax<T> {
@@ -105,6 +105,16 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
             data_row.copy_from_slice(res.as_slice());
         }
         data
+    }
+}
+
+impl<T> SoftmaxOps<T> for CudaDevice {
+    fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
+        todo!()
+    }
+
+    fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
+        todo!()
     }
 }
 

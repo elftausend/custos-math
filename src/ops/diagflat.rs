@@ -2,7 +2,7 @@ use custos::{
     cpu::{CPUCache, CPU},
     get_device,
     opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix, Buffer,
+    CDatatype, Matrix, Buffer, CudaDevice,
 };
 
 use super::cl_to_cpu_s;
@@ -36,6 +36,12 @@ impl<T: Default + Copy> DiagflatOp<T> for CPU {
         let mut y = CPUCache::get::<T>(self, size*size);
         diagflat(x.as_slice(), y.as_mut_slice());
         (y, (size,size)).into()
+    }
+}
+
+impl<T> DiagflatOp<T> for CudaDevice {
+    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+        todo!()
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::{AdditionalOps, ClipOp, FnsOps, SumOps};
-use custos::{get_device, number::Float, BaseOps, CDatatype, CLDevice, CPU, Matrix};
+use custos::{get_device, number::Float, BaseOps, CDatatype, CLDevice, CPU, Matrix, CudaDevice};
 
 pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);
@@ -20,6 +20,7 @@ where
 pub trait CCEOp<T>: FnsOps<T> + ClipOp<T> + BaseOps<T> + SumOps<T> + AdditionalOps<T> {}
 impl<T: Float + CDatatype> CCEOp<T> for CPU {}
 impl<T: Float + CDatatype> CCEOp<T> for CLDevice {}
+impl<T: Float + CDatatype> CCEOp<T> for CudaDevice {}
 
 pub fn cce<T: Float>(device: &dyn CCEOp<T>, preds: &Matrix<T>, targets: &Matrix<T>) -> T {
     let preds = device.clip(preds, T::as_generic(1E-7), T::as_generic(1. - 1E-7));

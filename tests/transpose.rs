@@ -1,5 +1,5 @@
 use custos::{cpu::CPU, AsDev, Matrix};
-use custos_math::Transpose;
+use custos_math::{Transpose, TransposeOp};
 
 #[test]
 fn test_transpose_cpu() {
@@ -30,4 +30,28 @@ fn test_transpose_cl_f64() {
     let res = a.T();
 
     assert_eq!(vec![6.0, 3.0, 5.0, 2.0, 4.0, 1.0], res.read());
+}
+
+#[test]
+fn test_transpose_cuda() -> custos::Result<()> {
+    let device = custos::CudaDevice::new(0)?.select();
+
+    let a = Matrix::from((&device, 2, 3, [1f32, 2., 3.,
+                                                     4., 5., 6.,]));
+    let out = device.transpose(&a);
+    assert_eq!(vec![1., 4., 2., 5., 3., 6.,], out.read());
+
+    Ok(())
+}
+
+#[cfg(feature="cuda")]
+#[test]
+fn test_transpose_selected_cuda() -> custos::Result<()> {
+    let device = custos::CudaDevice::new(0)?.select();
+
+    let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
+    let res = a.T();
+
+    assert_eq!(vec![6.0, 3.0, 5.0, 2.0, 4.0, 1.0], res.read());
+    Ok(())
 }

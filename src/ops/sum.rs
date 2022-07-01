@@ -120,7 +120,7 @@ impl<T: CDatatype> SumOps<T> for CLDevice {
 }
 
 #[cfg(feature="cuda")]
-impl<T: CDatatype> SumOps<T> for CLDevice {
+impl<T: CDatatype> SumOps<T> for CudaDevice {
     
     fn sum(&self, x: &Matrix<T>) -> T {
         cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
