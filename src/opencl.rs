@@ -3,16 +3,16 @@ use custos::{
     Error, CDatatype, Matrix,
 };
 
-pub fn str_op<T: CDatatype>(
+pub fn cl_str_op<T: CDatatype>(
     device: &CLDevice,
     x: &Matrix<T>,
     op: &str,
 ) -> Result<Matrix<T>, Error> {
     let src = format!(
         "
-        __kernel void str_op(__global const {datatype}* x, __global {datatype}* out) {{
+        __kernel void str_op(__global const {datatype}* lhs, __global {datatype}* out) {{
             size_t id = get_global_id(0);
-            {datatype} I = x[id];
+            {datatype} x = lhs[id];
             out[id] = {op};
         }}
     ",

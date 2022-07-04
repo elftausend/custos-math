@@ -1,4 +1,4 @@
-use crate::opencl::str_op;
+use crate::opencl::cl_str_op;
 use custos::{
     get_device,
     libs::{
@@ -48,23 +48,23 @@ pub trait ActivationOps<T> {
 
 impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "1.0 / (1.0 + exp(-I))").unwrap()
+        cl_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
     }
 
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "tanh(I)").unwrap()
+        cl_str_op(self, x, "tanh(x)").unwrap()
     }
 
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "1.0 - pow(tanh(I), 2)").unwrap()
+        cl_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap()
     }
 
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "I * (I >= 0)").unwrap()
+        cl_str_op(self, x, "x * (x >= 0)").unwrap()
     }
 
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "(I >= 0)").unwrap()
+        cl_str_op(self, x, "(x >= 0)").unwrap()
     }
 }
 

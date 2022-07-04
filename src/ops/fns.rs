@@ -6,7 +6,7 @@ use custos::{
     CDatatype, Matrix, CudaDevice,
 };
 
-use crate::opencl::str_op;
+use crate::{opencl::cl_str_op, cu_str_op};
 
 pub trait Fns<T> {
     #[must_use]
@@ -69,36 +69,40 @@ impl<T: Float> FnsOps<T> for CPU {
 
 impl<T: CDatatype> FnsOps<T> for CLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "exp(I)").unwrap()
+        cl_str_op(self, x, "exp(x)").unwrap()
     }
 
     fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "log(I)").unwrap()
+        cl_str_op(self, x, "log(x)").unwrap()
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        str_op(self, x, "-I").unwrap()
+        cl_str_op(self, x, "-x").unwrap()
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
-        str_op(self, x, &format!("pow(I, {rhs})")).unwrap()
+        cl_str_op(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 }
 
-impl<T> FnsOps<T> for CudaDevice {
+impl<T: CDatatype> FnsOps<T> for CudaDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "exp(x)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "ln(x)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "neg(x)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, &format!("pow(x, {rhs})")).unwrap();
+        (out, x.dims()).into()
     }
 }

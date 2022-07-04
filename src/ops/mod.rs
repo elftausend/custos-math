@@ -17,7 +17,7 @@ use custos::{
     cpu::CPU,
     number::Number,
     opencl::CLDevice,
-    CDatatype, Matrix,
+    Matrix,
 };
 pub use diagflat::*;
 pub use fns::*;
@@ -30,7 +30,7 @@ pub use random::*;
 
 ///OpenCL
 pub fn cl_to_cpu_lr<
-    T: CDatatype,
+    T: Copy+Default,
     F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
 >(device: &CLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
 {
@@ -48,7 +48,7 @@ pub fn cl_to_cpu_lr<
 
 ///OpenCL
 pub fn cl_to_cpu_s<
-    T: CDatatype, F: 
+    T: Copy+Default, F: 
     Fn(&CPU, Matrix<T>) -> Matrix<T>
 >(device: &CLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
 {
@@ -80,7 +80,7 @@ fn cl_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
 use custos::CudaDevice;
 
 pub fn cu_to_cpu_lr<
-    T: CDatatype,
+    T: Copy+Default,
     F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
 >(device: &CudaDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
 {
@@ -93,7 +93,7 @@ pub fn cu_to_cpu_lr<
 }
 
 pub fn cu_to_cpu_s<
-    T: CDatatype, F: 
+    T: Copy+Default, F: 
     Fn(&CPU, Matrix<T>) -> Matrix<T>
 >(device: &CudaDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
 {    
@@ -104,7 +104,7 @@ pub fn cu_to_cpu_s<
     Matrix::from((device, result))
 }
 
-pub fn cu_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
+pub fn cu_to_cpu_scalar<T: Copy+Default, F: Fn(&CPU, Matrix<T>) -> T>(
     device: &CudaDevice,
     x: &Matrix<T>,
     f: F,
