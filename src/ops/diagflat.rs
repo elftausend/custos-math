@@ -5,6 +5,8 @@ use custos::{
     CDatatype, Matrix, Buffer, CudaDevice,
 };
 
+use crate::cu_to_cpu_s;
+
 use super::cl_to_cpu_s;
 
 pub trait Diagflat<T> {
@@ -39,9 +41,9 @@ impl<T: Default + Copy> DiagflatOp<T> for CPU {
     }
 }
 
-impl<T> DiagflatOp<T> for CudaDevice {
+impl<T: Copy+Default> DiagflatOp<T> for CudaDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        cu_to_cpu_s(self, x, |cpu, x| cpu.diagflat(&x))
     }
 }
 

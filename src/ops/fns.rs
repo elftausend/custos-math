@@ -97,7 +97,7 @@ impl<T: CDatatype> FnsOps<T> for CudaDevice {
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        let out = cu_str_op(self, x, "neg(x)").unwrap();
+        let out = cu_str_op(self, x, "-x").unwrap();
         (out, x.dims()).into()
     }
 
