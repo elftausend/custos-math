@@ -30,7 +30,6 @@ pub fn cu_str_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, op: &str) -
                     {datatype} x = lhs[idx];
                     out[idx] = {op};
                 }}
-              
             }}
     "#, datatype=T::as_c_type_str());
 

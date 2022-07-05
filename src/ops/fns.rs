@@ -92,7 +92,7 @@ impl<T: CDatatype> FnsOps<T> for CudaDevice {
     }
 
     fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
-        let out = cu_str_op(self, x, "ln(x)").unwrap();
+        let out = cu_str_op(self, x, "logf(x)").unwrap();
         (out, x.dims()).into()
     }
 
@@ -102,7 +102,7 @@ impl<T: CDatatype> FnsOps<T> for CudaDevice {
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
-        let out = cu_str_op(self, x, &format!("pow(x, {rhs})")).unwrap();
+        let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
     }
 }

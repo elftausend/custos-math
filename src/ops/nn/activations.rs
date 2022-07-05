@@ -1,4 +1,4 @@
-use crate::opencl::cl_str_op;
+use crate::{opencl::cl_str_op, cu_str_op};
 use custos::{
     get_device,
     libs::{
@@ -90,24 +90,29 @@ impl<T: Float> ActivationOps<T> for CPU {
     }
 }
 
-impl<T> ActivationOps<T> for CudaDevice {
+impl<T: CDatatype> ActivationOps<T> for CudaDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();
+        (out, x.dims()).into()
     }
 
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "tanh(x)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "x * (x >= 0)").unwrap();
+        (out, x.dims()).into()
     }
 
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        todo!()
+        let out = cu_str_op(self, x, "(x >= 0)").unwrap();
+        (out, x.dims()).into()
     }
 }

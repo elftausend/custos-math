@@ -52,7 +52,7 @@ fn test_diagflat_kernel_cl() {
     let out = Matrix::from((out, x.rows(), x.cols()*x.cols()));
     println!("out: {out:?}");
 
-    /* 
+    /*
     assert_eq!(
         result.read(),
         vec![1.5, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 4.0]
