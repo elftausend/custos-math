@@ -3,8 +3,11 @@ use custos::{
     get_device,
     number::Number,
     opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix, CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer,
+    CDatatype, Matrix
 };
+
+#[cfg(feature="cuda")]
+use custos::{CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer};
 
 pub trait Clip<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T>;
@@ -79,6 +82,7 @@ impl<T: CDatatype> ClipOp<T> for CLDevice {
     }
 }
 
+#[cfg(feature="cuda")]
 pub fn cu_clip<T: CDatatype>(device: &CudaDevice, x: &Buffer<T>, min: T, max: T) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void clip({datatype}* lhs, {datatype} min, {datatype} max, {datatype}* out, int numElements)
@@ -107,6 +111,7 @@ pub fn cu_clip<T: CDatatype>(device: &CudaDevice, x: &Buffer<T>, min: T, max: T)
     Ok(out)
 }
 
+#[cfg(feature="cuda")]
 impl<T: CDatatype> ClipOp<T> for CudaDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let buf = cu_clip(self, x, min, max).unwrap();

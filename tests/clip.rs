@@ -21,6 +21,7 @@ fn test_clip_cl() {
     assert_eq!(vec![99, 10, 99, -99, -5], res.read());
 }
 
+#[cfg(feature="cuda")]
 #[test]
 fn test_clip_cuda() {
     let device = custos::CudaDevice::new(0).unwrap().select();

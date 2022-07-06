@@ -1,4 +1,4 @@
-use crate::{opencl::cl_str_op, cu_str_op};
+use crate::opencl::cl_str_op;
 use custos::{
     get_device,
     libs::{
@@ -6,8 +6,13 @@ use custos::{
         opencl::cl_device::CLDevice,
     },
     number::Float,
-    CDatatype, Matrix, CudaDevice,
+    CDatatype, Matrix
 };
+
+#[cfg(feature="cuda")]
+use crate::cu_str_op;
+#[cfg(feature="cuda")]
+use custos::CudaDevice;
 
 pub trait Activations<T> {
     fn tanh(&self) -> Matrix<T>;
@@ -90,6 +95,7 @@ impl<T: Float> ActivationOps<T> for CPU {
     }
 }
 
+#[cfg(feature="cuda")]
 impl<T: CDatatype> ActivationOps<T> for CudaDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();

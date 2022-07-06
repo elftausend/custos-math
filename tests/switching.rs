@@ -1,6 +1,11 @@
-use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec, CudaDevice, VecRead, BaseOps};
-use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s, cu_to_cpu_scalar, SumOps, cu_to_cpu_s, cu_to_cpu_lr};
+use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec};
+use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s};
 
+#[cfg(feature="cuda")]
+use custos::{CudaDevice, VecRead, BaseOps};
+
+#[cfg(feature="cuda")]
+use custos_math::{cu_to_cpu_scalar, cu_to_cpu_s, cu_to_cpu_lr, SumOps};
 
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
@@ -39,7 +44,7 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     Ok(())
 }
 
-
+#[cfg(feature="cuda")]
 #[test]
 fn test_scalar_switch_cuda() -> custos::Result<()> {
     let device = CudaDevice::new(0)?;
@@ -51,6 +56,7 @@ fn test_scalar_switch_cuda() -> custos::Result<()> {
     Ok(())
 }
 
+#[cfg(feature="cuda")]
 #[test]
 fn test_single_switch_cuda() -> custos::Result<()> {
     let device = CudaDevice::new(0)?;
@@ -60,6 +66,7 @@ fn test_single_switch_cuda() -> custos::Result<()> {
     Ok(())
 }
 
+#[cfg(feature="cuda")]
 #[test]
 fn test_lr_switch_cuda() -> custos::Result<()> {
     let device = CudaDevice::new(0)?;

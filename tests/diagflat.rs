@@ -29,6 +29,7 @@ fn test_diagflat_cl() {
     //    println!("res: {:?}", result);
 }
 
+#[cfg(feature="cuda")]
 #[test]
 fn test_diagflat_cuda() {
     let device = custos::CudaDevice::new(0).unwrap().select();

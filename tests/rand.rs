@@ -1,9 +1,9 @@
+#[cfg(feature="cuda")]
 use custos_math::RandOp;
-use custos::{Buffer, Matrix, VecRead};
-//#[cfg(feature="cuda")]
-use custos::CudaDevice;
+#[cfg(feature="cuda")]
+use custos::{Buffer, Matrix, VecRead, CudaDevice};
 
-
+#[cfg(feature="cuda")]
 #[test]
 fn test_rand_cuda() -> custos::Result<()> {
     let device = CudaDevice::new(0)?;

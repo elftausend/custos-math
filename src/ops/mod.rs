@@ -76,9 +76,10 @@ fn cl_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
     f(&cpu, x)*/
 }
 
-//#[cfg(feauture="cuda")]
+#[cfg(feauture="cuda")]
 use custos::CudaDevice;
 
+#[cfg(feature="cuda")]
 pub fn cu_to_cpu_lr<
     T: Copy+Default,
     F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
@@ -92,6 +93,7 @@ pub fn cu_to_cpu_lr<
     Matrix::from((device, result))
 }
 
+#[cfg(feature="cuda")]
 pub fn cu_to_cpu_s<
     T: Copy+Default, F: 
     Fn(&CPU, Matrix<T>) -> Matrix<T>
@@ -104,6 +106,7 @@ pub fn cu_to_cpu_s<
     Matrix::from((device, result))
 }
 
+#[cfg(feature="cuda")]
 pub fn cu_to_cpu_scalar<T: Copy+Default, F: Fn(&CPU, Matrix<T>) -> T>(
     device: &CudaDevice,
     x: &Matrix<T>,

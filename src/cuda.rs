@@ -1,5 +1,7 @@
-use custos::{CudaDevice, Buffer, CDatatype, cuda::{CudaCache, launch_kernel1d}};
+#[cfg(feature="cuda")]
+use custos::{Buffer, CDatatype, CudaDevice, cuda::{CudaCache, launch_kernel1d}};
 
+#[cfg(feature="cuda")]
 pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, op: &str) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void scalar_op({datatype}* lhs, {datatype} rhs, {datatype}* out, int numElements)
@@ -21,6 +23,7 @@ pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, 
     Ok(out)
 }
 
+#[cfg(feature="cuda")]
 pub fn cu_str_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, op: &str) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void str_op({datatype}* lhs, {datatype}* out, int numElements)

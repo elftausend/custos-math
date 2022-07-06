@@ -1,13 +1,16 @@
+#[cfg(feature="cuda")]
 use std::ptr::null_mut;
 
 use custos::{
     cpu::CPU,
     get_device,
     opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix, cuda::{api::cublas::{CublasHandle, cublasSgeam, cublasOperation_t, cublasDgeam}, CudaCache}, CUdeviceptr, CudaDevice,
+    CDatatype, Matrix,
 };
-
 use crate::cached;
+
+#[cfg(feature="cuda")]
+use custos::{CUdeviceptr, cuda::{api::cublas::{CublasHandle, cublasSgeam, cublasOperation_t, cublasDgeam}, CudaCache}};
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
@@ -89,7 +92,8 @@ impl<T: CDatatype> TransposeOp<T> for CLDevice {
     }
 }
 
-impl<T: CudaTranspose> TransposeOp<T> for CudaDevice {
+#[cfg(feature="cuda")]
+impl<T: CudaTranspose> TransposeOp<T> for custos::CudaDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = CudaCache::get(self, x.len());
         T::transpose(
@@ -100,10 +104,12 @@ impl<T: CudaTranspose> TransposeOp<T> for CudaDevice {
 }
 
 pub trait CudaTranspose {
+    #[cfg(feature="cuda")]
     fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()>;
 }
 
 impl CudaTranspose for f32 {
+    #[cfg(feature="cuda")]
     fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()> {
         unsafe {
             // TODO: better casting than: usize as i32
@@ -120,6 +126,7 @@ impl CudaTranspose for f32 {
 }
 
 impl CudaTranspose for f64 {
+    #[cfg(feature="cuda")]
     fn transpose(handle: &CublasHandle, m: usize, n: usize, a: CUdeviceptr, c: CUdeviceptr) -> custos::Result<()> {
         unsafe {
             // TODO: better casting than: usize as i32

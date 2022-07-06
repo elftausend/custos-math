@@ -41,9 +41,10 @@ impl<T: Float + SampleUniform> RandOp<T> for CLDevice {
     }
 }
 
-//#[cfg(feature="cuda")]
+#[cfg(feature="cuda")]
 use custos::{CudaDevice, cuda::api::cu_write};
 
+#[cfg(feature="cuda")]
 impl<T: Float + SampleUniform> RandOp<T> for CudaDevice {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
         let mut data = vec![T::default(); x.len()];
