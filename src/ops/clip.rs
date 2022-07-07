@@ -2,9 +2,11 @@ use custos::{
     cpu::{CPUCache, CPU},
     get_device,
     number::Number,
-    opencl::{CLDevice, KernelOptions},
     CDatatype, Matrix
 };
+
+#[cfg(feature="opencl")]
+use custos::{CLDevice, opencl::KernelOptions};
 
 #[cfg(feature="cuda")]
 use custos::{CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer};
@@ -42,6 +44,7 @@ impl<T: Number> ClipOp<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 fn ocl_clip<T: CDatatype>(
     device: CLDevice,
     x: &Matrix<T>,
@@ -76,6 +79,7 @@ fn ocl_clip<T: CDatatype>(
 
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()

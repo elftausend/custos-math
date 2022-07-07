@@ -11,7 +11,7 @@ custos = {path = "../custos"}
 rand = "0.8.5"
 
 [features]
-default = ["opencl"]
+default = ["cuda"]
 safe = []
 opencl = []
 cuda = []

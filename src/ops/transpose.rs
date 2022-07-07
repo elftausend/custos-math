@@ -4,10 +4,12 @@ use std::ptr::null_mut;
 use custos::{
     cpu::CPU,
     get_device,
-    opencl::{CLDevice, KernelOptions},
     CDatatype, Matrix,
 };
 use crate::cached;
+
+#[cfg(feature="opencl")]
+use custos::{CLDevice, opencl::KernelOptions};
 
 #[cfg(feature="cuda")]
 use custos::{CUdeviceptr, cuda::{api::cublas::{CublasHandle, cublasSgeam, cublasOperation_t, cublasDgeam}, CudaCache}};
@@ -24,6 +26,7 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
     }
 }
 
+#[cfg(feature="opencl")]
 pub fn cl_transpose<T: CDatatype>(
     device: CLDevice,
     x: &Matrix<T>,
@@ -86,6 +89,7 @@ impl<T: Default + Copy> TransposeOp<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> TransposeOp<T> for CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_transpose(self.clone(), x).unwrap()

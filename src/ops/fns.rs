@@ -2,7 +2,6 @@ use custos::{
     cpu::{each_op, CPU},
     get_device,
     number::Float,
-    opencl::CLDevice,
     CDatatype, Matrix,
 };
 #[cfg(feature="cuda")]
@@ -10,7 +9,10 @@ use custos::CudaDevice;
 #[cfg(feature="cuda")]
 use crate::cu_str_op;
 
+#[cfg(feature="opencl")]
 use crate::opencl::cl_str_op;
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 pub trait Fns<T> {
     #[must_use]
@@ -71,6 +73,7 @@ impl<T: Float> FnsOps<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> FnsOps<T> for CLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "exp(x)").unwrap()

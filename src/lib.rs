@@ -1,11 +1,14 @@
 mod cpu;
+#[cfg(feature="opencl")]
 mod opencl;
 mod ops;
 mod syntax;
-//#[cfg(feature="cuda")]
+
+#[cfg(feature="cuda")]
 mod cuda;
 
 pub use cpu::*;
+#[cfg(feature="cuda")]
 pub use cuda::*;
 use custos::Matrix;
 pub use ops::*;

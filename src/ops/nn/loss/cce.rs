@@ -19,6 +19,7 @@ where
 
 pub trait CCEOp<T>: FnsOps<T> + ClipOp<T> + BaseOps<T> + SumOps<T> + AdditionalOps<T> {}
 impl<T: Float + CDatatype> CCEOp<T> for CPU {}
+#[cfg(feature="opencl")]
 impl<T: Float + CDatatype> CCEOp<T> for CLDevice {}
 #[cfg(feature="cuda")]
 impl<T: Float + CDatatype> CCEOp<T> for custos::CudaDevice {}

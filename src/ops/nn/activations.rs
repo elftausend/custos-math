@@ -1,10 +1,10 @@
+#[cfg(feature="opencl")]
+use custos::CLDevice;
+#[cfg(feature="opencl")]
 use crate::opencl::cl_str_op;
 use custos::{
     get_device,
-    libs::{
-        cpu::{each_op, CPU},
-        opencl::cl_device::CLDevice,
-    },
+    libs::cpu::{each_op, CPU},
     number::Float,
     CDatatype, Matrix
 };
@@ -51,6 +51,7 @@ pub trait ActivationOps<T> {
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap()

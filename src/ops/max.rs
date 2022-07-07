@@ -1,12 +1,17 @@
 use custos::{
-    cpu::CPUCache, get_device, number::Number, CDatatype, CLDevice, CPU, Matrix,
+    cpu::CPUCache, get_device, number::Number, CDatatype, CPU, Matrix,
 };
+
+
 #[cfg(feature="cuda")]
 use custos::CudaDevice;
 #[cfg(feature="cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 
+#[cfg(feature="opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 pub trait Max<T> {
     fn max(&self) -> T;
@@ -94,6 +99,7 @@ impl<T: Number> MaxOps<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> MaxOps<T> for CLDevice {
     fn max(&self, x: &Matrix<T>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.max(&x))

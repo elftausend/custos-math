@@ -76,7 +76,7 @@ fn cl_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
     f(&cpu, x)*/
 }
 
-#[cfg(feauture="cuda")]
+#[cfg(feature="cuda")]
 use custos::CudaDevice;
 
 #[cfg(feature="cuda")]

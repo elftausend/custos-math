@@ -1,15 +1,17 @@
 use custos::{
     cpu::{CPUCache, CPU},
     get_device,
-    opencl::{CLDevice, KernelOptions},
-    CDatatype, Matrix, Buffer,
+    CDatatype, Matrix,
 };
 #[cfg(feature="cuda")]
 use custos::CudaDevice;
 #[cfg(feature="cuda")]
 use crate::cu_to_cpu_s;
 
+#[cfg(feature="opencl")]
 use super::cl_to_cpu_s;
+#[cfg(feature="opencl")]
+use custos::{CLDevice, Buffer, custos::KernelOptions};
 
 pub trait Diagflat<T> {
     fn diagflat(&self) -> Matrix<T>;
@@ -50,12 +52,14 @@ impl<T: Copy+Default> DiagflatOp<T> for CudaDevice {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> DiagflatOp<T> for CLDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(&x))
     }
 }
 
+#[cfg(feature="opencl")]
 pub fn cl_diagflat<T: CDatatype>(device: &CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"__kernel void diagflat(__global const {datatype}* input, const {datatype} co, __global {datatype}* output) {{
