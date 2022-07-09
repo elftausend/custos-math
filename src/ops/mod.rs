@@ -13,12 +13,7 @@ mod random;
 
 pub use clip::*;
 pub use col_op::*;
-use custos::{
-    cpu::CPU,
-    Matrix,
-};
-#[cfg(feature="opencl")]
-use custos::CLDevice;
+
 pub use diagflat::*;
 pub use fns::*;
 pub use max::*;
@@ -27,6 +22,15 @@ pub use scalar::*;
 pub use sum::*;
 pub use transpose::*;
 pub use random::*;
+
+#[cfg(any(feature="opencl", feature="cuda"))]
+use custos::{
+    cpu::CPU,
+    Matrix,
+};
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 #[cfg(feature="opencl")]
 ///OpenCL
