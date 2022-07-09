@@ -14,6 +14,7 @@ fn test_transpose_cpu() {
     assert_eq!(vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0], res.read());
 }
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_transpose_cl() {
     let device = custos::CLDevice::new(0).unwrap().select();

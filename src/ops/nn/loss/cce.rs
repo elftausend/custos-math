@@ -1,5 +1,8 @@
 use crate::{AdditionalOps, ClipOp, FnsOps, SumOps};
-use custos::{get_device, number::Float, BaseOps, CDatatype, CLDevice, CPU, Matrix};
+use custos::{get_device, number::Float, BaseOps, CDatatype, CPU, Matrix};
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);

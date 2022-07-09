@@ -1,9 +1,12 @@
 use custos::{
-    get_device, number::Number, CDatatype, CLDevice, CPU, Matrix,
+    get_device, number::Number, CDatatype, CPU, Matrix,
 };
-
 use crate::cached;
+
+#[cfg(feature="opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 #[cfg(feature="cuda")]
 use super::{cu_to_cpu_s, cu_to_cpu_scalar};
@@ -101,6 +104,7 @@ impl<T: Number> SumOps<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: CDatatype> SumOps<T> for CLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.sum(&x))

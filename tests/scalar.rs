@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, number::Float, opencl::CLDevice, AsDev, Matrix};
-use custos_math::{scalar_apply, AdditionalOps};
+use custos::{cpu::CPU, number::Float, AsDev, Matrix};
+use custos_math::scalar_apply;
 
 #[cfg(feature="cuda")]
 use custos::VecRead;
@@ -16,15 +16,17 @@ pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
     }
 }
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_scalar() {
+    use custos_math::AdditionalOps;
     let device = CPU::new().select();
     let x = Matrix::from((&device, (1, 5), [-1.31, 2.12, 1., 5., 4.]));
 
     let res = device.adds(&x, 2.0);
     assert_eq!(res.read(), vec![0.69, 4.12, 3., 7., 6.]);
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = custos::CLDevice::new(0).unwrap().select();
     let x = Matrix::from((&device, (1, 5), [-1.31f32, 2.12, 1., 5., 4.]));
 
     let res = device.adds(&x, 2.0);

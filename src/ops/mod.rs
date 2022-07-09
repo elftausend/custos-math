@@ -15,10 +15,10 @@ pub use clip::*;
 pub use col_op::*;
 use custos::{
     cpu::CPU,
-    number::Number,
-    opencl::CLDevice,
     Matrix,
 };
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 pub use diagflat::*;
 pub use fns::*;
 pub use max::*;
@@ -28,6 +28,7 @@ pub use sum::*;
 pub use transpose::*;
 pub use random::*;
 
+#[cfg(feature="opencl")]
 ///OpenCL
 pub fn cl_to_cpu_lr<
     T: Copy+Default,
@@ -46,6 +47,7 @@ pub fn cl_to_cpu_lr<
     
 }
 
+#[cfg(feature="opencl")]
 ///OpenCL
 pub fn cl_to_cpu_s<
     T: Copy+Default, F: 
@@ -62,8 +64,9 @@ pub fn cl_to_cpu_s<
     Matrix::from((device, result))*/
 }
 
+#[cfg(feature="opencl")]
 ///OpenCL
-fn cl_to_cpu_scalar<T: Number, F: Fn(&CPU, Matrix<T>) -> T>(
+fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, Matrix<T>) -> T>(
     device: &CLDevice,
     x: &Matrix<T>,
     f: F,

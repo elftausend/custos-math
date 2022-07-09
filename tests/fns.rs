@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, number::Float, AsDev, Matrix, CLDevice};
+use custos::{CPU, number::Float, AsDev, Matrix};
 use custos_math::FnsOps;
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
@@ -32,9 +32,10 @@ fn test_fns_cpu() {
     roughly_equals(&res.read(), &[2.25, 4., 36., 9.,], 0.001);
 }
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_fns_cl() -> Result<(), custos::Error> {
-    let device = CLDevice::new(0)?.select();
+    let device = custos::CLDevice::new(0)?.select();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 

@@ -1,5 +1,10 @@
-use custos::{cpu::CPU, opencl::CLDevice, AsDev, Matrix};
-use custos_math::{DiagflatOp, cl_diagflat};
+use custos::{cpu::CPU, AsDev, Matrix};
+use custos_math::DiagflatOp;
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
+#[cfg(feature="opencl")]
+use custos_math::cl_diagflat;
 
 #[test]
 fn test_diagflat_cpu() {
@@ -15,6 +20,7 @@ fn test_diagflat_cpu() {
     println!("res: {:?}", result);
 }
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_diagflat_cl() {
     let device = CLDevice::new(0).unwrap().select();
@@ -42,7 +48,7 @@ fn test_diagflat_cuda() {
     );
 }
 
-
+#[cfg(feature="opencl")]
 #[test]
 fn test_diagflat_kernel_cl() {
     let device = CLDevice::new(0).unwrap().select();

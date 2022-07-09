@@ -1,12 +1,17 @@
-use custos::{CLDevice, Matrix, AsDev, range, opencl::cpu_exec};
-use custos_math::{FnsOps, nn::SoftmaxOps, cl_to_cpu_s};
+use custos::Matrix;
+use custos_math::FnsOps;
+
+#[cfg(feature="opencl")]
+use custos::{CLDevice, opencl::cpu_exec, AsDev, range};
+#[cfg(feature="opencl")]
+use custos_math::{nn::SoftmaxOps, cl_to_cpu_s};
 
 #[cfg(feature="cuda")]
 use custos::{CudaDevice, VecRead, BaseOps};
-
 #[cfg(feature="cuda")]
 use custos_math::{cu_to_cpu_scalar, cu_to_cpu_s, cu_to_cpu_lr, SumOps};
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
     let device = CLDevice::new(0)?.select();
@@ -24,6 +29,8 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     println!("m: {m:?}");
     Ok(())
 }
+
+#[cfg(feature="opencl")]
 #[test]
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     let device = CLDevice::new(0)?.select();

@@ -11,7 +11,7 @@ use crate::cu_to_cpu_s;
 #[cfg(feature="opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature="opencl")]
-use custos::{CLDevice, Buffer, custos::KernelOptions};
+use custos::{CLDevice, Buffer, opencl::KernelOptions};
 
 pub trait Diagflat<T> {
     fn diagflat(&self) -> Matrix<T>;

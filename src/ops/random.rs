@@ -1,6 +1,8 @@
 use custos::{
-    get_device, number::Float, opencl::cl_write, Device, CPU, Matrix, CLDevice,
+    get_device, number::Float, Device, CPU, Matrix,
 };
+#[cfg(feature="opencl")]
+use custos::{opencl::cl_write, CLDevice};
 use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
 pub trait RandMatrix<T> {
@@ -30,6 +32,7 @@ impl<T: Float + SampleUniform> RandOp<T> for CPU {
     }
 }
 
+#[cfg(feature="opencl")]
 impl<T: Float + SampleUniform> RandOp<T> for CLDevice {
     fn rand(&self, x: &mut Matrix<T>, lo: T, hi: T) {
         if self.unified_mem() {

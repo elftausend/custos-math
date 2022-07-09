@@ -1,9 +1,10 @@
-use custos::{libs::cpu::CPU, opencl::CLDevice, AsDev, Matrix};
+use custos::{AsDev, Matrix};
 use custos_math::nn::ActivationOps;
 
+#[cfg(feature="opencl")]
 #[test]
 fn test_relu() {
-    let device = CPU::new().select();
+    let device = custos::CPU::new().select();
 
     let x = Matrix::from((&device, (1, 5), [-1.31, 2.12, -0.68, 5., 4.]));
     let res = device.relu(&x);
@@ -12,7 +13,7 @@ fn test_relu() {
     let res = device.relu_grad(&x);
     assert_eq!(res.read(), [0., 1., 0., 1., 1.]);
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = custos::CLDevice::new(0).unwrap().select();
 
     let x = Matrix::from((&device, (1, 5), [-1.31f32, 2.12, -0.68, 5., 4.]));
     let res = device.relu(&x);
