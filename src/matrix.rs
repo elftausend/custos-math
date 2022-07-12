@@ -1,8 +1,8 @@
 use std::ffi::c_void;
 
-use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, VecRead, CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_event}}, number::Number};
+use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, VecRead, number::Number};
 #[cfg(feature="opencl")]
-
+use custos::{CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_event}}};
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example

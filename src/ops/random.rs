@@ -1,9 +1,13 @@
 use custos::{
     get_device, number::Float, Device, CPU,
 };
+use crate::Matrix;
 #[cfg(feature="opencl")]
 use custos::CLDevice;
 use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
+
+#[cfg(feature="opencl")]
+use crate::opencl::cl_write;
 
 pub trait RandMatrix<T> {
     fn rand(&mut self, lo: T, hi: T);
@@ -46,8 +50,6 @@ impl<T: Float + SampleUniform> RandOp<T> for CLDevice {
 
 #[cfg(feature="cuda")]
 use custos::{CudaDevice, cuda::api::cu_write};
-
-use crate::{Matrix, opencl::cl_write};
 
 #[cfg(feature="cuda")]
 impl<T: Float + SampleUniform> RandOp<T> for CudaDevice {

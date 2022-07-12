@@ -1,10 +1,8 @@
-use custos::AsDev;
-use custos_math::nn::ActivationOps;
-
 #[cfg(feature="opencl")]
 #[test]
 fn test_relu() {
-    use custos_math::Matrix;
+    use custos::AsDev;
+    use custos_math::{Matrix, nn::ActivationOps};
 
     let device = custos::CPU::new().select();
 
@@ -28,7 +26,8 @@ fn test_relu() {
 #[cfg(feature="cuda")]
 #[test]
 fn test_relu_cuda() {
-    use custos_math::Matrix;
+    use custos::AsDev;
+    use custos_math::{Matrix, nn::ActivationOps};
 
     let device = custos::CudaDevice::new(0).unwrap().select();
 

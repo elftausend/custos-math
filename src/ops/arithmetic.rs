@@ -1,6 +1,15 @@
-use custos::{number::Number, CPU, CDatatype, CLDevice};
+use custos::{number::Number, CPU};
 
-use crate::{Matrix, ew_op, opencl::cl_tew};
+use crate::{Matrix, ew_op};
+
+#[cfg(any(feature="cuda", feature="opencl"))]
+use custos::CDatatype;
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
+#[cfg(feature="opencl")]
+use crate::opencl::cl_tew;
+
 #[cfg(feature="cuda")]
 use crate::cu_ew;
 

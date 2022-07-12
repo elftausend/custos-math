@@ -228,6 +228,7 @@ fn test_threading_cl_a() {
 fn test_threading_cuda_a() -> custos::Result<()> {
     use std::thread::JoinHandle;
     use custos::{cuda::CUDA_CACHE, cpu::CPU_CACHE, CudaDevice};
+    use custos_math::Matrix;
     
     let device = CudaDevice::new(0)?.select();
 

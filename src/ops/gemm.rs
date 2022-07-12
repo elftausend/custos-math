@@ -1,6 +1,14 @@
-use custos::{GenericBlas, CPU, cpu::CPUCache, CDatatype, CLDevice};
+use custos::{GenericBlas, CPU, cpu::CPUCache};
 
-use crate::{Matrix, opencl::cl_gemm};
+#[cfg(feature="opencl")]
+use custos::CDatatype;
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
+#[cfg(feature="opencl")]
+use crate::opencl::cl_gemm;
+
+use crate::Matrix;
 
 /// Matrix multiplication. Uses provided device.
 /// # Example
@@ -47,8 +55,9 @@ impl<T: CDatatype> Gemm<T> for CLDevice {
 #[cfg(feature="cuda")]
 impl<T: GenericBlas> Gemm<T> for custos::CudaDevice {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+        use custos::CacheBuf;
         assert!(lhs.cols() == rhs.rows(), "wrong dims for matrix multiplication");
-        let out: Buffer<T> = self.cached_buf(lhs.rows() * rhs.cols());
+        let out = self.cached_buf(lhs.rows() * rhs.cols());
         T::cugemm(
             &self.inner.borrow().handle(), 
             lhs.rows(), 

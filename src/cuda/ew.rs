@@ -4,7 +4,8 @@ use custos::{CDatatype, Buffer, cuda::{CudaCache, launch_kernel1d}, CudaDevice};
 /// 
 /// # Example
 /// ```
-/// use custos::{CudaDevice, Buffer, VecRead, cuda::cu_ew};
+/// use custos::{CudaDevice, Buffer, VecRead};
+/// use custos_math::cuda::cu_ew;
 /// 
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CudaDevice::new(0)?;
@@ -56,7 +57,8 @@ pub fn cu_ew<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: &Buffer<T>
 /// 
 /// # Example
 /// ```
-/// use custos::{CudaDevice, Buffer, VecRead, cuda::cu_ew_self};
+/// use custos::{CudaDevice, Buffer, VecRead};
+/// use custos_math::cuda::cu_ew_self;
 /// 
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CudaDevice::new(0)?;

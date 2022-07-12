@@ -1,7 +1,10 @@
+#[cfg(feature="opencl")]
 use std::ffi::c_void;
 
+#[cfg(feature="opencl")]
 use custos::{CLDevice, opencl::api::{clCreateBuffer, MemFlags, OCLErrorKind}, Error};
 
+#[cfg(feature="opencl")]
 pub fn unified_mem<T>(device: &CLDevice, arr: &mut [T]) -> Result<*mut c_void, Error>{
     let mut err = 0;
 

@@ -1,3 +1,4 @@
+#[cfg(feature="opencl")]
 use custos_math::FnsOps;
 
 #[cfg(feature="opencl")]
@@ -71,7 +72,7 @@ fn test_scalar_switch_cuda() -> custos::Result<()> {
 #[cfg(feature="cuda")]
 #[test]
 fn test_single_switch_cuda() -> custos::Result<()> {
-    use custos_math::Matrix;
+    use custos_math::{Matrix, FnsOps};
 
     let device = CudaDevice::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1., 2., 3., 4., 5., 6.]));

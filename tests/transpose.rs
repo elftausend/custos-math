@@ -25,6 +25,7 @@ fn test_transpose_cl() {
     assert_eq!(vec![6.0, 3.0, 5.0, 2.0, 4.0, 1.0], res.read());
 }
 
+#[cfg(feature="opencl")]
 #[cfg(not(target_os = "macos"))]
 #[test]
 fn test_transpose_cl_f64() {

@@ -12,7 +12,7 @@ custos = { version = "0.1.2", default-features = false }
 rand = "0.8.5"
 
 [features]
-default = ["opencl", "safe"]
+default = ["cuda", "opencl"]
 safe = ["custos/safe"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]

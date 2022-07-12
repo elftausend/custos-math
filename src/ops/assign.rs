@@ -1,6 +1,14 @@
-use custos::{Buffer, CPU, cpu::CPUCache, number::Number, CDatatype, CLDevice};
+use custos::{Buffer, CPU, cpu::CPUCache, number::Number};
 
-use crate::{Matrix, assign_to_lhs, opencl::cl_tew_self, element_wise_op_mut};
+#[cfg(any(feature="cuda", feature="opencl"))]
+use custos::CDatatype;
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
+#[cfg(feature="opencl")]
+use crate::opencl::cl_tew_self;
+
+use crate::{Matrix, assign_to_lhs, element_wise_op_mut};
 #[cfg(feature="cuda")]
 use crate::cu_ew_self;
 
