@@ -44,7 +44,7 @@ fn test_use_range_for_ew_add() {
 #[cfg(feature="opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
-    use custos::{CLDevice, range};
+    use custos::{CLDevice, range, AsDev, VecRead};
     use custos_math::Matrix;
 
     let device = CLDevice::new(0).unwrap().select();
@@ -106,6 +106,9 @@ fn test_nested_for() {
 #[cfg(feature="safe")]
 #[test]
 fn test_nested_for() {
+    use custos::{CPU, AsDev, range};
+    use custos_math::Matrix;
+
     let device = CPU::new().select();
     
     let a = Matrix::from(( &device, (1, 5), [1i32, 4, 2, 9, 1] ));

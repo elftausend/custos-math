@@ -53,8 +53,9 @@ where
     if device.unified_mem() && !cfg!(feature="safe") { 
         
         let no_drop = f(&cpu, lhs, rhs);
+        let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return construct_buffer(device, &cpu, no_drop.to_buf()).map(|buf| (buf, no_drop.dims()).into());
+        return construct_buffer(device, &cpu, no_drop.to_buf()).map(|buf| (buf, no_drop_dims).into());
     }
 
     let (lhs, rhs) = if device.unified_mem() {

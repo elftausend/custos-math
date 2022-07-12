@@ -83,7 +83,8 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
 
     #[cfg(feature = "safe")]
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
-        use custos::CPU;
+        use crate::{Gemm, BaseOps};
+
         let device = CPU::new();
         let mut data = cached(self, grads.dims());
 

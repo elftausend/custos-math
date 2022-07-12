@@ -27,7 +27,8 @@ impl <T: !GenericOCL>Both for T {
 /// 
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead, opencl::cl_tew};
+/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos_math::cl_tew;
 /// 
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CLDevice::new(0)?;
@@ -58,7 +59,8 @@ pub fn cl_tew<T: CDatatype>(device: &CLDevice, lhs: &Buffer<T>, rhs: &Buffer<T>,
 /// 
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead, opencl::cl_tew_self};
+/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos_math::cl_tew_self;
 /// 
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CLDevice::new(0)?;

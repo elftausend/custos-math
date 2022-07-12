@@ -8,7 +8,8 @@ use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, Ve
 /// # Example
 /// The following example creates a zeroed (or values set to default) Matrix with the given dimensions.
 /// ```
-/// use custos::{CPU, Matrix, AsDev};
+/// use custos::{CPU, AsDev};
+/// use custos_math::Matrix;
 /// 
 /// let device = CPU::new().select();
 /// let m = Matrix::<i32>::new(&device, (5, 8));
@@ -29,7 +30,8 @@ impl<T> Matrix<T> {
     /// Returns an empty matrix with the specified dimensions (rows, cols).
     /// # Example
     /// ```
-    /// use custos::{CPU, Matrix, AsDev};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new().select();
     /// let m = Matrix::<f64>::new(&device, (20, 10));
@@ -51,7 +53,8 @@ impl<T> Matrix<T> {
     /// Returns a reference to the underlying buffer.
     /// # Example
     /// ```
-    /// use custos::{CPU, Matrix, VecRead};
+    /// use custos::{CPU, VecRead};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new();
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 3., 2., 1.,]));
@@ -83,7 +86,8 @@ impl<T> Matrix<T> {
     /// 
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev, Matrix};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
@@ -97,7 +101,8 @@ impl<T> Matrix<T> {
     /// 
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev, Matrix};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
@@ -111,7 +116,8 @@ impl<T> Matrix<T> {
     /// 
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev, Matrix};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<u16>::new(&device, (4, 12));
@@ -132,7 +138,9 @@ impl<T> Matrix<T> {
     /// Matrix multiplication. Uses current global device.
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev, Matrix};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
+    /// 
     /// let device = CPU::new().select();
     ///
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
@@ -174,7 +182,8 @@ impl<T> Matrix<T> {
     /// 
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev, Matrix};
+    /// use custos::{CPU, AsDev};
+    /// use custos_math::Matrix;
     /// 
     /// let device = CPU::new().select();
     ///
