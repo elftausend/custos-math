@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, AsDev, Matrix};
-use custos_math::row_op;
+use custos::{cpu::CPU, AsDev};
+use custos_math::{row_op, Matrix};
 
 #[test]
 fn test_row_op() {

@@ -1,7 +1,7 @@
 use custos::{
-    cpu::CPUCache, get_device, number::Number, CDatatype, CPU, Matrix,
+    cpu::CPUCache, get_device, number::Number, CDatatype, CPU,
 };
-
+use crate::Matrix;
 
 #[cfg(feature="cuda")]
 use custos::CudaDevice;

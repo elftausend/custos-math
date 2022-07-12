@@ -1,9 +1,12 @@
 use custos::{
-    cpu::{each_op, CPU},
+    cpu::CPU,
     get_device,
     number::Float,
-    CDatatype, Matrix,
+    CDatatype,
 };
+
+use crate::{Matrix, each_op};
+
 #[cfg(feature="cuda")]
 use custos::CudaDevice;
 #[cfg(feature="cuda")]

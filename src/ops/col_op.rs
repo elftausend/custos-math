@@ -1,5 +1,5 @@
-use custos::{number::Number, CPU, Matrix};
-use crate::cpu::col_op;
+use custos::{number::Number, CPU};
+use crate::{cpu::col_op, Matrix};
 
 #[cfg(feature="opencl")]
 use super::cl_to_cpu_lr;

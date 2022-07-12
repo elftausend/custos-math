@@ -1,5 +1,5 @@
-use custos::{CPU, AsDev, Matrix};
-use custos_math::Fns;
+use custos::{CPU, AsDev};
+use custos_math::{Fns, Matrix};
 
 
 #[test]

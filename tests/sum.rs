@@ -1,5 +1,5 @@
-use custos::{AsDev, Matrix, CPU};
-use custos_math::SumOps;
+use custos::{AsDev, CPU};
+use custos_math::{SumOps, Matrix};
 
 #[test]
 fn test_sum_ops() {

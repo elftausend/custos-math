@@ -1,12 +1,13 @@
 #[cfg(feature="opencl")]
 use custos::CLDevice;
+use crate::{Matrix, each_op};
 #[cfg(feature="opencl")]
 use crate::opencl::cl_str_op;
 use custos::{
     get_device,
-    libs::cpu::{each_op, CPU},
+    libs::cpu::CPU,
     number::Float,
-    CDatatype, Matrix
+    CDatatype
 };
 
 #[cfg(feature="cuda")]

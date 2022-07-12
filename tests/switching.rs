@@ -1,19 +1,20 @@
-use custos::Matrix;
 use custos_math::FnsOps;
 
 #[cfg(feature="opencl")]
-use custos::{CLDevice, opencl::cpu_exec, AsDev, range};
+use custos::{CLDevice, AsDev, range};
 #[cfg(feature="opencl")]
 use custos_math::{nn::SoftmaxOps, cl_to_cpu_s};
 
 #[cfg(feature="cuda")]
-use custos::{CudaDevice, VecRead, BaseOps};
+use custos::{CudaDevice, VecRead};
 #[cfg(feature="cuda")]
 use custos_math::{cu_to_cpu_scalar, cu_to_cpu_s, cu_to_cpu_lr, SumOps};
 
 #[cfg(feature="opencl")]
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
+    use custos_math::{Matrix, cpu_exec};
+
     let device = CLDevice::new(0)?.select();
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
@@ -33,6 +34,8 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
 #[cfg(feature="opencl")]
 #[test]
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
+    use custos_math::{Matrix, cpu_exec};
+
     let device = CLDevice::new(0)?.select();
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
@@ -54,6 +57,8 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 #[cfg(feature="cuda")]
 #[test]
 fn test_scalar_switch_cuda() -> custos::Result<()> {
+    use custos_math::Matrix;
+
     let device = CudaDevice::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6,]));
     let sum = cu_to_cpu_scalar(&device, &a, |cpu, x| cpu.sum(&x));
@@ -66,6 +71,8 @@ fn test_scalar_switch_cuda() -> custos::Result<()> {
 #[cfg(feature="cuda")]
 #[test]
 fn test_single_switch_cuda() -> custos::Result<()> {
+    use custos_math::Matrix;
+
     let device = CudaDevice::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1., 2., 3., 4., 5., 6.]));
     let res = cu_to_cpu_s(&device, &a, |cpu, x| cpu.neg(&x));
@@ -76,6 +83,8 @@ fn test_single_switch_cuda() -> custos::Result<()> {
 #[cfg(feature="cuda")]
 #[test]
 fn test_lr_switch_cuda() -> custos::Result<()> {
+    use custos_math::{Matrix, BaseOps};
+
     let device = CudaDevice::new(0)?;
     let lhs = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6,]));
     let rhs = Matrix::from((&device, 3, 2, [2, 2, 3, 4, 5, 7,]));

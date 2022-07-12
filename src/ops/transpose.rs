@@ -4,9 +4,9 @@ use std::ptr::null_mut;
 use custos::{
     cpu::CPU,
     get_device,
-    CDatatype, Matrix,
+    CDatatype,
 };
-use crate::cached;
+use crate::{cached, Matrix};
 
 #[cfg(feature="opencl")]
 use custos::{CLDevice, opencl::KernelOptions};

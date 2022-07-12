@@ -1,5 +1,5 @@
-use custos::{AsDev, Matrix, CPU};
-use custos_math::nn::cce;
+use custos::{AsDev, CPU};
+use custos_math::{nn::cce, Matrix};
 
 #[test]
 fn test_cce() {

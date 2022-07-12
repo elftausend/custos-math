@@ -1,3 +1,9 @@
+mod gemm;
+mod ew;
+
+pub use ew::*;
+
+
 use custos::{Buffer, CDatatype, CudaDevice, cuda::{CudaCache, launch_kernel1d}};
 
 pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, op: &str) -> custos::Result<Buffer<T>> {

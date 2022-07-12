@@ -1,5 +1,5 @@
-use custos::{CPU, number::Float, AsDev, Matrix};
-use custos_math::FnsOps;
+use custos::{CPU, number::Float, AsDev};
+use custos_math::{FnsOps, Matrix};
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
     for (a, b) in lhs.iter().zip(rhs) {

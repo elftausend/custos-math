@@ -1,16 +1,18 @@
-mod cpu;
+pub mod cpu;
 #[cfg(feature="opencl")]
-mod opencl;
+pub mod opencl;
+#[cfg(feature="cuda")]
+pub mod cuda;
 mod ops;
 mod syntax;
-
-#[cfg(feature="cuda")]
-mod cuda;
+mod matrix;
+pub use matrix::Matrix;
 
 pub use cpu::*;
 #[cfg(feature="cuda")]
 pub use cuda::*;
-use custos::Matrix;
+#[cfg(feature="opencl")]
+pub use opencl::*;
 pub use ops::*;
 
 pub trait Mat<T> {

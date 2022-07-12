@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, number::Float, AsDev, Matrix};
-use custos_math::scalar_apply;
+use custos::{cpu::CPU, number::Float, AsDev};
+use custos_math::{scalar_apply, Matrix};
 
 #[cfg(feature="cuda")]
 use custos::VecRead;

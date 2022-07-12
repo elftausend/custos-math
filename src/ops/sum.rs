@@ -1,7 +1,7 @@
 use custos::{
-    get_device, number::Number, CDatatype, CPU, Matrix,
+    get_device, number::Number, CDatatype, CPU,
 };
-use crate::cached;
+use crate::{cached, Matrix};
 
 #[cfg(feature="opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};

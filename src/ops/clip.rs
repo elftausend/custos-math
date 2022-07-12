@@ -2,7 +2,7 @@ use custos::{
     cpu::{CPUCache, CPU},
     get_device,
     number::Number,
-    CDatatype, Matrix
+    CDatatype
 };
 
 #[cfg(feature="opencl")]
@@ -10,6 +10,8 @@ use custos::{CLDevice, opencl::KernelOptions};
 
 #[cfg(feature="cuda")]
 use custos::{CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer};
+
+use crate::Matrix;
 
 pub trait Clip<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T>;

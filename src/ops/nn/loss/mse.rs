@@ -1,6 +1,6 @@
-use custos::{number::Number, BaseOps, Matrix};
+use custos::{number::Number};
 
-use crate::{AdditionalOps, SumOps};
+use crate::{AdditionalOps, SumOps, BaseOps, Matrix};
 
 pub fn mse<T: Copy, D: BaseOps<T> + SumOps<T>>(
     device: &D,

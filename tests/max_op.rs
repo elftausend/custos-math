@@ -1,5 +1,5 @@
-use custos::{AsDev, Matrix, CPU};
-use custos_math::MaxOps;
+use custos::{AsDev, CPU};
+use custos_math::{MaxOps, Matrix};
 
 #[test]
 fn test_max_ops() {

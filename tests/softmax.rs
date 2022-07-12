@@ -1,5 +1,5 @@
-use custos::{range, AsDev, Matrix, CPU};
-use custos_math::nn::{cce_grad, SoftmaxOps};
+use custos::{range, AsDev, CPU};
+use custos_math::{nn::{cce_grad, SoftmaxOps}, Matrix};
 
 #[test]
 fn test_softmax_cpu() {

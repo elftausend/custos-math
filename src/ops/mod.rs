@@ -10,10 +10,12 @@ mod scalar;
 mod sum;
 mod transpose;
 mod random;
+mod assign;
+mod gemm;
+mod arithmetic;
 
 pub use clip::*;
 pub use col_op::*;
-
 pub use diagflat::*;
 pub use fns::*;
 pub use max::*;
@@ -22,12 +24,16 @@ pub use scalar::*;
 pub use sum::*;
 pub use transpose::*;
 pub use random::*;
+pub use assign::*;
+pub use gemm::*;
+pub use arithmetic::*;
 
 #[cfg(any(feature="opencl", feature="cuda"))]
 use custos::{
     cpu::CPU,
-    Matrix,
 };
+#[cfg(any(feature="opencl", feature="cuda"))]
+use crate::Matrix;
 
 #[cfg(feature="opencl")]
 use custos::CLDevice;
@@ -39,7 +45,7 @@ pub fn cl_to_cpu_lr<
     F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
 >(device: &CLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<T> 
 {
-    use custos::opencl::cpu_exec_lhs_rhs;
+    use crate::opencl::cpu_exec_lhs_rhs;
     cpu_exec_lhs_rhs(device, lhs, rhs, f).unwrap()
     /* 
     let cpu = custos::CPU::new();
@@ -58,9 +64,8 @@ pub fn cl_to_cpu_s<
     Fn(&CPU, Matrix<T>) -> Matrix<T>
 >(device: &CLDevice, x: &Matrix<T>, f: F) -> Matrix<T> 
 {
-    use custos::opencl::cpu_exec;
+    use crate::opencl::cpu_exec;
     cpu_exec(device, x, f).unwrap()
-    
     /*let cpu = custos::CPU::new();
     let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
 
@@ -75,9 +80,8 @@ fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, Matrix<T>) -> T>(
     x: &Matrix<T>,
     f: F,
 ) -> T {
-    use custos::opencl::cpu_exec_scalar;
+    use crate::opencl::cpu_exec_scalar;
     cpu_exec_scalar(device, x, f)
-    
     /*let cpu = custos::CPU::new();
     let x = Matrix::from((&cpu, x.dims(), custos::VecRead::read(device, x)));
     f(&cpu, x)*/

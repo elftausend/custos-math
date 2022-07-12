@@ -1,6 +1,6 @@
-use crate::{cpu::row_op, Mat};
+use crate::{cpu::row_op, Mat, Matrix};
 use custos::{
-    cpu::CPU, get_device, number::Number, CDatatype, Matrix,
+    cpu::CPU, get_device, number::Number, CDatatype,
 };
 
 #[cfg(feature="opencl")]

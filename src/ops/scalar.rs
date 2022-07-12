@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, get_device, CDatatype, Matrix, number::Number};
-use crate::cpu::scalar_apply;
+use custos::{cpu::CPU, get_device, CDatatype, number::Number};
+use crate::{cpu::scalar_apply, Matrix};
 
 #[cfg(feature="opencl")]
 use crate::opencl::cl_scalar_op;

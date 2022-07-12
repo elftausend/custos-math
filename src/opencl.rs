@@ -1,7 +1,17 @@
+mod gemm;
+mod tew;
+mod switching;
+
+pub use gemm::cl_gemm;
+pub use tew::*;
+pub use switching::*;
+
 use custos::{
     libs::opencl::{cl_device::CLDevice, KernelOptions},
-    Error, CDatatype, Matrix,
+    Error, CDatatype, opencl::api::{enqueue_write_buffer, wait_for_event},
 };
+
+use crate::Matrix;
 
 pub fn cl_str_op<T: CDatatype>(
     device: &CLDevice,
@@ -46,3 +56,8 @@ pub fn cl_scalar_op<T: CDatatype>(
     // TODO: unwrap, Ok()?
     buf.map(|buf| (buf.unwrap(), x.dims()).into())
 }
+
+pub fn cl_write<T>(device: &CLDevice, x: &mut Matrix<T>, data: &[T]) {
+    let event = unsafe {enqueue_write_buffer(&device.queue(), x.ptr().1, data, true).unwrap()};
+    wait_for_event(event).unwrap();
+} 

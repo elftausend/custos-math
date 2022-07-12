@@ -1,8 +1,15 @@
+mod assign_to_lhs;
+mod ew;
+
+pub use assign_to_lhs::*;
+pub use ew::*;
+
 use custos::{
     cpu::{CPUCache, CPU},
     number::Number,
-    Matrix,
 };
+
+use crate::Matrix;
 
 pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
     (CPUCache::get::<T>(device, dims.0*dims.1), dims).into()
@@ -34,6 +41,7 @@ pub fn row_op<T: Number, F: Fn(&mut T, T, T)>(
     let lhs_data = lhs.as_slice();
     let rhs_data = rhs.as_slice();
 
+    // TODO: refactor to function
     //rows
     for i in 0..lhs.rows() {
         let index = i * lhs.dims().1;
@@ -58,6 +66,7 @@ pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
     let rhs_data = rhs.as_slice();
     let y_slice = y.as_mut_slice();
 
+    // TODO: refactor to function
     //rows
     let mut i = 0;
     for (idx, rdata_value) in rhs_data.iter().enumerate().take(lhs.rows()) {
@@ -69,4 +78,14 @@ pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
         }
     }
     y
+}
+
+
+pub fn each_op<T: Copy+Default, F: Fn(T) -> T>(device: &CPU, x: &Matrix<T>, f: F) -> Matrix<T> {
+    let mut y = CPUCache::get::<T>(device, x.size());
+    
+    for (idx, value) in y.iter_mut().enumerate() {
+        *value = f(x[idx]);
+    }
+    (y, x.dims()).into()
 }

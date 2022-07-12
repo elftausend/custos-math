@@ -1,5 +1,5 @@
-use crate::{AdditionalOps, ClipOp, FnsOps, SumOps};
-use custos::{get_device, number::Float, BaseOps, CDatatype, CPU, Matrix};
+use crate::{AdditionalOps, ClipOp, FnsOps, SumOps, Matrix, BaseOps};
+use custos::{get_device, number::Float, CDatatype, CPU};
 
 #[cfg(feature="opencl")]
 use custos::CLDevice;

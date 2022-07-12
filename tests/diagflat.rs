@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, AsDev, Matrix};
-use custos_math::DiagflatOp;
+use custos::{cpu::CPU, AsDev};
+use custos_math::{DiagflatOp, Matrix};
 
 #[cfg(feature="opencl")]
 use custos::CLDevice;

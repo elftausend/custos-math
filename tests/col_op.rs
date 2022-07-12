@@ -1,5 +1,5 @@
-use custos::{cpu::CPU, AsDev, Matrix};
-use custos_math::ColOp;
+use custos::{cpu::CPU, AsDev};
+use custos_math::{ColOp, Matrix};
 
 #[test]
 fn test_col_op() {

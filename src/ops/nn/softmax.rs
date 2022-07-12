@@ -1,15 +1,15 @@
 use crate::{
-    cached, ColOp, DiagflatOp, FnsOps, Mat, MaxOps, SumOps, TransposeOp
+    cached, ColOp, DiagflatOp, FnsOps, Mat, MaxOps, SumOps, TransposeOp, Matrix
 };
 use custos::{
     GenericBlas, get_device, number::Float, range, 
-    BaseOps, Gemm, CDatatype, CPU, Matrix
+    CDatatype, CPU
 };
 
 #[cfg(feature="opencl")]
 use crate::{ops::{cl_to_cpu_lr, cl_to_cpu_s}, cl_diagflat};
 #[cfg(feature="opencl")]
-use custos::{CLDevice, opencl::cl_tew};
+use custos::CLDevice;
 
 #[cfg(feature="cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_lr};
@@ -46,6 +46,8 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
 
     #[cfg(not(feature = "safe"))]
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
+        use crate::{BaseOps, Gemm};
+
         let mut data = cached(self, grads.dims());
 
         let rows = grads.rows();
@@ -145,6 +147,8 @@ impl<T: GenericBlas + Float> SoftmaxOps<T> for CLDevice {
 
 #[cfg(feature="opencl")]
 pub fn cl_softmax<T: CDatatype>(device: &CLDevice, mut activated: Matrix<T>, grads: &Matrix<T>) -> custos::Result<Matrix<T>> {
+    use crate::{Gemm, cl_tew};
+
     let rows = grads.rows();
     let cols = grads.cols();
 
