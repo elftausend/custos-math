@@ -19,17 +19,17 @@ pub trait Additional<T> {
 
 impl<T: CDatatype> Additional<T> for Matrix<T> {
     fn adds(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps, T).unwrap();
+        let device = get_device!(AdditionalOps<T>).unwrap();
         device.adds(self, rhs)
     }
 
     fn muls(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps, T).unwrap();
+        let device = get_device!(AdditionalOps<T>).unwrap();
         device.muls(self, rhs)
     }
 
     fn divs(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps, T).unwrap();
+        let device = get_device!(AdditionalOps<T>).unwrap();
         device.divs(self, rhs)
     }
 }

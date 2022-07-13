@@ -22,22 +22,22 @@ pub trait Sum<T> {
 
 impl<T: CDatatype> Sum<T> for Matrix<T> {
     fn sum(&self) -> T {
-        let device = get_device!(SumOps, T).unwrap();
+        let device = get_device!(SumOps<T>).unwrap();
         device.sum(self)
     }
 
     fn mean(&self) -> T {
-        let device = get_device!(SumOps, T).unwrap();
+        let device = get_device!(SumOps<T>).unwrap();
         device.mean(self)
     }
 
     fn sum_rows(&self) -> Matrix<T> {
-        let device = get_device!(SumOps, T).unwrap();
+        let device = get_device!(SumOps<T>).unwrap();
         device.sum_rows(self)
     }
 
     fn sum_cols(&self) -> Matrix<T> {
-        let device = get_device!(SumOps, T).unwrap();
+        let device = get_device!(SumOps<T>).unwrap();
         device.sum_cols(self)
     }
 }

@@ -23,12 +23,12 @@ pub trait Softmax<T> {
 
 impl<T: CDatatype + GenericBlas + Float, L: Mat<T>> Softmax<T> for L {
     fn softmax(&self) -> Matrix<T> {
-        let device = get_device!(SoftmaxOps, T).unwrap();
+        let device = get_device!(SoftmaxOps<T>).unwrap();
         device.softmax(self.as_mat())
     }
 
     fn softmax_grad(&self, activated: Matrix<T>) -> Matrix<T> {
-        let device = get_device!(SoftmaxOps, T).unwrap();
+        let device = get_device!(SoftmaxOps<T>).unwrap();
         device.softmax_grad(activated.as_mat(), self.as_mat())
     }
 }

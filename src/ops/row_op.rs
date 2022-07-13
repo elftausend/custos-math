@@ -19,7 +19,7 @@ pub trait Row<T, R: Mat<T>> {
 
 impl<T: CDatatype, L: Mat<T>, R: Mat<T>> Row<T, R> for L {
     fn add_row(self, rhs: R) -> Matrix<T> {
-        let device = get_device!(RowOp, T).unwrap();
+        let device = get_device!(RowOp<T>).unwrap();
         device.add_row(self.as_mat(), rhs.as_mat())
     }
 }

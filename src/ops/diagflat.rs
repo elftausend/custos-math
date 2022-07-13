@@ -20,7 +20,7 @@ pub trait Diagflat<T> {
 
 impl<T: CDatatype> Diagflat<T> for Matrix<T> {
     fn diagflat(&self) -> Matrix<T> {
-        let device = get_device!(DiagflatOp, T).unwrap();
+        let device = get_device!(DiagflatOp<T>).unwrap();
         device.diagflat(self)
     }
 }

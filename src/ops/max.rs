@@ -21,17 +21,17 @@ pub trait Max<T> {
 
 impl<T: CDatatype> Max<T> for Matrix<T> {
     fn max(&self) -> T {
-        let device = get_device!(MaxOps, T).unwrap();
+        let device = get_device!(MaxOps<T>).unwrap();
         device.max(self)
     }
 
     fn max_rows(&self) -> Matrix<T> {
-        let device = get_device!(MaxOps, T).unwrap();
+        let device = get_device!(MaxOps<T>).unwrap();
         device.max_rows(self)
     }
 
     fn max_cols(&self) -> Matrix<T> {
-        let device = get_device!(MaxOps, T).unwrap();
+        let device = get_device!(MaxOps<T>).unwrap();
         device.max_cols(self)
     }
 }

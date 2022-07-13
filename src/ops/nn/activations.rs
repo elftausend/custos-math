@@ -24,22 +24,22 @@ pub trait Activations<T> {
 
 impl<T: CDatatype + Float> Activations<T> for Matrix<T> {
     fn tanh(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps, T).unwrap();
+        let device = get_device!(ActivationOps<T>).unwrap();
         device.tanh(self)
     }
 
     fn tanh_grad(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps, T).unwrap();
+        let device = get_device!(ActivationOps<T>).unwrap();
         device.tanh_grad(self)
     }
 
     fn relu(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps, T).unwrap();
+        let device = get_device!(ActivationOps<T>).unwrap();
         device.relu(self)
     }
 
     fn relu_grad(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps, T).unwrap();
+        let device = get_device!(ActivationOps<T>).unwrap();
         device.relu_grad(self)
     }
 }

@@ -154,7 +154,7 @@ impl<T> Matrix<T> {
     pub fn gemm(&self, rhs: &Matrix<T>) -> Matrix<T> 
     where T: CDatatype + GenericBlas
     {
-        let device = get_device!(Gemm, T).unwrap();
+        let device = get_device!(Gemm<T>).unwrap();
         device.gemm(self, rhs)
     }
 
@@ -193,7 +193,7 @@ impl<T> Matrix<T> {
     pub fn read(&self) -> Vec<T> 
     where T: Default + Copy 
     {
-        let device = get_device!(VecRead, T).unwrap();
+        let device = get_device!(VecRead<T>).unwrap();
         device.read(self.as_buf())
     }
 }
@@ -273,7 +273,7 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
 //no Weak ptr:
 impl<T: Copy+Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<T> {
     fn from(dims_slice: ((usize, usize), &[T; N])) -> Self {
-        let device = get_device!(Device, T).unwrap();
+        let device = get_device!(Device<T>).unwrap();
         
         let buffer = Buffer::from((&device, dims_slice.1));
         Matrix {
@@ -285,7 +285,7 @@ impl<T: Copy+Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix
 
 impl<T: Copy+Default> From<(usize, usize)> for Matrix<T> {
     fn from(dims: (usize, usize)) -> Self {
-        let device = get_device!(Device, T).unwrap();
+        let device = get_device!(Device<T>).unwrap();
         let buffer = Buffer::<T>::from((&device, dims.0*dims.1));
         
         Matrix {
@@ -297,7 +297,7 @@ impl<T: Copy+Default> From<(usize, usize)> for Matrix<T> {
 
 impl<T: Copy+Default> From<(usize, usize, Vec<T>)> for Matrix<T> {
     fn from(dims_data: (usize, usize, Vec<T>)) -> Self {
-        let device = get_device!(Device, T).unwrap();
+        let device = get_device!(Device<T>).unwrap();
         let buffer = Buffer::<T>::from((device, dims_data.2));
         
         Matrix {
@@ -411,7 +411,7 @@ impl<T: CDatatype> core::ops::Add<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.add(self, rhs)
     }
 }
@@ -420,7 +420,7 @@ impl<T: CDatatype> core::ops::Add<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.add(&self, &rhs)
     }
 }
@@ -429,7 +429,7 @@ impl<T: CDatatype> core::ops::Add<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.add(&self, rhs)
     }
 }
@@ -438,7 +438,7 @@ impl<T: CDatatype> core::ops::Add<Matrix<T>> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Matrix<T>) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.add(self, &rhs)
     }
 }
@@ -449,7 +449,7 @@ impl<T: CDatatype> core::ops::Sub<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.sub(self, rhs)
     }
 }
@@ -458,7 +458,7 @@ impl<T: CDatatype> core::ops::Sub<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.sub(&self, &rhs)
     }
 }
@@ -467,7 +467,7 @@ impl<T: CDatatype> core::ops::Sub<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.sub(&self, rhs)
     }
 }
@@ -476,7 +476,7 @@ impl<T: CDatatype> core::ops::Sub<Matrix<T>> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Matrix<T>) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.sub(self, &rhs)
     }
 }
@@ -487,7 +487,7 @@ impl<T: CDatatype> core::ops::Mul<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.mul(self, rhs)
     }
 }
@@ -496,7 +496,7 @@ impl<T: CDatatype> core::ops::Mul<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.mul(&self, &rhs)
     }
 }
@@ -505,21 +505,21 @@ impl<T: CDatatype> core::ops::Mul<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps, T).unwrap();
+        let device = get_device!(BaseOps<T>).unwrap();
         device.mul(&self, rhs)
     }
 }
 
 impl<T: CDatatype> core::ops::AddAssign<&Matrix<T>> for Matrix<T> {
     fn add_assign(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(AssignOps, T).unwrap();
+        let device = get_device!(AssignOps<T>).unwrap();
         device.add_assign(self, rhs)
     }
 }
 
 impl<T: CDatatype> core::ops::SubAssign<&Matrix<T>> for Matrix<T> {
     fn sub_assign(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(AssignOps, T).unwrap();
+        let device = get_device!(AssignOps<T>).unwrap();
         device.sub_assign(self, rhs)
     }
 }

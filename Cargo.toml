@@ -8,11 +8,11 @@ edition = "2021"
 [dependencies]
 #custos = {git = "https://github.com/elftausend/custos"}
 #custos = { path = "../custos", default-features = false }
-custos = { version = "0.1.2", default-features = false }
+custos = { version = "0.1.3", default-features = false }
 rand = "0.8.5"
 
 [features]
-default = ["cuda", "opencl"]
+default = ["opencl"]
 safe = ["custos/safe"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]

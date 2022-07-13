@@ -30,22 +30,22 @@ pub trait Fns<T> {
 
 impl<T: CDatatype + Float> Fns<T> for Matrix<T> {
     fn exp(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps, T).unwrap();
+        let device = get_device!(FnsOps<T>).unwrap();
         device.exp(self)
     }
 
     fn ln(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps, T).unwrap();
+        let device = get_device!(FnsOps<T>).unwrap();
         device.ln(self)
     }
 
     fn neg(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps, T).unwrap();
+        let device = get_device!(FnsOps<T>).unwrap();
         device.neg(self)
     }
 
     fn powf(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(FnsOps, T).unwrap();
+        let device = get_device!(FnsOps<T>).unwrap();
         device.powf(self, rhs)
     }
 }

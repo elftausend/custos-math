@@ -14,7 +14,7 @@ pub trait RandMatrix<T> {
 }
 impl<T: Float + SampleUniform> RandMatrix<T> for Matrix<T> {
     fn rand(&mut self, lo: T, hi: T) {
-        let device = get_device!(RandOp, T).unwrap();
+        let device = get_device!(RandOp<T>).unwrap();
         device.rand(self, lo, hi)
     }
 }

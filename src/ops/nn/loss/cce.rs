@@ -13,7 +13,7 @@ where
     Box<dyn CCEOp<T>>: CCEOp<T>,
 {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>) {
-        let device = get_device!(CCEOp, T).unwrap();
+        let device = get_device!(CCEOp<T>).unwrap();
         let loss = cce(&device, self, targets);
         let grad = cce_grad(&device, self, targets);
         (loss, grad)

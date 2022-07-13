@@ -19,7 +19,7 @@ pub trait Clip<T> {
 
 impl<T: CDatatype> Clip<T> for Matrix<T> {
     fn clip(&self, min: T, max: T) -> Matrix<T> {
-        let device = get_device!(ClipOp, T).unwrap();
+        let device = get_device!(ClipOp<T>).unwrap();
         device.clip(self, min, max)
     }
 }
