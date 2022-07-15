@@ -30,7 +30,7 @@ where
         let no_drop = f(&cpu, matrix.clone());
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
         return construct_buffer(device, &cpu, no_drop.to_buf())
-            .map(|buf| (buf, matrix.dims()).into());
+            .map(|buf| (buf, no_drop.dims()).into());
     }
     
     let x = if device.unified_mem() {
