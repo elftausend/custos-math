@@ -1,8 +1,9 @@
-use std::ffi::c_void;
+use std::{ffi::c_void, ops::{Add, AddAssign, Sub, Mul, SubAssign}};
 
 use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, VecRead, number::Number};
 #[cfg(feature="opencl")]
 use custos::{CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_event}}};
+use crate::Additional;
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -407,7 +408,7 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<T> {
 
 //-------------Add-------------
 
-impl<T: CDatatype> core::ops::Add<Self> for &Matrix<T> {
+impl<T: CDatatype> Add<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -416,7 +417,7 @@ impl<T: CDatatype> core::ops::Add<Self> for &Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Add<Self> for Matrix<T> {
+impl<T: CDatatype> Add<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -425,7 +426,7 @@ impl<T: CDatatype> core::ops::Add<Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Add<&Self> for Matrix<T> {
+impl<T: CDatatype> Add<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: &Self) -> Self::Output {
@@ -434,7 +435,7 @@ impl<T: CDatatype> core::ops::Add<&Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Add<Matrix<T>> for &Matrix<T> {
+impl<T: CDatatype> Add<Matrix<T>> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn add(self, rhs: Matrix<T>) -> Self::Output {
@@ -443,9 +444,25 @@ impl<T: CDatatype> core::ops::Add<Matrix<T>> for &Matrix<T> {
     }
 }
 
+impl<T: CDatatype> Add<T> for &Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn add(self, rhs: T) -> Self::Output {
+        self.adds(rhs)
+    }
+}
+
+impl<T: CDatatype> Add<T> for Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn add(self, rhs: T) -> Self::Output {
+        self.adds(rhs)
+    }
+}
+
 //-------------Sub-------------
 
-impl<T: CDatatype> core::ops::Sub<Self> for &Matrix<T> {
+impl<T: CDatatype> Sub<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -454,7 +471,7 @@ impl<T: CDatatype> core::ops::Sub<Self> for &Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Sub<Self> for Matrix<T> {
+impl<T: CDatatype> Sub<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -463,7 +480,7 @@ impl<T: CDatatype> core::ops::Sub<Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Sub<&Self> for Matrix<T> {
+impl<T: CDatatype> Sub<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: &Self) -> Self::Output {
@@ -472,7 +489,7 @@ impl<T: CDatatype> core::ops::Sub<&Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Sub<Matrix<T>> for &Matrix<T> {
+impl<T: CDatatype> Sub<Matrix<T>> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn sub(self, rhs: Matrix<T>) -> Self::Output {
@@ -481,9 +498,27 @@ impl<T: CDatatype> core::ops::Sub<Matrix<T>> for &Matrix<T> {
     }
 }
 
+impl<T: CDatatype> Sub<T> for &Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn sub(self, _rhs: T) -> Self::Output {
+        todo!()
+        //self.subs(rhs)
+    }
+}
+
+impl<T: CDatatype> Sub<T> for Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn sub(self, _rhs: T) -> Self::Output {
+        todo!()
+        //self.subs(rhs)
+    }
+}
+
 //-------------Mul-------------
 
-impl<T: CDatatype> core::ops::Mul<Self> for &Matrix<T> {
+impl<T: CDatatype> Mul<Self> for &Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -492,7 +527,7 @@ impl<T: CDatatype> core::ops::Mul<Self> for &Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Mul<Self> for Matrix<T> {
+impl<T: CDatatype> Mul<Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -501,7 +536,7 @@ impl<T: CDatatype> core::ops::Mul<Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::Mul<&Self> for Matrix<T> {
+impl<T: CDatatype> Mul<&Self> for Matrix<T> {
     type Output = Matrix<T>;
 
     fn mul(self, rhs: &Self) -> Self::Output {
@@ -510,14 +545,14 @@ impl<T: CDatatype> core::ops::Mul<&Self> for Matrix<T> {
     }
 }
 
-impl<T: CDatatype> core::ops::AddAssign<&Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> AddAssign<&Matrix<T>> for Matrix<T> {
     fn add_assign(&mut self, rhs: &Matrix<T>) {
         let device = get_device!(AssignOps<T>).unwrap();
         device.add_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype> core::ops::SubAssign<&Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> SubAssign<&Matrix<T>> for Matrix<T> {
     fn sub_assign(&mut self, rhs: &Matrix<T>) {
         let device = get_device!(AssignOps<T>).unwrap();
         device.sub_assign(self, rhs)
