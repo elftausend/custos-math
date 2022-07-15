@@ -8,7 +8,7 @@ pub use switching::*;
 
 use custos::{
     libs::opencl::{cl_device::CLDevice, KernelOptions},
-    Error, CDatatype, opencl::api::{enqueue_write_buffer, wait_for_event},
+    Error, CDatatype, opencl::{api::{enqueue_write_buffer, wait_for_event}, KernelArg}, Buffer,
 };
 
 use crate::Matrix;
@@ -61,3 +61,15 @@ pub fn cl_write<T>(device: &CLDevice, x: &mut Matrix<T>, data: &[T]) {
     let event = unsafe {enqueue_write_buffer(&device.queue(), x.ptr().1, data, true).unwrap()};
     wait_for_event(event).unwrap();
 } 
+
+impl<'a, T: Copy> KernelArg<'a, T> for Matrix<T> {
+    fn buf(&'a self) -> Option<&'a Buffer<T>> {
+        Some(self.as_buf())
+    }
+}
+
+impl<'a, T: Copy> KernelArg<'a, T> for &'a Matrix<T> {
+    fn buf(&self) -> Option<&'a Buffer<T>> {
+        Some(self.as_buf())
+    }
+}
