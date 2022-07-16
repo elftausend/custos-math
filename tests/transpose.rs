@@ -1,5 +1,5 @@
 use custos::{cpu::CPU, AsDev};
-use custos_math::{Transpose, Matrix};
+use custos_math::{Matrix};
 
 #[cfg(feature="cuda")]
 use custos_math::TransposeOp;

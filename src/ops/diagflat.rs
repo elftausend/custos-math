@@ -14,14 +14,9 @@ use super::cl_to_cpu_s;
 #[cfg(feature="opencl")]
 use custos::{CLDevice, Buffer, opencl::KernelOptions};
 
-pub trait Diagflat<T> {
-    fn diagflat(&self) -> Matrix<T>;
-}
-
-impl<T: CDatatype> Diagflat<T> for Matrix<T> {
-    fn diagflat(&self) -> Matrix<T> {
-        let device = get_device!(DiagflatOp<T>).unwrap();
-        device.diagflat(self)
+impl<T: CDatatype> Matrix<T> {
+    pub fn diagflat(&self) -> Matrix<T> {
+        get_device!(DiagflatOp<T>).unwrap().diagflat(self)
     }
 }
 

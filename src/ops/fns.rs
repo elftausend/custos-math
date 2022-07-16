@@ -17,36 +17,25 @@ use crate::opencl::cl_str_op;
 #[cfg(feature="opencl")]
 use custos::CLDevice;
 
-pub trait Fns<T> {
-    #[must_use]
-    fn exp(&self) -> Matrix<T>;
-    #[must_use]
-    fn ln(&self) -> Matrix<T>;
-    #[must_use]
-    fn neg(&self) -> Matrix<T>;
-    #[must_use]
-    fn powf(&self, rhs: T) -> Matrix<T>;
-}
-
-impl<T: CDatatype + Float> Fns<T> for Matrix<T> {
-    fn exp(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps<T>).unwrap();
-        device.exp(self)
+impl<T: CDatatype + Float>  Matrix<T> {
+    pub fn exp(&self) -> Matrix<T> {
+        get_device!(FnsOps<T>).unwrap().exp(self)
     }
 
-    fn ln(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps<T>).unwrap();
-        device.ln(self)
+    pub fn ln(&self) -> Matrix<T> {
+        get_device!(FnsOps<T>).unwrap().ln(self)
     }
 
-    fn neg(&self) -> Matrix<T> {
-        let device = get_device!(FnsOps<T>).unwrap();
-        device.neg(self)
+    pub fn neg(&self) -> Matrix<T> {
+        get_device!(FnsOps<T>).unwrap().neg(self)
     }
 
-    fn powf(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(FnsOps<T>).unwrap();
-        device.powf(self, rhs)
+    pub fn powf(&self, rhs: T) -> Matrix<T> {
+        get_device!(FnsOps<T>).unwrap().powf(self, rhs)
+    }
+
+    pub fn powi(&self, rhs: i32) -> Matrix<T> {
+        get_device!(FnsOps<T>).unwrap().powi(self, rhs)
     }
 }
 
@@ -55,7 +44,7 @@ pub trait FnsOps<T> {
     fn ln(&self, x: &Matrix<T>) -> Matrix<T>;
     fn neg(&self, x: &Matrix<T>) -> Matrix<T>;
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>; 
-    
+    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T>; 
 }
 
 impl<T: Float> FnsOps<T> for CPU {
@@ -74,6 +63,10 @@ impl<T: Float> FnsOps<T> for CPU {
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
         each_op(self, x, |x| x.powf(rhs))
     }
+
+    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+        each_op(self, x, |x| x.powi(rhs))
+    }
 }
 
 #[cfg(feature="opencl")]
@@ -91,6 +84,10 @@ impl<T: CDatatype> FnsOps<T> for CLDevice {
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+        cl_str_op(self, x, &format!("pow(x, {rhs})")).unwrap()
+    }
+
+    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
         cl_str_op(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 }
@@ -113,6 +110,11 @@ impl<T: CDatatype> FnsOps<T> for CudaDevice {
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+        let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
+        (out, x.dims()).into()
+    }
+
+    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
     }

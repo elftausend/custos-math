@@ -13,26 +13,17 @@ use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature="opencl")]
 use custos::CLDevice;
 
-pub trait Max<T> {
-    fn max(&self) -> T;
-    fn max_rows(&self) -> Matrix<T>;
-    fn max_cols(&self) -> Matrix<T>;
-}
-
-impl<T: CDatatype> Max<T> for Matrix<T> {
-    fn max(&self) -> T {
-        let device = get_device!(MaxOps<T>).unwrap();
-        device.max(self)
+impl<T: CDatatype> Matrix<T> {
+    pub fn max(&self) -> T {
+        get_device!(MaxOps<T>).unwrap().max(self)
     }
 
-    fn max_rows(&self) -> Matrix<T> {
-        let device = get_device!(MaxOps<T>).unwrap();
-        device.max_rows(self)
+    pub fn max_rows(&self) -> Matrix<T> {
+        get_device!(MaxOps<T>).unwrap().max_rows(self)
     }
 
-    fn max_cols(&self) -> Matrix<T> {
-        let device = get_device!(MaxOps<T>).unwrap();
-        device.max_cols(self)
+    pub fn max_cols(&self) -> Matrix<T> {
+        get_device!(MaxOps<T>).unwrap().max_cols(self)
     }
 }
 

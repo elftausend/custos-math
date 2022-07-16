@@ -11,26 +11,17 @@ use crate::cuda::cu_scalar_op;
 #[cfg(feature="cuda")]
 use custos::CudaDevice;
 
-pub trait Additional<T> {
-    fn adds(&self, rhs: T) -> Matrix<T>;
-    fn muls(&self, rhs: T) -> Matrix<T>;
-    fn divs(&self, rhs: T) -> Matrix<T>;
-}
-
-impl<T: CDatatype> Additional<T> for Matrix<T> {
-    fn adds(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps<T>).unwrap();
-        device.adds(self, rhs)
+impl<T: CDatatype> Matrix<T> {
+    pub fn adds(&self, rhs: T) -> Matrix<T> {
+        get_device!(AdditionalOps<T>).unwrap().adds(self, rhs)
     }
 
-    fn muls(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps<T>).unwrap();
-        device.muls(self, rhs)
+    pub fn muls(&self, rhs: T) -> Matrix<T> {
+        get_device!(AdditionalOps<T>).unwrap().muls(self, rhs)
     }
 
-    fn divs(&self, rhs: T) -> Matrix<T> {
-        let device = get_device!(AdditionalOps<T>).unwrap();
-        device.divs(self, rhs)
+    pub fn divs(&self, rhs: T) -> Matrix<T> {
+        get_device!(AdditionalOps<T>).unwrap().divs(self, rhs)
     }
 }
 

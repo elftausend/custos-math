@@ -13,32 +13,21 @@ use super::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature="cuda")]
 use custos::CudaDevice;
 
-pub trait Sum<T> {
-    fn sum(&self) -> T;
-    fn mean(&self) -> T;
-    fn sum_rows(&self) -> Matrix<T>;
-    fn sum_cols(&self) -> Matrix<T>;
-}
-
-impl<T: CDatatype> Sum<T> for Matrix<T> {
-    fn sum(&self) -> T {
-        let device = get_device!(SumOps<T>).unwrap();
-        device.sum(self)
+impl<T: CDatatype> Matrix<T> {
+    pub fn sum(&self) -> T {
+        get_device!(SumOps<T>).unwrap().sum(self)
     }
 
-    fn mean(&self) -> T {
-        let device = get_device!(SumOps<T>).unwrap();
-        device.mean(self)
+    pub fn mean(&self) -> T {
+        get_device!(SumOps<T>).unwrap().mean(self)
     }
 
-    fn sum_rows(&self) -> Matrix<T> {
-        let device = get_device!(SumOps<T>).unwrap();
-        device.sum_rows(self)
+    pub fn sum_rows(&self) -> Matrix<T> {
+        get_device!(SumOps<T>).unwrap().sum_rows(self)
     }
 
-    fn sum_cols(&self) -> Matrix<T> {
-        let device = get_device!(SumOps<T>).unwrap();
-        device.sum_cols(self)
+    pub fn sum_cols(&self) -> Matrix<T> {
+        get_device!(SumOps<T>).unwrap().sum_cols(self)
     }
 }
 

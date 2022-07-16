@@ -1,9 +1,8 @@
-use std::{ffi::c_void, ops::{Add, AddAssign, Sub, Mul, SubAssign}};
+use std::{ffi::c_void, ops::{Add, AddAssign, Sub, Mul, SubAssign, Div}};
 
 use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, VecRead, number::Number};
 #[cfg(feature="opencl")]
 use custos::{CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_event}}};
-use crate::Additional;
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -545,6 +544,33 @@ impl<T: CDatatype> Mul<&Self> for Matrix<T> {
     }
 }
 
+impl<T: CDatatype> Mul<T> for Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        self.muls(rhs)
+    }
+}
+
+impl<T: CDatatype> Mul<&T> for Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn mul(self, rhs: &T) -> Self::Output {
+        self.muls(*rhs)
+    }
+}
+
+
+// div
+
+impl<T: CDatatype> Div<T> for Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        self.divs(rhs)
+    }
+}
+
 impl<T: CDatatype> AddAssign<&Matrix<T>> for Matrix<T> {
     fn add_assign(&mut self, rhs: &Matrix<T>) {
         let device = get_device!(AssignOps<T>).unwrap();
@@ -552,10 +578,24 @@ impl<T: CDatatype> AddAssign<&Matrix<T>> for Matrix<T> {
     }
 }
 
+impl<T: CDatatype> AddAssign<Matrix<T>> for Matrix<T> {
+    fn add_assign(&mut self, rhs: Matrix<T>) {
+        let device = get_device!(AssignOps<T>).unwrap();
+        device.add_assign(self, &rhs)
+    }
+}
+
 impl<T: CDatatype> SubAssign<&Matrix<T>> for Matrix<T> {
     fn sub_assign(&mut self, rhs: &Matrix<T>) {
         let device = get_device!(AssignOps<T>).unwrap();
         device.sub_assign(self, rhs)
+    }
+}
+
+impl<T: CDatatype> SubAssign<Matrix<T>> for Matrix<T> {
+    fn sub_assign(&mut self, rhs: Matrix<T>) {
+        let device = get_device!(AssignOps<T>).unwrap();
+        device.sub_assign(self, &rhs)
     }
 }
 

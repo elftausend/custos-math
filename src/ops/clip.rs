@@ -10,17 +10,11 @@ use custos::{CLDevice, opencl::KernelOptions};
 
 #[cfg(feature="cuda")]
 use custos::{CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer};
-
 use crate::Matrix;
 
-pub trait Clip<T> {
-    fn clip(&self, min: T, max: T) -> Matrix<T>;
-}
-
-impl<T: CDatatype> Clip<T> for Matrix<T> {
-    fn clip(&self, min: T, max: T) -> Matrix<T> {
-        let device = get_device!(ClipOp<T>).unwrap();
-        device.clip(self, min, max)
+impl<T: CDatatype> Matrix<T> {
+    pub fn clip(&self, min: T, max: T) -> Matrix<T> {
+        get_device!(ClipOp<T>).unwrap().clip(self, min, max)
     }
 }
 

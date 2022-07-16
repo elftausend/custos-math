@@ -64,16 +64,10 @@ pub fn cl_transpose<T: CDatatype>(
     buf.map(|buf| (buf.unwrap(), (x.cols(), x.rows())).into())
 }
 
-pub trait Transpose<T> {
+impl<T: CDatatype + CudaTranspose> Matrix<T> {
     #[allow(non_snake_case)]
-    fn T(&self) -> Matrix<T>;
-}
-
-impl<T: CDatatype + CudaTranspose> Transpose<T> for Matrix<T> {
-    #[allow(non_snake_case)]
-    fn T(&self) -> Matrix<T> {
-        let device = get_device!(TransposeOp<T>).unwrap();
-        device.transpose(self)
+    pub fn T(&self) -> Matrix<T> {
+        get_device!(TransposeOp<T>).unwrap().transpose(self)
     }
 }
 
