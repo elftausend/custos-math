@@ -1,8 +1,10 @@
 mod assign_to_lhs;
 mod ew;
+mod correlate;
 
 pub use assign_to_lhs::*;
 pub use ew::*;
+pub use correlate::*;
 
 use custos::{
     cpu::{CPUCache, CPU},
