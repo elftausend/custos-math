@@ -1,18 +1,13 @@
-#[cfg(feature="opencl")]
-use custos::CLDevice;
-use crate::{Matrix, each_op};
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op;
-use custos::{
-    get_device,
-    libs::cpu::CPU,
-    number::Float,
-    CDatatype
-};
+use crate::{each_op, Matrix};
+#[cfg(feature = "opencl")]
+use custos::CLDevice;
+use custos::{get_device, libs::cpu::CPU, number::Float, CDatatype};
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use crate::cu_str_op;
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
 pub trait Activations<T> {
@@ -52,7 +47,7 @@ pub trait ActivationOps<T> {
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
@@ -97,7 +92,7 @@ impl<T: Float> ActivationOps<T> for CPU {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: CDatatype> ActivationOps<T> for CudaDevice {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();

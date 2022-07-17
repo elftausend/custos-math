@@ -1,12 +1,12 @@
+use custos::{libs::opencl::KernelOptions, Buffer, CDatatype, CLDevice, Error};
 use std::fmt::Write;
-use custos::{libs::opencl::KernelOptions, Error, CDatatype, Buffer, CLDevice};
 
 /// OpenCL matrix multiplication of two buffers / matrices.
 /// # Example
 /// ```
 /// use custos::{CLDevice, Buffer, VecRead};
 /// use custos_math::cl_gemm;
-/// 
+///
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CLDevice::new(0)?;
 ///     let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8, 5]));
@@ -17,7 +17,14 @@ use custos::{libs::opencl::KernelOptions, Error, CDatatype, Buffer, CLDevice};
 ///     Ok(())
 /// }
 /// ```
-pub fn cl_gemm<T: CDatatype>(device: &CLDevice, m: usize, k: usize, n: usize, lhs: &Buffer<T>, rhs: &Buffer<T>) -> Result<Buffer<T>, Error> {
+pub fn cl_gemm<T: CDatatype>(
+    device: &CLDevice,
+    m: usize,
+    k: usize,
+    n: usize,
+    lhs: &Buffer<T>,
+    rhs: &Buffer<T>,
+) -> Result<Buffer<T>, Error> {
     let mut mw = 1;
     for x in &[16, 8, 4, 2, 1] {
         if m % x == 0 {
@@ -33,11 +40,11 @@ pub fn cl_gemm<T: CDatatype>(device: &CLDevice, m: usize, k: usize, n: usize, lh
         }
     }
     let nw = kw;
-    let mt = (((m/mw) as f32).floor()) as usize;
-    let kt = (((k/kw) as f32).floor()) as usize;
+    let mt = (((m / mw) as f32).floor()) as usize;
+    let kt = (((k / kw) as f32).floor()) as usize;
 
-    let f = (((m/mw) as f32).floor()) as usize;
-    let s = (((n/nw) as f32).floor()) as usize;
+    let f = (((m / mw) as f32).floor()) as usize;
+    let s = (((n / nw) as f32).floor()) as usize;
     //'testing'/excellent code for gemm - 'currently' stolen from litenn
 
     let mut float_mw = String::new();
@@ -104,11 +111,10 @@ pub fn cl_gemm<T: CDatatype>(device: &CLDevice, m: usize, k: usize, n: usize, lh
             }}");
 
     let gws = [f, s, 0];
-    
+
     Ok(KernelOptions::new(device, lhs, gws, &src)?
         .with_rhs(rhs)
-        .with_output(n*m)
-        .run()?.unwrap())
+        .with_output(n * m)
+        .run()?
+        .unwrap())
 }
-
-

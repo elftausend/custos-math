@@ -1,12 +1,19 @@
-mod gemm;
 mod ew;
+mod gemm;
 
 pub use ew::*;
 
+use custos::{
+    cuda::{launch_kernel1d, CudaCache},
+    Buffer, CDatatype, CudaDevice,
+};
 
-use custos::{Buffer, CDatatype, CudaDevice, cuda::{CudaCache, launch_kernel1d}};
-
-pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, op: &str) -> custos::Result<Buffer<T>> {
+pub fn cu_scalar_op<T: CDatatype>(
+    device: &CudaDevice,
+    lhs: &Buffer<T>,
+    rhs: T,
+    op: &str,
+) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void scalar_op({datatype}* lhs, {datatype} rhs, {datatype}* out, int numElements)
             {{
@@ -16,18 +23,26 @@ pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, 
                 }}
               
             }}
-    "#, datatype=T::as_c_type_str());
+    "#,
+        datatype = T::as_c_type_str()
+    );
 
     let out = CudaCache::get::<T>(device, lhs.len);
     launch_kernel1d(
-        lhs.len, device, 
-        &src, "scalar_op", 
+        lhs.len,
+        device,
+        &src,
+        "scalar_op",
         vec![&lhs, &rhs, &out, &lhs.len],
     )?;
     Ok(out)
 }
 
-pub fn cu_str_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, op: &str) -> custos::Result<Buffer<T>> {
+pub fn cu_str_op<T: CDatatype>(
+    device: &CudaDevice,
+    lhs: &Buffer<T>,
+    op: &str,
+) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void str_op({datatype}* lhs, {datatype}* out, int numElements)
             {{
@@ -37,13 +52,11 @@ pub fn cu_str_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, op: &str) -
                     out[idx] = {op};
                 }}
             }}
-    "#, datatype=T::as_c_type_str());
+    "#,
+        datatype = T::as_c_type_str()
+    );
 
     let out = CudaCache::get::<T>(device, lhs.len);
-    launch_kernel1d(
-        lhs.len, device, 
-        &src, "str_op", 
-        vec![&lhs, &out, &lhs.len],
-    )?;
+    launch_kernel1d(lhs.len, device, &src, "str_op", vec![&lhs, &out, &lhs.len])?;
     Ok(out)
 }

@@ -1,23 +1,18 @@
-use custos::{
-    cpu::CPU,
-    get_device,
-    number::Float,
-    CDatatype,
-};
+use custos::{cpu::CPU, get_device, number::Float, CDatatype};
 
-use crate::{Matrix, each_op};
+use crate::{each_op, Matrix};
 
-#[cfg(feature="cuda")]
-use custos::CudaDevice;
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use crate::cu_str_op;
+#[cfg(feature = "cuda")]
+use custos::CudaDevice;
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op;
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
 
-impl<T: CDatatype + Float>  Matrix<T> {
+impl<T: CDatatype + Float> Matrix<T> {
     pub fn exp(&self) -> Matrix<T> {
         get_device!(FnsOps<T>).unwrap().exp(self)
     }
@@ -43,8 +38,8 @@ pub trait FnsOps<T> {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T>;
     fn ln(&self, x: &Matrix<T>) -> Matrix<T>;
     fn neg(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>; 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T>; 
+    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>;
+    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T>;
 }
 
 impl<T: Float> FnsOps<T> for CPU {
@@ -69,7 +64,7 @@ impl<T: Float> FnsOps<T> for CPU {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype> FnsOps<T> for CLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "exp(x)").unwrap()
@@ -92,7 +87,7 @@ impl<T: CDatatype> FnsOps<T> for CLDevice {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: CDatatype> FnsOps<T> for CudaDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "exp(x)").unwrap();

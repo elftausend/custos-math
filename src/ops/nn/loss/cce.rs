@@ -1,7 +1,7 @@
-use crate::{AdditionalOps, ClipOp, FnsOps, SumOps, Matrix, BaseOps};
+use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps};
 use custos::{get_device, number::Float, CDatatype, CPU};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
 
 pub trait CCE<T> {
@@ -22,9 +22,9 @@ where
 
 pub trait CCEOp<T>: FnsOps<T> + ClipOp<T> + BaseOps<T> + SumOps<T> + AdditionalOps<T> {}
 impl<T: Float + CDatatype> CCEOp<T> for CPU {}
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: Float + CDatatype> CCEOp<T> for CLDevice {}
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: Float + CDatatype> CCEOp<T> for custos::CudaDevice {}
 
 pub fn cce<T: Float>(device: &dyn CCEOp<T>, preds: &Matrix<T>, targets: &Matrix<T>) -> T {

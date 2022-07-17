@@ -1,12 +1,12 @@
-use custos::{GenericBlas, CPU, cpu::CPUCache};
+use custos::{cpu::CPUCache, GenericBlas, CPU};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CDatatype;
 
-#[cfg(feature="opencl")]
-use custos::CLDevice;
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::opencl::cl_gemm;
+#[cfg(feature = "opencl")]
+use custos::CLDevice;
 
 use crate::Matrix;
 
@@ -15,7 +15,7 @@ use crate::Matrix;
 /// ```
 /// use custos::{CPU, VecRead};
 /// use custos_math::{Matrix, Gemm};
-/// 
+///
 /// let device = CPU::new();
 ///
 /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
@@ -29,20 +29,20 @@ pub trait Gemm<T> {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: GenericBlas+Default+Copy> Gemm<T> for CPU {
+impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         assert!(lhs.dims().1 == rhs.dims().0);
         let m = lhs.dims().0;
         let k = lhs.dims().1;
         let n = rhs.dims().1;
 
-        let mut c = CPUCache::get(self, m*n);
+        let mut c = CPUCache::get(self, m * n);
         T::gemm(m, n, k, lhs, rhs, &mut c);
         (c, (m, n)).into()
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype> Gemm<T> for CLDevice {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         assert!(lhs.dims().1 == rhs.dims().0);
@@ -52,21 +52,25 @@ impl<T: CDatatype> Gemm<T> for CLDevice {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: GenericBlas> Gemm<T> for custos::CudaDevice {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         use custos::CacheBuf;
-        assert!(lhs.cols() == rhs.rows(), "wrong dims for matrix multiplication");
+        assert!(
+            lhs.cols() == rhs.rows(),
+            "wrong dims for matrix multiplication"
+        );
         let out = self.cached_buf(lhs.rows() * rhs.cols());
         T::cugemm(
-            self.inner.borrow().handle(), 
-            lhs.rows(), 
-            rhs.cols(), 
-            lhs.cols(), 
-            lhs.as_buf().ptr.2, 
-            rhs.as_buf().ptr.2, 
-            out.ptr.2
-        ).unwrap();
+            self.inner.borrow().handle(),
+            lhs.rows(),
+            rhs.cols(),
+            lhs.cols(),
+            lhs.as_buf().ptr.2,
+            rhs.as_buf().ptr.2,
+            out.ptr.2,
+        )
+        .unwrap();
         (out, lhs.rows(), rhs.cols()).into()
     }
 }

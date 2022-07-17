@@ -1,16 +1,14 @@
-use custos::{
-    get_device, number::Number, CDatatype, CPU,
-};
 use crate::{cached, Matrix};
+use custos::{get_device, number::Number, CDatatype, CPU};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use super::{cu_to_cpu_s, cu_to_cpu_scalar};
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
 impl<T: CDatatype> Matrix<T> {
@@ -93,7 +91,7 @@ impl<T: Number> SumOps<T> for CPU {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype> SumOps<T> for CLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.sum(&x))
@@ -112,9 +110,8 @@ impl<T: CDatatype> SumOps<T> for CLDevice {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: CDatatype> SumOps<T> for CudaDevice {
-    
     fn sum(&self, x: &Matrix<T>) -> T {
         cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
     }

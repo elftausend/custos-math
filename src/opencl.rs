@@ -1,14 +1,18 @@
 mod gemm;
-mod tew;
 mod switching;
+mod tew;
 
 pub use gemm::cl_gemm;
-pub use tew::*;
 pub use switching::*;
+pub use tew::*;
 
 use custos::{
     libs::opencl::{cl_device::CLDevice, KernelOptions},
-    Error, CDatatype, opencl::{api::{enqueue_write_buffer, wait_for_event}, KernelArg}, Buffer,
+    opencl::{
+        api::{enqueue_write_buffer, wait_for_event},
+        KernelArg,
+    },
+    Buffer, CDatatype, Error,
 };
 
 use crate::Matrix;
@@ -31,7 +35,8 @@ pub fn cl_str_op<T: CDatatype>(
 
     let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
         .with_output(x.size())
-        .run()?.unwrap();
+        .run()?
+        .unwrap();
     Ok((buf, x.dims()).into())
 }
 
@@ -58,9 +63,9 @@ pub fn cl_scalar_op<T: CDatatype>(
 }
 
 pub fn cl_write<T>(device: &CLDevice, x: &mut Buffer<T>, data: &[T]) {
-    let event = unsafe {enqueue_write_buffer(&device.queue(), x.ptr.1, data, true).unwrap()};
+    let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.1, data, true).unwrap() };
     wait_for_event(event).unwrap();
-} 
+}
 
 impl<'a, T: Copy> KernelArg<'a, T> for Matrix<T> {
     fn some_buf(&'a self) -> Option<&'a Buffer<T>> {

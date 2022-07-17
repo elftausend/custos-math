@@ -1,9 +1,9 @@
-use custos::{number::Number, CPU};
 use crate::{cpu::col_op, Matrix};
+use custos::{number::Number, CPU};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use super::cl_to_cpu_lr;
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
 
 pub trait ColOp<T> {
@@ -26,7 +26,7 @@ impl<T: Number> ColOp<T> for CPU {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: custos::CDatatype> ColOp<T> for CLDevice {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
@@ -40,12 +40,12 @@ impl<T: custos::CDatatype> ColOp<T> for CLDevice {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.div_col(lhs, rhs))
     }
 }
-#[cfg(feature="cuda")]
-use custos::CudaDevice;
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use super::cu_to_cpu_lr;
+#[cfg(feature = "cuda")]
+use custos::CudaDevice;
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: custos::CDatatype> ColOp<T> for CudaDevice {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))

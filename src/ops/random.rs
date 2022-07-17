@@ -1,12 +1,10 @@
-use custos::{
-    get_device, number::Float, Device, CPU, Buffer,
-};
 use crate::Matrix;
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
+use custos::{get_device, number::Float, Buffer, Device, CPU};
 //use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::opencl::cl_write;
 
 pub trait RandBuf<T> {
@@ -32,21 +30,21 @@ pub trait RandOp<T>: Device<T> {
 pub fn rand_slice<T: PartialOrd + Copy + Float>(slice: &mut [T], lo: T, hi: T) {
     let rng = fastrand::Rng::new();
     for value in slice {
-        *value = T::as_generic(rng.f64()) * (hi-(lo))+(lo);
+        *value = T::as_generic(rng.f64()) * (hi - (lo)) + (lo);
     }
 }
 
-impl<T: Float > RandOp<T> for CPU {
+impl<T: Float> RandOp<T> for CPU {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         rand_slice(x, lo, hi)
     }
 }
 
-#[cfg(feature="opencl")]
-impl<T: Float > RandOp<T> for CLDevice {
+#[cfg(feature = "opencl")]
+impl<T: Float> RandOp<T> for CLDevice {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         if self.unified_mem() {
-            return rand_slice(x, lo, hi)
+            return rand_slice(x, lo, hi);
         }
         let mut data = vec![T::default(); x.len()];
         rand_slice(&mut data, lo, hi);
@@ -54,11 +52,11 @@ impl<T: Float > RandOp<T> for CLDevice {
     }
 }
 
-#[cfg(feature="cuda")]
-use custos::{CudaDevice, cuda::api::cu_write};
+#[cfg(feature = "cuda")]
+use custos::{cuda::api::cu_write, CudaDevice};
 
-#[cfg(feature="cuda")]
-impl<T: Float > RandOp<T> for CudaDevice {
+#[cfg(feature = "cuda")]
+impl<T: Float> RandOp<T> for CudaDevice {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         let mut data = vec![T::default(); x.len()];
         rand_slice(&mut data, lo, hi);

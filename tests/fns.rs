@@ -1,4 +1,4 @@
-use custos::{CPU, number::Float, AsDev};
+use custos::{number::Float, AsDev, CPU};
 use custos_math::{FnsOps, Matrix};
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
@@ -29,10 +29,10 @@ fn test_fns_cpu() {
     roughly_equals(&res.read(), &[0.405, 0.6931, 1.7917, f64::NAN], 0.001);
 
     let res = device.powf(&x, 2.);
-    roughly_equals(&res.read(), &[2.25, 4., 36., 9.,], 0.001);
+    roughly_equals(&res.read(), &[2.25, 4., 36., 9.], 0.001);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_fns_cl() -> Result<(), custos::Error> {
     let device = custos::CLDevice::new(0)?.select();
@@ -49,12 +49,12 @@ fn test_fns_cl() -> Result<(), custos::Error> {
     roughly_equals(&res.read(), &[0.405, 0.6931, 1.7917, f32::NAN], 0.001);
 
     let res = device.powf(&x, 2.);
-    roughly_equals(&res.read(), &[2.25, 4., 36., 9.,], 0.001);
+    roughly_equals(&res.read(), &[2.25, 4., 36., 9.], 0.001);
 
     Ok(())
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_fns_cuda() -> Result<(), custos::Error> {
     let device = custos::CudaDevice::new(0)?.select();
@@ -71,7 +71,7 @@ fn test_fns_cuda() -> Result<(), custos::Error> {
     roughly_equals(&res.read(), &[0.405, 0.6931, 1.7917, f32::NAN], 0.001);
 
     let res = device.powf(&x, 2.);
-    roughly_equals(&res.read(), &[2.25, 4., 36., 9.,], 0.001);
+    roughly_equals(&res.read(), &[2.25, 4., 36., 9.], 0.001);
 
     Ok(())
 }

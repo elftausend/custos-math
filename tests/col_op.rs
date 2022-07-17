@@ -12,7 +12,7 @@ fn test_col_op() {
     assert_eq!(c.read(), vec![2., 3., 4., 6., 7., 8., 10., 11., 12.]);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_col_op_cl() {
     let device = custos::CLDevice::new(0).unwrap().select();

@@ -1,10 +1,10 @@
 mod assign_to_lhs;
-mod ew;
 mod correlate;
+mod ew;
 
 pub use assign_to_lhs::*;
-pub use ew::*;
 pub use correlate::*;
+pub use ew::*;
 
 use custos::{
     cpu::{CPUCache, CPU},
@@ -14,7 +14,7 @@ use custos::{
 use crate::Matrix;
 
 pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
-    (CPUCache::get::<T>(device, dims.0*dims.1), dims).into()
+    (CPUCache::get::<T>(device, dims.0 * dims.1), dims).into()
 }
 
 pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
@@ -82,10 +82,9 @@ pub fn col_op<T: Number, F: Fn(&mut T, T, T)>(
     y
 }
 
-
-pub fn each_op<T: Copy+Default, F: Fn(T) -> T>(device: &CPU, x: &Matrix<T>, f: F) -> Matrix<T> {
+pub fn each_op<T: Copy + Default, F: Fn(T) -> T>(device: &CPU, x: &Matrix<T>, f: F) -> Matrix<T> {
     let mut y = CPUCache::get::<T>(device, x.size());
-    
+
     for (idx, value) in y.iter_mut().enumerate() {
         *value = f(x[idx]);
     }

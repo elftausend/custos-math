@@ -1,5 +1,5 @@
 use custos::{AsDev, CPU};
-use custos_math::{MaxOps, Matrix};
+use custos_math::{Matrix, MaxOps};
 
 #[test]
 fn test_max_ops() {
@@ -20,17 +20,15 @@ fn test_max_ops() {
     assert_eq!(res.read(), vec![-4., -2., -3.]);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_max_cl() -> custos::Result<()> {
-
     let device = custos::CLDevice::new(0).unwrap().select();
 
     let a = Matrix::from((
-        &device, (3, 3),
-        [-10f32, -2., -3., 
-        -4., -5., -6., 
-        -7., -8., -9.],
+        &device,
+        (3, 3),
+        [-10f32, -2., -3., -4., -5., -6., -7., -8., -9.],
     ));
 
     let res = device.max(&a);
@@ -44,16 +42,11 @@ fn test_max_cl() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_max_cuda() -> custos::Result<()> {
     let device = custos::CudaDevice::new(0)?.select();
-    let a = Matrix::from((
-        &device, (3, 3),
-        [1f32, 2., -3., 
-        4., 5., 6., 
-        7., -8., 9.],
-    ));
+    let a = Matrix::from((&device, (3, 3), [1f32, 2., -3., 4., 5., 6., 7., -8., 9.]));
     let max = device.max(&a);
     assert_eq!(max, 9.);
 

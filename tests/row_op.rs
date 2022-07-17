@@ -12,7 +12,7 @@ fn test_row_op() {
     assert_eq!(c.read(), vec![2., 4., 6., 5., 7., 9., 8., 10., 12.]);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_row_op_cl() -> custos::Result<()> {
     use custos_math::RowOp;

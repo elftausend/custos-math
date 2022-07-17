@@ -2,15 +2,18 @@ use custos::{
     cpu::{CPUCache, CPU},
     get_device,
     number::Number,
-    CDatatype
+    CDatatype,
 };
 
-#[cfg(feature="opencl")]
-use custos::{CLDevice, opencl::KernelOptions};
+#[cfg(feature = "opencl")]
+use custos::{opencl::KernelOptions, CLDevice};
 
-#[cfg(feature="cuda")]
-use custos::{CudaDevice, cuda::{CudaCache, launch_kernel1d}, Buffer};
 use crate::Matrix;
+#[cfg(feature = "cuda")]
+use custos::{
+    cuda::{launch_kernel1d, CudaCache},
+    Buffer, CudaDevice,
+};
 
 impl<T: CDatatype> Matrix<T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
@@ -40,7 +43,7 @@ impl<T: Number> ClipOp<T> for CPU {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 fn ocl_clip<T: CDatatype>(
     device: CLDevice,
     x: &Matrix<T>,
@@ -72,18 +75,22 @@ fn ocl_clip<T: CDatatype>(
 
     // TODO: unwrap, Ok()?
     buf.map(|buf| (buf.unwrap(), x.dims()).into())
-
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         ocl_clip(self.clone(), x, min, max).unwrap()
     }
 }
 
-#[cfg(feature="cuda")]
-pub fn cu_clip<T: CDatatype>(device: &CudaDevice, x: &Buffer<T>, min: T, max: T) -> custos::Result<Buffer<T>> {
+#[cfg(feature = "cuda")]
+pub fn cu_clip<T: CDatatype>(
+    device: &CudaDevice,
+    x: &Buffer<T>,
+    min: T,
+    max: T,
+) -> custos::Result<Buffer<T>> {
     let src = format!(
         r#"extern "C" __global__ void clip({datatype}* lhs, {datatype} min, {datatype} max, {datatype}* out, int numElements)
             {{
@@ -100,18 +107,22 @@ pub fn cu_clip<T: CDatatype>(device: &CudaDevice, x: &Buffer<T>, min: T, max: T)
                 }}
               
             }}
-    "#, datatype=T::as_c_type_str());
+    "#,
+        datatype = T::as_c_type_str()
+    );
 
     let out = CudaCache::get::<T>(device, x.len());
     launch_kernel1d(
-        x.len(), device, 
-        &src, "clip", 
+        x.len(),
+        device,
+        &src,
+        "clip",
         vec![x, &min, &max, &out, &x.len],
     )?;
     Ok(out)
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: CDatatype> ClipOp<T> for CudaDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let buf = cu_clip(self, x, min, max).unwrap();

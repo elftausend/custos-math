@@ -1,8 +1,19 @@
-use std::{ffi::c_void, ops::{Add, AddAssign, Sub, Mul, SubAssign, Div}};
+use std::{
+    ffi::c_void,
+    ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
+};
 
-use custos::{Buffer, Device, CUdeviceptr, CDatatype, get_device, GenericBlas, VecRead, number::Number};
-#[cfg(feature="opencl")]
-use custos::{CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_event}}};
+use custos::{
+    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead,
+};
+#[cfg(feature = "opencl")]
+use custos::{
+    opencl::{
+        api::{enqueue_write_buffer, wait_for_event},
+        CLCache,
+    },
+    CLDevice,
+};
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -10,20 +21,20 @@ use custos::{CLDevice, opencl::{CLCache, api::{enqueue_write_buffer, wait_for_ev
 /// ```
 /// use custos::{CPU, AsDev};
 /// use custos_math::Matrix;
-/// 
+///
 /// let device = CPU::new().select();
 /// let m = Matrix::<i32>::new(&device, (5, 8));
-/// 
+///
 /// assert_eq!(m.rows(), 5);
 /// assert_eq!(m.cols(), 8);
 /// assert_eq!(m.size(), 5*8);
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
-#[cfg_attr(not(feature="safe"), derive(Copy))]
+#[cfg_attr(not(feature = "safe"), derive(Copy))]
 #[derive(Clone)]
 pub struct Matrix<T> {
     data: Buffer<T>,
-    dims: (usize, usize)
+    dims: (usize, usize),
 }
 
 impl<T> Matrix<T> {
@@ -32,16 +43,16 @@ impl<T> Matrix<T> {
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     /// let m = Matrix::<f64>::new(&device, (20, 10));
-    /// 
+    ///
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
     pub fn new<D: Device<T>>(device: &D, dims: (usize, usize)) -> Matrix<T> {
         Matrix {
-            data: Buffer::new(device, dims.0*dims.1),
+            data: Buffer::new(device, dims.0 * dims.1),
             dims,
         }
     }
@@ -55,7 +66,7 @@ impl<T> Matrix<T> {
     /// ```
     /// use custos::{CPU, VecRead};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new();
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 3., 2., 1.,]));
     /// let read = device.read(a.as_buf());
@@ -83,12 +94,12 @@ impl<T> Matrix<T> {
     }
 
     /// Returns the row count of the matrix.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.rows(), 2)
@@ -98,12 +109,12 @@ impl<T> Matrix<T> {
     }
 
     /// Returns the column count of the matrix.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.cols(), 5)
@@ -113,12 +124,12 @@ impl<T> Matrix<T> {
     }
 
     /// Returns the number of elements in the matrix: rows * cols
-    /// 
+    ///
     /// # Example
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     /// let matrix = Matrix::<u16>::new(&device, (4, 12));
     /// assert_eq!(matrix.size(), 48)
@@ -140,7 +151,7 @@ impl<T> Matrix<T> {
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     ///
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
@@ -151,27 +162,28 @@ impl<T> Matrix<T> {
     ///
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
-    pub fn gemm(&self, rhs: &Matrix<T>) -> Matrix<T> 
-    where T: CDatatype + GenericBlas
+    pub fn gemm(&self, rhs: &Matrix<T>) -> Matrix<T>
+    where
+        T: CDatatype + GenericBlas,
     {
         let device = get_device!(Gemm<T>).unwrap();
         device.gemm(self, rhs)
     }
 
-    /* 
+    /*
     /// Sets all elements to zero.
     /// # Example
     /// ```
     /// use custos::{CPU, AsDev, Matrix};
-    /// 
+    ///
     /// let device = CPU::new().select();
     /// let mut matrix = Matrix::from((&device, 3, 2, [4, 3, 2, 6, 9, 2,]));
     /// assert_eq!(matrix.read(), vec![4, 3, 2, 6, 9, 2]);
-    /// 
+    ///
     /// matrix.clear();
     /// assert_eq!(matrix.read(), vec![0; 6]);
     /// ```
-    pub fn clear(&mut self) 
+    pub fn clear(&mut self)
     where T: CDatatype
     {
         let device = get_device!(BaseOps, T).unwrap();
@@ -179,19 +191,20 @@ impl<T> Matrix<T> {
     }*/
 
     /// Uses VecRead and current global device to read Matrix
-    /// 
+    ///
     /// # Example
     /// ```
     /// use custos::{CPU, AsDev};
     /// use custos_math::Matrix;
-    /// 
+    ///
     /// let device = CPU::new().select();
     ///
     /// let a = Matrix::from((&device, (2, 2), [5, 7, 2, 10,]));
     /// assert_eq!(a.read(), vec![5, 7, 2, 10])
     /// ```
-    pub fn read(&self) -> Vec<T> 
-    where T: Default + Copy 
+    pub fn read(&self) -> Vec<T>
+    where
+        T: Default + Copy,
     {
         let device = get_device!(VecRead<T>).unwrap();
         device.read(self.as_buf())
@@ -200,7 +213,10 @@ impl<T> Matrix<T> {
 
 impl<T> Default for Matrix<T> {
     fn default() -> Self {
-        Self { data: Default::default(), dims: Default::default() }
+        Self {
+            data: Default::default(),
+            dims: Default::default(),
+        }
     }
 }
 
@@ -225,7 +241,7 @@ impl<T> From<(Buffer<T>, (usize, usize))> for Matrix<T> {
         let dims = ptr_dims.1;
         Matrix {
             data: ptr_dims.0,
-            dims
+            dims,
         }
     }
 }
@@ -236,93 +252,95 @@ impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
         let dims = (ptr_dims.1, ptr_dims.2);
         Matrix {
             data: ptr_dims.0,
-            dims
+            dims,
         }
     }
 }
 
 // TODO: unsafe from raw parts?
-#[cfg(not(feature="safe"))]
+#[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
         Matrix {
             data: Buffer {
-                ptr: (ptr_dims.0, std::ptr::null_mut(), 0), 
-                len: dims.0*dims.1, 
-                },
-            dims
+                ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
+                len: dims.0 * dims.1,
+            },
+            dims,
         }
     }
 }
 
 // TODO: unsafe from raw parts?
-#[cfg(not(feature="safe"))]
+#[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
     fn from(ptr_dims: (*mut T, usize, usize)) -> Self {
         Matrix {
             data: Buffer {
-                ptr: (ptr_dims.0, std::ptr::null_mut(), 0), 
-                len: ptr_dims.1*ptr_dims.2, 
-                },
-            dims: (ptr_dims.1,ptr_dims.2)
+                ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
+                len: ptr_dims.1 * ptr_dims.2,
+            },
+            dims: (ptr_dims.1, ptr_dims.2),
         }
     }
 }
 
 //no Weak ptr:
-impl<T: Copy+Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<T> {
+impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<T> {
     fn from(dims_slice: ((usize, usize), &[T; N])) -> Self {
         let device = get_device!(Device<T>).unwrap();
-        
+
         let buffer = Buffer::from((&device, dims_slice.1));
         Matrix {
             data: buffer,
-            dims: dims_slice.0
-        }        
-    }
-}
-
-impl<T: Copy+Default> From<(usize, usize)> for Matrix<T> {
-    fn from(dims: (usize, usize)) -> Self {
-        let device = get_device!(Device<T>).unwrap();
-        let buffer = Buffer::<T>::from((&device, dims.0*dims.1));
-        
-        Matrix {
-            data: buffer,
-            dims
+            dims: dims_slice.0,
         }
     }
 }
 
-impl<T: Copy+Default> From<(usize, usize, Vec<T>)> for Matrix<T> {
+impl<T: Copy + Default> From<(usize, usize)> for Matrix<T> {
+    fn from(dims: (usize, usize)) -> Self {
+        let device = get_device!(Device<T>).unwrap();
+        let buffer = Buffer::<T>::from((&device, dims.0 * dims.1));
+
+        Matrix { data: buffer, dims }
+    }
+}
+
+impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<T> {
     fn from(dims_data: (usize, usize, Vec<T>)) -> Self {
         let device = get_device!(Device<T>).unwrap();
         let buffer = Buffer::<T>::from((device, dims_data.2));
-        
+
         Matrix {
             data: buffer,
-            dims: (dims_data.0, dims_data.1)
+            dims: (dims_data.0, dims_data.1),
         }
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T> From<(&CLDevice, Matrix<T>)> for Matrix<T> {
     fn from(device_matrix: (&CLDevice, Matrix<T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
         let y = CLCache::get::<T>(device_matrix.0, device_matrix.1.size());
-        let event = unsafe {enqueue_write_buffer(&device_matrix.0.queue(), y.ptr.1, &device_matrix.1, true).unwrap()};
+        let event = unsafe {
+            enqueue_write_buffer(&device_matrix.0.queue(), y.ptr.1, &device_matrix.1, true).unwrap()
+        };
         wait_for_event(event).unwrap();
         Matrix::from((y, device_matrix.1.dims()))
     }
 }
 
-use crate::{Gemm, BaseOps, AssignOps};
-#[cfg(feature="cuda")]
-use custos::{CudaDevice, cuda::{CudaCache, api::cu_write}};
+use crate::{AssignOps, BaseOps, Gemm};
+#[cfg(feature = "cuda")]
+use custos::{
+    cuda::{api::cu_write, CudaCache},
+    CudaDevice,
+};
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T> From<(&CudaDevice, Matrix<T>)> for Matrix<T> {
     fn from(device_matrix: (&CudaDevice, Matrix<T>)) -> Self {
         let dst = CudaCache::get::<T>(device_matrix.0, device_matrix.1.size());
@@ -336,8 +354,8 @@ impl<T: Copy, D: Device<T>, const N: usize> From<(&D, (usize, usize), [T; N])> f
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
             data: buffer,
-            dims: dims_slice.1
-        }        
+            dims: dims_slice.1,
+        }
     }
 }
 
@@ -347,8 +365,8 @@ impl<T: Copy, D: Device<T>, const N: usize> From<(&D, usize, usize, [T; N])> for
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
             data: buffer,
-            dims: (dims_slice.1, dims_slice.2)
-        }        
+            dims: (dims_slice.1, dims_slice.2),
+        }
     }
 }
 
@@ -357,8 +375,8 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), Vec<T>)> for Matrix<T> {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
             data: buffer,
-            dims: dims_slice.1
-        }        
+            dims: dims_slice.1,
+        }
     }
 }
 
@@ -368,19 +386,18 @@ impl<T: Copy, D: Device<T>> From<(&D, usize, usize, Vec<T>)> for Matrix<T> {
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
             data: buffer,
-            dims: (dims_slice.1, dims_slice.2)
-        }        
+            dims: (dims_slice.1, dims_slice.2),
+        }
     }
 }
-
 
 impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &[T])> for Matrix<T> {
     fn from(dims_slice: (&D, (usize, usize), &[T])) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
             data: buffer,
-            dims: dims_slice.1
-        }        
+            dims: dims_slice.1,
+        }
     }
 }
 
@@ -390,8 +407,8 @@ impl<T: Copy, D: Device<T>> From<(&D, usize, usize, &[T])> for Matrix<T> {
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
             data: buffer,
-            dims: (dims_slice.1, dims_slice.2)
-        }        
+            dims: (dims_slice.1, dims_slice.2),
+        }
     }
 }
 
@@ -400,7 +417,7 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<T> {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
             data: buffer,
-            dims: dims_slice.1
+            dims: dims_slice.1,
         }
     }
 }
@@ -560,7 +577,6 @@ impl<T: CDatatype> Mul<&T> for Matrix<T> {
     }
 }
 
-
 // div
 
 impl<T: CDatatype> Div<T> for Matrix<T> {
@@ -605,15 +621,15 @@ impl<T: Number> core::fmt::Debug for Matrix<T> {
 
         writeln!(f, "dims={:?}", self.dims)?;
         write!(f, "[")?;
-        
-        let max = self.dims.0*self.dims.1;
+
+        let max = self.dims.0 * self.dims.1;
         for (count, value) in data.iter().enumerate() {
             write!(f, "{:?}, ", value)?;
-        
-            if (count+1) % self.dims.1 == 0 && count+1 != max {
+
+            if (count + 1) % self.dims.1 == 0 && count + 1 != max {
                 writeln!(f)?;
-            }            
-        }       
+            }
+        }
         write!(f, ":datatype={}]", core::any::type_name::<T>())
     }
 }

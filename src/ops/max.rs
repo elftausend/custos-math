@@ -1,16 +1,14 @@
-use custos::{
-    cpu::CPUCache, get_device, number::Number, CDatatype, CPU,
-};
 use crate::Matrix;
+use custos::{cpu::CPUCache, get_device, number::Number, CDatatype, CPU};
 
-#[cfg(feature="cuda")]
-use custos::CudaDevice;
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
+#[cfg(feature = "cuda")]
+use custos::CudaDevice;
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::CLDevice;
 
 impl<T: CDatatype> Matrix<T> {
@@ -90,7 +88,7 @@ impl<T: Number> MaxOps<T> for CPU {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 impl<T: CDatatype> MaxOps<T> for CLDevice {
     fn max(&self, x: &Matrix<T>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.max(&x))
@@ -105,7 +103,7 @@ impl<T: CDatatype> MaxOps<T> for CLDevice {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: Number> MaxOps<T> for CudaDevice {
     fn max(&self, x: &Matrix<T>) -> T {
         cu_to_cpu_scalar(self, x, |cpu, x| cpu.max(&x))

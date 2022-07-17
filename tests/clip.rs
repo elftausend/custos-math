@@ -1,7 +1,7 @@
 use custos::{cpu::CPU, AsDev};
 use custos_math::{ClipOp, Matrix};
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use custos::opencl::CLDevice;
 
 #[test]
@@ -14,7 +14,7 @@ fn test_clip_cpu() {
     assert_eq!(vec![99, 10, 99, -99, -5], res.read());
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_clip_cl() {
     let device = CLDevice::new(0).unwrap().select();
@@ -25,7 +25,7 @@ fn test_clip_cl() {
     assert_eq!(vec![99, 10, 99, -99, -5], res.read());
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_clip_cuda() {
     let device = custos::CudaDevice::new(0).unwrap().select();

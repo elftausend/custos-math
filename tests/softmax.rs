@@ -1,5 +1,8 @@
 use custos::{range, AsDev, CPU};
-use custos_math::{nn::{cce_grad, SoftmaxOps}, Matrix};
+use custos_math::{
+    nn::{cce_grad, SoftmaxOps},
+    Matrix,
+};
 
 #[test]
 fn test_softmax_cpu() {
@@ -16,7 +19,7 @@ fn test_softmax_cpu() {
     }
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_softmax_cl() -> custos::Result<()> {
     let device = custos::CLDevice::new(0)?.select();
@@ -32,7 +35,7 @@ fn test_softmax_cl() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_softmax_kernel_cl() -> custos::Result<()> {
     let device = custos::CLDevice::new(0)?.select();
@@ -50,4 +53,3 @@ fn test_softmax_kernel_cl() -> custos::Result<()> {
     //println!("out: {out:?}");
     Ok(())
 }
-

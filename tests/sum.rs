@@ -1,5 +1,5 @@
 use custos::{AsDev, CPU};
-use custos_math::{SumOps, Matrix};
+use custos_math::{Matrix, SumOps};
 
 #[test]
 fn test_sum_ops() {
@@ -23,7 +23,7 @@ fn test_sum_ops() {
     assert_eq!(res.read(), vec![-21., -15., -18.]);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_sum_ops_cl() -> custos::Result<()> {
     let device = custos::CLDevice::new(0)?.select();
@@ -48,8 +48,7 @@ fn test_sum_ops_cl() -> custos::Result<()> {
     Ok(())
 }
 
-
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_sum_ops_cu() -> custos::Result<()> {
     let device = custos::CudaDevice::new(0)?.select();
