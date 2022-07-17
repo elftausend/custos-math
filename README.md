@@ -1,5 +1,8 @@
 # custos-math
 
+[![Crates.io version](https://img.shields.io/crates/v/custos-math.svg)](https://crates.io/crates/custos-math)
+[![Docs](https://docs.rs/custos-math/badge.svg?version=0.1.0)](https://docs.rs/custos-math/0.1.0/custos-math/)
+
 This crate provides CUDA, OpenCL and CPU based matrix operations using [custos].
 
 [custos]: https://github.com/elftausend/custos

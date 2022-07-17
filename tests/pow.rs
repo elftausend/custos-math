@@ -1,7 +1,6 @@
 use custos::{CPU, AsDev};
 use custos_math::Matrix;
 
-
 #[test]
 fn test_pow() {
 

@@ -17,10 +17,10 @@ repository = "https://github.com/elftausend/custos-math"
 #custos = {git = "https://github.com/elftausend/custos"}
 #custos = { path = "../custos", default-features = false }
 custos = { version = "0.1.4", default-features = false }
-rand = "0.8.5"
+fastrand = "1.7.0"
 
 [features]
-default = ["opencl", "cuda"]
+default = ["opencl"]
 safe = ["custos/safe"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]
