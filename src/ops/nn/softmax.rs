@@ -40,7 +40,7 @@ pub trait SoftmaxOps<T> {
 
 impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
-        let exp = self.exp(&self.sub_col(&inputs, &self.max_cols(inputs)));
+        let exp = self.exp(&self.sub_col(inputs, &self.max_cols(inputs)));
         self.div_col(&exp, &self.sum_cols(&exp))
     }
 
@@ -140,8 +140,8 @@ impl<T: GenericBlas + Float> SoftmaxOps<T> for CLDevice {
     }
 
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
-        cl_to_cpu_lr(self, activated, &grads, |device, activated, grads| {
-            device.softmax_grad(activated, &grads)
+        cl_to_cpu_lr(self, activated, grads, |device, activated, grads| {
+            device.softmax_grad(activated, grads)
         })
     }
 }

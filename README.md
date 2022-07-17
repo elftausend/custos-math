@@ -1,5 +1,37 @@
 # custos-math
 
-More math and matrix operations using [custos].
+This crate provides CUDA, OpenCL and CPU based matrix operations using [custos].
 
 [custos]: https://github.com/elftausend/custos
+
+## Installation
+
+Add "custos-math" as a dependency:
+You will also need [custos], if you want to run an example.
+```toml
+[dependencies]
+custos-math = "0.1.0"
+custos = "0.1.4"
+
+# to disable the default features (cuda, opencl) and use an own set of features:
+#custos-math = {version = "0.1.0", default-features=false, features=["opencl", "safe"]}
+#custos = { version="0.1.4", default-features = false, features=["opencl", "safe"]}
+```
+
+## Example
+
+```rust
+use custos::{CPU, AsDev};
+use custos_math::Matrix;
+
+fn main() {
+    let device = CPU::new().select();
+
+    let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
+    let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));
+
+    let c = a.gemm(&b);
+
+    assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
+}
+```

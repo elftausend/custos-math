@@ -59,7 +59,7 @@ impl<T: GenericBlas> Gemm<T> for custos::CudaDevice {
         assert!(lhs.cols() == rhs.rows(), "wrong dims for matrix multiplication");
         let out = self.cached_buf(lhs.rows() * rhs.cols());
         T::cugemm(
-            &self.inner.borrow().handle(), 
+            self.inner.borrow().handle(), 
             lhs.rows(), 
             rhs.cols(), 
             lhs.cols(), 

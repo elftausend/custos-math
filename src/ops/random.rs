@@ -62,6 +62,6 @@ impl<T: Float + SampleUniform> RandOp<T> for CudaDevice {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         let mut data = vec![T::default(); x.len()];
         rand_slice(&mut data, lo, hi);
-        cu_write(x.ptr.2, &mut data).unwrap();
+        cu_write(x.ptr.2, &data).unwrap();
     }
 }

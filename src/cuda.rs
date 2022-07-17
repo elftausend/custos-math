@@ -18,9 +18,9 @@ pub fn cu_scalar_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, rhs: T, 
             }}
     "#, datatype=T::as_c_type_str());
 
-    let out = CudaCache::get::<T>(&device, lhs.len);
+    let out = CudaCache::get::<T>(device, lhs.len);
     launch_kernel1d(
-        lhs.len, &device, 
+        lhs.len, device, 
         &src, "scalar_op", 
         vec![&lhs, &rhs, &out, &lhs.len],
     )?;
@@ -39,9 +39,9 @@ pub fn cu_str_op<T: CDatatype>(device: &CudaDevice, lhs: &Buffer<T>, op: &str) -
             }}
     "#, datatype=T::as_c_type_str());
 
-    let out = CudaCache::get::<T>(&device, lhs.len);
+    let out = CudaCache::get::<T>(device, lhs.len);
     launch_kernel1d(
-        lhs.len, &device, 
+        lhs.len, device, 
         &src, "str_op", 
         vec![&lhs, &out, &lhs.len],
     )?;

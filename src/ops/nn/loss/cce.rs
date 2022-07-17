@@ -38,6 +38,6 @@ pub fn cce_grad<T: Float>(
     preds: &Matrix<T>,
     targets: &Matrix<T>,
 ) -> Matrix<T> {
-    let grad = device.neg(&device.div(targets, &preds));
+    let grad = device.neg(&device.div(targets, preds));
     device.divs(&grad, T::from_usize(preds.rows()))
 }

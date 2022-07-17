@@ -102,9 +102,9 @@ pub fn cu_clip<T: CDatatype>(device: &CudaDevice, x: &Buffer<T>, min: T, max: T)
             }}
     "#, datatype=T::as_c_type_str());
 
-    let out = CudaCache::get::<T>(&device, x.len());
+    let out = CudaCache::get::<T>(device, x.len());
     launch_kernel1d(
-        x.len(), &device, 
+        x.len(), device, 
         &src, "clip", 
         vec![x, &min, &max, &out, &x.len],
     )?;
