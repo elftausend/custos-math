@@ -17,16 +17,35 @@ pub use ops::*;
 
 pub trait Mat<T> {
     fn as_mat(&self) -> &Matrix<T>;
+    fn as_mat_mut(&mut self) -> &mut Matrix<T>;
 }
 
 impl<T> Mat<T> for Matrix<T> {
     fn as_mat(&self) -> &Matrix<T> {
         self
     }
+
+    fn as_mat_mut(&mut self) -> &mut Matrix<T> {
+        self
+    }
 }
 
 impl<T> Mat<T> for &Matrix<T> {
     fn as_mat(&self) -> &Matrix<T> {
+        self
+    }
+
+    fn as_mat_mut(&mut self) -> &mut Matrix<T> {
+        unimplemented!()
+    }
+}
+
+impl<T> Mat<T> for &mut Matrix<T> {
+    fn as_mat(&self) -> &Matrix<T> {
+        self
+    }
+
+    fn as_mat_mut(&mut self) -> &mut Matrix<T> {
         self
     }
 }

@@ -1,7 +1,7 @@
 # custos-math
 
 [![Crates.io version](https://img.shields.io/crates/v/custos-math.svg)](https://crates.io/crates/custos-math)
-[![Docs](https://docs.rs/custos-math/badge.svg?version=0.1.0)](https://docs.rs/custos-math/0.1.0/custos-math/)
+[![Docs](https://docs.rs/custos-math/badge.svg?version=0.1.1)](https://docs.rs/custos-math/0.1.1/custos-math/)
 
 This crate provides CUDA, OpenCL and CPU based matrix operations using [custos].
 
@@ -13,11 +13,11 @@ Add "custos-math" as a dependency:
 You will also need [custos], if you want to run an example.
 ```toml
 [dependencies]
-custos-math = "0.1.0"
+custos-math = "0.1.1"
 custos = "0.1.4"
 
 # to disable the default features (cuda, opencl) and use an own set of features:
-#custos-math = {version = "0.1.0", default-features=false, features=["opencl", "safe"]}
+#custos-math = {version = "0.1.1", default-features=false, features=["opencl", "safe"]}
 #custos = { version="0.1.4", default-features = false, features=["opencl", "safe"]}
 ```
 
