@@ -44,6 +44,7 @@ impl<T: Number> RowOp<T> for CPU {
     }
 }
 
+// TODO: Implement add_ro_mut (for cuda as well)
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> RowOp<T> for CLDevice {
     fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
