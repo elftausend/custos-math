@@ -7,7 +7,7 @@ use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 use custos::CLDevice;
 
 #[cfg(feature = "cuda")]
-use super::{cu_to_cpu_s, cu_to_cpu_scalar};
+use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 

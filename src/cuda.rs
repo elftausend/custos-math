@@ -1,7 +1,8 @@
 mod ew;
-mod gemm;
+mod switching;
 
 pub use ew::*;
+pub use switching::*;
 
 use custos::{
     cuda::{launch_kernel1d, CudaCache},

@@ -41,7 +41,7 @@ impl<T: custos::CDatatype> ColOp<T> for CLDevice {
     }
 }
 #[cfg(feature = "cuda")]
-use super::cu_to_cpu_lr;
+use crate::cu_to_cpu_lr;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 

@@ -71,6 +71,22 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     Ok(())
 }
 
+#[cfg(feature="cuda")]
+#[test]
+fn test_swtich_mut_cu() -> custos::Result<()> {
+    use custos_math::cu_to_cpu_lr_mut;
+
+    let device = custos::CudaDevice::new(0)?.select();
+
+    let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
+    let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));
+    cu_to_cpu_lr_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| cpu.add_row_mut(matrix, rhs));
+    
+    assert_eq!(matrix.read(), vec![2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
+    
+    Ok(())
+}
+
 #[cfg(feature = "cuda")]
 #[test]
 fn test_scalar_switch_cuda() -> custos::Result<()> {
