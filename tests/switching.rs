@@ -1,9 +1,5 @@
-#[cfg(feature = "opencl")]
-use custos_math::FnsOps;
-
-#[cfg(feature = "opencl")]
+use custos_math::{FnsOps, Matrix, RowOp, cpu_exec_lhs_rhs_mut};
 use custos::{range, AsDev, CLDevice};
-#[cfg(feature = "opencl")]
 use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 
 #[cfg(feature = "cuda")]
@@ -11,7 +7,28 @@ use custos::{CudaDevice, VecRead};
 #[cfg(feature = "cuda")]
 use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
-#[cfg(feature = "opencl")]
+#[test]
+fn test_swtich_mut_cl() -> custos::Result<()> {
+    let device = CLDevice::new(0)?.select();
+    let unified = device.unified_mem();
+    device.set_unified_mem(false);
+
+    let test = || {
+        let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
+        let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));
+        cpu_exec_lhs_rhs_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| cpu.add_row_mut(matrix, rhs))?;
+        custos::Result::Ok(matrix.read())
+    };
+
+    assert_eq!(test()?, vec![2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
+    if !unified {
+        return Ok(());
+    }
+    device.set_unified_mem(true);
+    assert_eq!(test()?, vec![2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
+    Ok(())
+}
+
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
@@ -32,7 +49,6 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "opencl")]
 #[test]
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
