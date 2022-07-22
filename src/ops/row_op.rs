@@ -1,8 +1,8 @@
-use crate::{cpu::row_op, Mat, Matrix, row_op_slice_lhs, opencl};
+use crate::{cpu::row_op, Mat, Matrix, row_op_slice_lhs};
 use custos::{cpu::CPU, get_device, number::Number, CDatatype};
 
 #[cfg(feature = "opencl")]
-use super::cl_to_cpu_lr;
+use crate::{cl_to_cpu_lr, opencl};
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
