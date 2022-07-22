@@ -38,7 +38,7 @@ where
         matrix.clone()
     } else {
         // convert an OpenCL buffer to a cpu buffer
-        Matrix::from((&cpu, matrix.dims(), device.read(matrix.as_buf())))
+        Matrix::from((&cpu, matrix.dims(), device.read(matrix)))
     };
 
     Ok(Matrix::from((device, f(&cpu, x))))
@@ -57,7 +57,7 @@ where
     }
 
     //convert an OpenCL buffer to a cpu matrix
-    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), device.read(matrix.as_buf())));
+    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
     f(&cpu, &mut cpu_matrix);
     // write result as slice back to OpenCL Matrix
     device.write(matrix, &cpu_matrix);

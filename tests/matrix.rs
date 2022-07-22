@@ -52,14 +52,15 @@ fn test_sub_assign_cpu() {
 
 #[cfg(feature = "opencl")]
 #[test]
-fn test_sub_assign_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+fn test_sub_assign_cl() -> custos::Result<()> {
+    let device = CLDevice::new(0)?.select();
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
 
     x -= &y;
-    assert_eq!(x.read(), vec![-2, -2, -2, -2, -2, -2])
+    assert_eq!(x.read(), vec![-2, -2, -2, -2, -2, -2]);
+    Ok(())
 }
 
 #[cfg(feature = "cuda")]
