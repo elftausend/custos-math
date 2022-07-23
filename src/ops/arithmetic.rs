@@ -25,7 +25,7 @@ use crate::cu_ew;
 /// let a = Matrix::from((&device, (2, 3), [2, 4, 6, 8, 10, 12]));
 /// let b = Matrix::from((&device, (2, 3), [12, 4, 3, 1, -5, -3]));
 ///
-/// let c = a + b;
+/// let c = &a + &b;
 /// assert_eq!(c.read(), vec![14, 8, 9, 9, 5, 9]);
 ///
 /// use custos_math::BaseOps;

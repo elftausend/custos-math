@@ -33,13 +33,14 @@ pub fn unified_mem<T>(device: &CLDevice, arr: &mut [T]) -> Result<*mut c_void, E
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
     use custos::{AsDev, CLDevice};
-    use custos_math::{cpu_exec, Matrix};
+    use custos_math::{cpu_exec, Matrix, FnsOps};
 
     let device = CLDevice::new(0)?.select();
 
-    let a = Matrix::from((&device, 2, 3, [1, 2, 3, 4, 5, 6]));
-    let m = cpu_exec(&device, &a, |_cpu, m| m)?;
-    m.read();
+    let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
+    let m = cpu_exec(&device, &a, |cpu, m| cpu.ln(m))?;
+    println!("m: {m:?}");
+    
     Ok(())
 }
 
@@ -75,7 +76,7 @@ fn test_unified_opencl() -> custos::Result<()> {
 fn test_unified_calc() -> custos::Result<()> {
     use std::ptr::null_mut;
 
-    use custos::{Buffer, CLDevice, CPU};
+    use custos::{Buffer, CLDevice, CPU, BufFlag};
     use custos_math::cl_tew;
 
     let len = 100;
@@ -89,10 +90,12 @@ fn test_unified_calc() -> custos::Result<()> {
     let a: Buffer<f32> = Buffer {
         ptr: (null_mut(), unified_mem(&cl, a.as_mut_slice())?, 0),
         len,
+        flag: BufFlag::Cache,
     };
     let b = Buffer {
         ptr: (null_mut(), unified_mem(&cl, b.as_mut_slice())?, 0),
         len,
+        flag: BufFlag::Cache,
     };
 
     cl_tew(&cl, &a, &b, "+")?;

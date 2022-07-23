@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 categories = ["mathematics", "science"]
 keywords = ["CUDA", "OpenCL", "arrays", "matrices", "deep-learning"]
-description = "Natrix operations with custos"
+description = "Matrix operations with custos"
 readme = "README.md"
 repository = "https://github.com/elftausend/custos-math"
 
@@ -15,12 +15,12 @@ repository = "https://github.com/elftausend/custos-math"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-#custos = { path = "../custos", default-features = false }
-custos = { version = "0.1.5", default-features = false }
+custos = { path = "../custos", default-features = false }
+#custos = { version = "0.1.5", default-features = false }
 fastrand = "1.7.0"
 
 [features]
-default = ["opencl", "cuda"]
+default = ["opencl"]
 safe = ["custos/safe"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]

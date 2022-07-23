@@ -4,7 +4,7 @@ use std::{
 };
 
 use custos::{
-    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead,
+    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead, BufFlag,
 };
 #[cfg(feature = "opencl")]
 use custos::{
@@ -30,7 +30,6 @@ use custos::{
 /// assert_eq!(m.size(), 5*8);
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
-#[cfg_attr(not(feature = "safe"), derive(Copy))]
 #[derive(Clone)]
 pub struct Matrix<T> {
     data: Buffer<T>,
@@ -266,6 +265,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: dims.0 * dims.1,
+                flag: BufFlag::Cache,
             },
             dims,
         }
@@ -280,6 +280,7 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: ptr_dims.1 * ptr_dims.2,
+                flag: BufFlag::Cache,
             },
             dims: (ptr_dims.1, ptr_dims.2),
         }

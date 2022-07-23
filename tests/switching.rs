@@ -38,13 +38,13 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
     let start = std::time::Instant::now();
-    for _ in range(10000) {
-        let _m = cpu_exec(&device, &a, |cpu, m| cpu.ln(&m))?;
+    for _ in range(100) {
+        let _m = cpu_exec(&device, &a, |cpu, m| cpu.neg(&m))?;
     }
 
     println!("duration: {:?}", start.elapsed());
 
-    let m = cpu_exec(&device, &a, |cpu, m| cpu.ln(&m))?;
+    let m = cpu_exec(&device, &a, |cpu, m| cpu.neg(&m))?;
     println!("m: {m:?}");
     Ok(())
 }
@@ -73,7 +73,7 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 
 #[cfg(feature="cuda")]
 #[test]
-fn test_swtich_mut_cu() -> custos::Result<()> {
+fn test_switch_mut_cu() -> custos::Result<()> {
     use custos_math::cu_to_cpu_lr_mut;
 
     let device = custos::CudaDevice::new(0)?.select();

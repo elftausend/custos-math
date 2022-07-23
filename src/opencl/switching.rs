@@ -7,41 +7,40 @@ use crate::Matrix;
 ///
 /// # Example
 /// ```
-/// use custos::{CLDevice, VecRead, ClearBuf};
-/// use custos_math::{Matrix, opencl::cpu_exec};
+/// use custos::{CLDevice, VecRead};
+/// use custos_math::{Matrix, opencl::cpu_exec, FnsOps};
 ///
 /// fn main() -> custos::Result<()> {
 ///     let device = CLDevice::new(0)?;
-///     let a = Matrix::<i32>::from((&device, 2, 2, [1, 2, 3, 4]));
-///     let res = cpu_exec(&device, &a, |cpu, mut x| {cpu.clear(&mut x); x})?;
-///     assert_eq!(device.read(&res), vec![0, 0, 0, 0]);
+///     let a = Matrix::<f32>::from((&device, 2, 2, [1., 2., 3., 4.]));
+///     let res = cpu_exec(&device, &a, |cpu, x| cpu.neg(x))?;
+///     assert_eq!(device.read(&res), vec![-1., -2., -3., -4.]);
 ///     Ok(())
 /// }
 /// ```
 pub fn cpu_exec<T, F>(device: &CLDevice, matrix: &Matrix<T>, f: F) -> custos::Result<Matrix<T>>
 where
-    F: Fn(&CPU, Matrix<T>) -> Matrix<T>,
+    F: Fn(&CPU, &Matrix<T>) -> Matrix<T>,
     T: Copy + Default,
 {
     let cpu = CPU::new();
 
     if device.unified_mem() && !cfg!(feature = "safe") {
         // host ptr matrix
-        let no_drop = f(&cpu, matrix.clone());
+        let no_drop = f(&cpu, matrix);
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
         return construct_buffer(device, &cpu, no_drop.to_buf())
             .map(|buf| (buf, dims).into());
     }
 
-    let x = if device.unified_mem() {
-        matrix.clone()
-    } else {
-        // convert an OpenCL buffer to a cpu buffer
-        Matrix::from((&cpu, matrix.dims(), device.read(matrix)))
-    };
-
-    Ok(Matrix::from((device, f(&cpu, x))))
+    if device.unified_mem() {
+        return Ok(Matrix::from((device, f(&cpu, matrix))))
+    }
+    
+    // convert an OpenCL buffer to a cpu buffer
+    let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    Ok(Matrix::from((device, f(&cpu, &cpu_buf))))
 }
 
 pub fn cpu_exec_mut<T, F>(device: &CLDevice, matrix: &mut Matrix<T>, f: F) -> custos::Result<()>
@@ -83,16 +82,13 @@ where
         return construct_buffer(device, &cpu, no_drop.to_buf())
             .map(|buf| (buf, no_drop_dims).into());
     }
-
-    let (lhs, rhs) = if device.unified_mem() {
-        (lhs.clone(), rhs.clone())
-    } else {
-        // convert an OpenCL buffer to a cpu buffer
-        (
-            Matrix::from((&cpu, lhs.dims(), device.read(lhs))),
-            Matrix::from((&cpu, rhs.dims(), device.read(rhs))),
-        )
-    };
+    if device.unified_mem() {
+        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
+    }
+    
+    // convert an OpenCL buffer to a cpu buffer
+    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
+    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
 
     Ok(Matrix::from((device, f(&cpu, &lhs, &rhs))))
 }
@@ -121,15 +117,16 @@ where
 
 pub fn cpu_exec_scalar<T, F>(device: &CLDevice, matrix: &Matrix<T>, f: F) -> T
 where
-    F: Fn(&CPU, Matrix<T>) -> T,
+    F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,
 {
     let cpu = CPU::new();
-    let x = if device.unified_mem() {
-        matrix.clone()
-    } else {
-        // convert an OpenCL buffer to a cpu buffer
-        Matrix::from((&cpu, matrix.dims(), device.read(matrix)))
-    };
-    f(&cpu, x)
+    if device.unified_mem() {
+        return f(&cpu, matrix);
+    }
+    
+    // convert an OpenCL buffer to a cpu buffer
+    let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    
+    f(&cpu, &cpu_buf)
 }

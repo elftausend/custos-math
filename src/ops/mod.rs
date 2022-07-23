@@ -50,7 +50,7 @@ pub fn cl_to_cpu_lr<T: Copy + Default, F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Ma
 
 #[cfg(feature = "opencl")]
 ///OpenCL
-pub fn cl_to_cpu_s<T: Copy + Default, F: Fn(&CPU, Matrix<T>) -> Matrix<T>>(
+pub fn cl_to_cpu_s<T: Copy + Default, F: Fn(&CPU, &Matrix<T>) -> Matrix<T>>(
     device: &CLDevice,
     x: &Matrix<T>,
     f: F,
@@ -61,7 +61,7 @@ pub fn cl_to_cpu_s<T: Copy + Default, F: Fn(&CPU, Matrix<T>) -> Matrix<T>>(
 
 #[cfg(feature = "opencl")]
 ///OpenCL
-fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, Matrix<T>) -> T>(
+fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, &Matrix<T>) -> T>(
     device: &CLDevice,
     x: &Matrix<T>,
     f: F,
