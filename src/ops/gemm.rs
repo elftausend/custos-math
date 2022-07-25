@@ -38,7 +38,7 @@ impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
 
         let mut c = CPUCache::get(self, m * n);
         T::gemm(m, n, k, lhs, rhs, &mut c);
-        (c, (m, n)).into()
+        (c.to_buf(), (m, n)).into()
     }
 }
 

@@ -62,7 +62,7 @@ impl<T: Number> MaxOps<T> for CPU {
                 }
             }
         }
-        (y, 1, x.cols()).into()
+        (y.to_buf(), 1, x.cols()).into()
     }
 
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
@@ -84,7 +84,7 @@ impl<T: Number> MaxOps<T> for CPU {
             }
             *max_cols_val = max;
         }
-        (y, x.rows(), 1).into()
+        (y.to_buf(), x.rows(), 1).into()
     }
 }
 

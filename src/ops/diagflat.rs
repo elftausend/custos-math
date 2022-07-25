@@ -36,7 +36,7 @@ impl<T: Default + Copy> DiagflatOp<T> for CPU {
 
         let mut y = CPUCache::get::<T>(self, size * size);
         diagflat(x.as_slice(), y.as_mut_slice());
-        (y, (size, size)).into()
+        (y.to_buf(), (size, size)).into()
     }
 }
 

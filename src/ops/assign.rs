@@ -57,7 +57,7 @@ pub fn ew_op<T: Copy + Default, F: Fn(T, T) -> T>(
 ) -> Matrix<T> {
     let mut out = CPUCache::get::<T>(device, lhs.size());
     element_wise_op_mut(lhs, rhs, &mut out, f);
-    (out, lhs.dims()).into()
+    (out.to_buf(), lhs.dims()).into()
 }
 
 impl<T: Number> AssignOps<T> for CPU {

@@ -14,7 +14,7 @@ use custos::{
 use crate::Matrix;
 
 pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
-    (CPUCache::get::<T>(device, dims.0 * dims.1), dims).into()
+    (CPUCache::get::<T>(device, dims.0 * dims.1).to_buf(), dims).into()
 }
 
 pub fn scalar_apply<T: Number, F: Fn(&mut T, T, T)>(
@@ -94,5 +94,5 @@ pub fn each_op<T: Copy + Default, F: Fn(T) -> T>(device: &CPU, x: &Matrix<T>, f:
     for (idx, value) in out.iter_mut().enumerate() {
         *value = f(x[idx]);
     }
-    (out, x.dims()).into()
+    (out.to_buf(), x.dims()).into()
 }

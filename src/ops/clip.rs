@@ -39,7 +39,7 @@ impl<T: Number> ClipOp<T> for CPU {
                 y_slice[idx] = *value;
             }
         }
-        (y, x.dims()).into()
+        (y.to_buf(), x.dims()).into()
     }
 }
 
