@@ -257,6 +257,7 @@ impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
 }
 
 // TODO: unsafe from raw parts?
+// is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
@@ -265,7 +266,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: dims.0 * dims.1,
-                flag: BufFlag::Cache,
+                flag: BufFlag::Wrapper,
             },
             dims,
         }
@@ -273,6 +274,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
 }
 
 // TODO: unsafe from raw parts?
+// is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
     fn from(ptr_dims: (*mut T, usize, usize)) -> Self {
@@ -280,7 +282,7 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: ptr_dims.1 * ptr_dims.2,
-                flag: BufFlag::Cache,
+                flag: BufFlag::Wrapper,
             },
             dims: (ptr_dims.1, ptr_dims.2),
         }

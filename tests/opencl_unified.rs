@@ -90,12 +90,12 @@ fn test_unified_calc() -> custos::Result<()> {
     let a: Buffer<f32> = Buffer {
         ptr: (null_mut(), unified_mem(&cl, a.as_mut_slice())?, 0),
         len,
-        flag: BufFlag::Cache,
+        flag: BufFlag::Wrapper,
     };
     let b = Buffer {
         ptr: (null_mut(), unified_mem(&cl, b.as_mut_slice())?, 0),
         len,
-        flag: BufFlag::Cache,
+        flag: BufFlag::Wrapper,
     };
 
     cl_tew(&cl, &a, &b, "+")?;

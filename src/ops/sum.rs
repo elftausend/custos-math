@@ -38,11 +38,12 @@ pub trait SumOps<T> {
 
 impl<T: Number> SumOps<T> for CPU {
     fn sum(&self, x: &Matrix<T>) -> T {
-        let mut sum = T::default();
+        x.iter().map(|num| *num).sum()
+        /*let mut sum = T::default();
         for value in x.as_slice() {
             sum += *value;
         }
-        sum
+        sum*/
     }
 
     fn mean(&self, x: &Matrix<T>) -> T {
