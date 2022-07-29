@@ -16,7 +16,7 @@ use custos::CudaDevice;
 
 pub trait Softmax<T> {
     fn softmax(&self) -> Matrix<T>;
-    fn softmax_grad(&self, activated: Matrix<T>) -> Matrix<T>;
+    fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<T>;
 }
 
 impl<T: CDatatype + GenericBlas + Float, L: Mat<T>> Softmax<T> for L {
@@ -25,7 +25,7 @@ impl<T: CDatatype + GenericBlas + Float, L: Mat<T>> Softmax<T> for L {
         device.softmax(self.as_mat())
     }
 
-    fn softmax_grad(&self, activated: Matrix<T>) -> Matrix<T> {
+    fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<T> {
         let device = get_device!(SoftmaxOps<T>).unwrap();
         device.softmax_grad(activated.as_mat(), self.as_mat())
     }
