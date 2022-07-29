@@ -7,10 +7,9 @@ pub use switching::*;
 pub use tew::*;
 
 use custos::{
-    libs::opencl::{cl_device::CLDevice, KernelOptions},
+    libs::opencl::{cl_device::CLDevice},
     opencl::{
-        api::{enqueue_write_buffer, wait_for_event},
-        KernelArg,
+        api::{enqueue_write_buffer, wait_for_event}, CLCache, enqueue_kernel, AsClCvoidPtr,
     },
     Buffer, CDatatype, Error,
 };
@@ -33,11 +32,9 @@ pub fn cl_str_op<T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
-        .with_output(x.size())
-        .run()?
-        .unwrap();
-    Ok((buf, x.dims()).into())
+    let out = CLCache::get::<T>(&device, x.size());
+    enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
+    Ok((out, x.dims()).into())
 }
 
 pub fn cl_scalar_op<T: CDatatype>(
@@ -54,12 +51,10 @@ pub fn cl_scalar_op<T: CDatatype>(
         }}
     ", datatype=T::as_c_type_str());
 
-    let buf = KernelOptions::new(device, x.as_buf(), [x.size(), 0, 0], &src)?
-        .add_arg(&scalar)
-        .with_output(x.size())
-        .run();
-    // TODO: unwrap, Ok()?
-    buf.map(|buf| (buf.unwrap(), x.dims()).into())
+    let out = CLCache::get::<T>(device, x.size());
+    enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &scalar, &out])?;
+    
+    Ok((out, x.dims()).into())
 }
 
 pub fn cl_write<T>(device: &CLDevice, x: &mut Buffer<T>, data: &[T]) {
@@ -67,14 +62,14 @@ pub fn cl_write<T>(device: &CLDevice, x: &mut Buffer<T>, data: &[T]) {
     wait_for_event(event).unwrap();
 }
 
-impl<'a, T: Copy> KernelArg<'a, T> for Matrix<T> {
-    fn some_buf(&'a self) -> Option<&'a Buffer<T>> {
-        Some(self.as_buf())
+impl<T> AsClCvoidPtr for Matrix<T> {
+    fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
+        self.ptr.1
     }
 }
 
-impl<'a, T: Copy> KernelArg<'a, T> for &'a Matrix<T> {
-    fn some_buf(&self) -> Option<&'a Buffer<T>> {
-        Some(self.as_buf())
+impl<T> AsClCvoidPtr for &Matrix<T> {
+    fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
+        self.ptr.1
     }
 }

@@ -1,4 +1,4 @@
-use custos::{opencl::KernelOptions, Buffer, CDatatype, CLDevice};
+use custos::{Buffer, CDatatype, CLDevice, opencl::{CLCache, enqueue_kernel}};
 
 trait Both {
     fn as_str<'a>() -> &'a str;
@@ -53,11 +53,9 @@ pub fn cl_tew<T: CDatatype>(
     ", datatype=T::as_c_type_str());
 
     let gws = [lhs.len, 0, 0];
-    Ok(KernelOptions::<T>::new(device, lhs, gws, &src)?
-        .with_rhs(rhs)
-        .with_output(lhs.len)
-        .run()?
-        .unwrap())
+    let out = CLCache::get::<T>(device, lhs.len);
+    enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
+    Ok(out)
 }
 
 /// Element-wise "assign" operations. The op/operation is usually "+", "-", "*", "/".
@@ -94,8 +92,6 @@ pub fn cl_tew_self<T: CDatatype>(
     );
 
     let gws = [lhs.len, 0, 0];
-    KernelOptions::<T>::new(device, lhs, gws, &src)?
-        .with_rhs(rhs)
-        .run()?;
+    enqueue_kernel(device, &src, gws, None, &[lhs, rhs])?;
     Ok(())
 }

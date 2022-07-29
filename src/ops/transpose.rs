@@ -5,7 +5,7 @@ use crate::{cached, Matrix};
 use custos::{cpu::CPU, get_device, CDatatype};
 
 #[cfg(feature = "opencl")]
-use custos::{opencl::KernelOptions, CLDevice};
+use custos::CLDevice;
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -30,6 +30,8 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 
 #[cfg(feature = "opencl")]
 pub fn cl_transpose<T: CDatatype>(device: CLDevice, x: &Matrix<T>) -> custos::Result<Matrix<T>> {
+    use custos::opencl::{CLCache, enqueue_kernel};
+
     let src = format!(
         "
         #define MODULO(x,N) (x % N)
@@ -57,10 +59,9 @@ pub fn cl_transpose<T: CDatatype>(device: CLDevice, x: &Matrix<T>) -> custos::Re
     );
 
     let gws = [x.size(), 0, 0];
-    let buf = KernelOptions::new(&device, x, gws, &src)?
-        .with_output(x.cols() * x.rows())
-        .run();
-    buf.map(|buf| (buf.unwrap(), (x.cols(), x.rows())).into())
+    let out = CLCache::get::<T>(&device, x.size());
+    enqueue_kernel(&device, &src, gws, None, &[x, &out])?;
+    Ok((out, x.cols(), x.rows()).into())
 }
 
 impl<T: CDatatype + CudaTranspose> Matrix<T> {

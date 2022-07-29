@@ -11,7 +11,7 @@ use custos::{
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
-use custos::{opencl::KernelOptions, Buffer, CLDevice};
+use custos::{Buffer, CLDevice};
 
 impl<T: CDatatype> Matrix<T> {
     pub fn diagflat(&self) -> Matrix<T> {
@@ -56,22 +56,20 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
 
 #[cfg(feature = "opencl")]
 pub fn cl_diagflat<T: CDatatype>(device: &CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<T>> {
+    use custos::opencl::{CLCache, enqueue_kernel};
+
     let src = format!(
-        r#"__kernel void diagflat(__global const {datatype}* input, const {datatype} co, __global {datatype}* output) {{
+        r#"__kernel void diagflat(__global const {datatype}* input, const int cols, __global {datatype}* output) {{
             size_t x = get_global_id(0);
             size_t y = get_global_id(1);
-            
-            int cols = (int) co;
+        
             output[x * cols + x + y * cols * cols] = input[x + y*cols];
             
         }}"#,
         datatype = T::as_c_type_str()
     );
 
-    let buf = KernelOptions::new(device, x, [x.cols(), x.rows(), 0], &src)?
-        .add_arg(&T::from_usize(x.cols()))
-        .with_output(x.cols() * x.cols() * x.rows())
-        .run()?
-        .unwrap();
-    Ok(buf)
+    let out = CLCache::get::<T>(device, x.cols() * x.cols() * x.rows());
+    enqueue_kernel(device, &src, [x.cols(), x.rows(), 0], None, &[x, &(x.cols() as i32), &out])?;
+    Ok(out)
 }

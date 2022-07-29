@@ -6,7 +6,7 @@ use custos::{
 };
 
 #[cfg(feature = "opencl")]
-use custos::{opencl::KernelOptions, CLDevice};
+use custos::CLDevice;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
@@ -50,6 +50,8 @@ fn ocl_clip<T: CDatatype>(
     min: T,
     max: T,
 ) -> custos::Result<Matrix<T>> {
+    use custos::opencl::{CLCache, enqueue_kernel};
+
     let src = format!(
         "
         #define MIN {min}
@@ -69,12 +71,9 @@ fn ocl_clip<T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let buf = KernelOptions::new(&device, x, [x.size(), 0, 0], &src)?
-        .with_output(x.size())
-        .run();
-
-    // TODO: unwrap, Ok()?
-    buf.map(|buf| (buf.unwrap(), x.dims()).into())
+    let out = CLCache::get::<T>(&device, x.size());
+    enqueue_kernel(&device, &src, [x.size(), 0, 0], None, &[x, &out])?;
+    Ok((out, x.dims()).into())
 }
 
 #[cfg(feature = "opencl")]

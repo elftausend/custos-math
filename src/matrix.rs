@@ -56,6 +56,7 @@ impl<T> Matrix<T> {
         }
     }
 
+    #[inline]
     pub fn ptr(&self) -> (*mut T, *mut c_void, CUdeviceptr) {
         self.data.ptr
     }
@@ -71,19 +72,23 @@ impl<T> Matrix<T> {
     /// let read = device.read(a.as_buf());
     /// assert_eq!(vec![1., 2., 3., 3., 2., 1.,], read);
     /// ```
+    #[inline]
     pub fn as_buf(&self) -> &Buffer<T> {
         &self.data
     }
 
+    #[inline]
     pub fn to_buf(self) -> Buffer<T> {
         self.data
     }
 
     /// Returns a mutable reference to the underlying buffer.
+    #[inline]
     pub fn as_mut_buf(&mut self) -> &mut Buffer<T> {
         &mut self.data
     }
 
+    #[inline]
     pub fn dims(&self) -> (usize, usize) {
         self.dims
     }
@@ -103,6 +108,7 @@ impl<T> Matrix<T> {
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.rows(), 2)
     /// ```
+    #[inline]
     pub fn rows(&self) -> usize {
         self.dims.0
     }
@@ -118,6 +124,7 @@ impl<T> Matrix<T> {
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.cols(), 5)
     /// ```
+    #[inline]
     pub fn cols(&self) -> usize {
         self.dims.1
     }
@@ -133,14 +140,17 @@ impl<T> Matrix<T> {
     /// let matrix = Matrix::<u16>::new(&device, (4, 12));
     /// assert_eq!(matrix.size(), 48)
     /// ```
+    #[inline]
     pub fn size(&self) -> usize {
         self.dims.0 * self.dims.1
     }
 
+    #[inline]
     pub fn as_slice(&self) -> &[T] {
         self.data.as_slice()
     }
 
+    #[inline]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.as_mut_buf().as_mut_slice()
     }
