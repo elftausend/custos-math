@@ -17,22 +17,26 @@ pub trait Activations<T> {
     fn relu_grad(&self) -> Matrix<T>;
 }
 
-impl<T: CDatatype + Float> Activations<T> for Matrix<T> {
+impl<T: CDatatype + Float+ From<u8>> Activations<T> for Matrix<T> {
+    #[inline]
     fn tanh(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps<T>).unwrap();
         device.tanh(self)
     }
 
+    #[inline]
     fn tanh_grad(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps<T>).unwrap();
         device.tanh_grad(self)
     }
 
+    #[inline]
     fn relu(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps<T>).unwrap();
         device.relu(self)
     }
 
+    #[inline]
     fn relu_grad(&self) -> Matrix<T> {
         let device = get_device!(ActivationOps<T>).unwrap();
         device.relu_grad(self)
@@ -49,71 +53,86 @@ pub trait ActivationOps<T> {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
+    #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
     }
 
+    #[inline]
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "tanh(x)").unwrap()
     }
 
+    #[inline]
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap()
     }
 
+    #[inline]
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "x * (x >= 0)").unwrap()
     }
 
+    #[inline]
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op(self, x, "(x >= 0)").unwrap()
     }
 }
 
-impl<T: Float> ActivationOps<T> for CPU {
+impl<T: Float+From<u8>> ActivationOps<T> for CPU  {
+    #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
     }
 
+    #[inline]
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| x.tanh())
     }
 
+    #[inline]
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() - x.tanh().powi(2))
     }
 
+    #[inline]
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
+        each_op(self, x, |x| T::from((x >= T::zero()) as u8) * x)
     }
 
+    #[inline]
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize))
+        each_op(self, x, |x| T::from_usize((x >= T::default()) as usize))
     }
 }
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> ActivationOps<T> for CudaDevice {
+    #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();
         (out, x.dims()).into()
     }
 
+    #[inline]
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "tanh(x)").unwrap();
         (out, x.dims()).into()
     }
 
+    #[inline]
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap();
         (out, x.dims()).into()
     }
 
+    #[inline]
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "x * (x >= 0)").unwrap();
         (out, x.dims()).into()
     }
 
+    #[inline]
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "(x >= 0)").unwrap();
         (out, x.dims()).into()

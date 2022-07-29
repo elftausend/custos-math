@@ -30,6 +30,7 @@ pub trait Gemm<T> {
 }
 
 impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
+    #[inline]
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         assert!(lhs.dims().1 == rhs.dims().0);
         let m = lhs.dims().0;

@@ -30,7 +30,7 @@ where
         let no_drop = f(&cpu, matrix);
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return construct_buffer(device, &cpu, no_drop.to_buf())
+        return construct_buffer(device, no_drop.to_buf())
             .map(|buf| (buf, dims).into());
     }
 
@@ -79,7 +79,7 @@ where
         let no_drop = f(&cpu, lhs, rhs);
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return construct_buffer(device, &cpu, no_drop.to_buf())
+        return construct_buffer(device, no_drop.to_buf())
             .map(|buf| (buf, no_drop_dims).into());
     }
     if device.unified_mem() {

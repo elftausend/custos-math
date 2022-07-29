@@ -161,6 +161,7 @@ impl<T> Matrix<T> {
     ///
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
+    #[inline]
     pub fn gemm(&self, rhs: &Matrix<T>) -> Matrix<T>
     where
         T: CDatatype + GenericBlas,
@@ -236,6 +237,7 @@ impl<T> std::ops::DerefMut for Matrix<T> {
 // From conversions
 
 impl<T> From<(Buffer<T>, (usize, usize))> for Matrix<T> {
+    #[inline]
     fn from(ptr_dims: (Buffer<T>, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
         Matrix {
@@ -247,6 +249,7 @@ impl<T> From<(Buffer<T>, (usize, usize))> for Matrix<T> {
 
 // no tuple for dims
 impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
+    #[inline]
     fn from(ptr_dims: (Buffer<T>, usize, usize)) -> Self {
         let dims = (ptr_dims.1, ptr_dims.2);
         Matrix {
@@ -260,6 +263,7 @@ impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
+    #[inline]
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
         Matrix {
@@ -277,6 +281,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
 impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
+    #[inline]
     fn from(ptr_dims: (*mut T, usize, usize)) -> Self {
         Matrix {
             data: Buffer {
@@ -289,7 +294,6 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
     }
 }
 
-//no Weak ptr:
 impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<T> {
     fn from(dims_slice: ((usize, usize), &[T; N])) -> Self {
         let device = get_device!(Device<T>).unwrap();
