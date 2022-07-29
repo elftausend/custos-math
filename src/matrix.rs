@@ -580,6 +580,14 @@ impl<T: CDatatype> Mul<&T> for Matrix<T> {
     }
 }
 
+impl<T: CDatatype> Mul<T> for &Matrix<T> {
+    type Output = Matrix<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        self.muls(rhs)
+    }
+}
+
 // div
 
 impl<T: CDatatype> Div<T> for Matrix<T> {
@@ -601,6 +609,20 @@ impl<T: CDatatype> AddAssign<Matrix<T>> for Matrix<T> {
     fn add_assign(&mut self, rhs: Matrix<T>) {
         let device = get_device!(AssignOps<T>).unwrap();
         device.add_assign(self, &rhs)
+    }
+}
+
+impl<T: CDatatype> SubAssign<&Matrix<T>> for &mut Matrix<T> {
+    fn sub_assign(&mut self, rhs: &Matrix<T>) {
+        let device = get_device!(AssignOps<T>).unwrap();
+        device.sub_assign(self, rhs)
+    }
+}
+
+impl<T: CDatatype> SubAssign<Matrix<T>> for &mut Matrix<T> {
+    fn sub_assign(&mut self, rhs: Matrix<T>) {
+        let device = get_device!(AssignOps<T>).unwrap();
+        device.sub_assign(self, &rhs)
     }
 }
 
