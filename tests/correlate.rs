@@ -1,4 +1,4 @@
-use custos::{CPU, AsDev};
+use custos::CPU;
 use custos_math::{correlate_valid_mut, rot_kernel, add_full_padding, Matrix};
 
 #[test]
@@ -32,7 +32,7 @@ fn test_rotate_kernel() {
 
 #[test]
 fn test_add_padding() {
-    let device = CPU::new().select();
+    let device = CPU::new();
     let lhs = [
         1., 2., 3., 4., 
         5., 6., 7., 8., 

@@ -1,4 +1,4 @@
-use custos::{number::Float, AsDev, CPU};
+use custos::{number::Float, CPU};
 use custos_math::{FnsOps, Matrix};
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
@@ -15,7 +15,7 @@ pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
 
 #[test]
 fn test_fns_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 
@@ -35,7 +35,7 @@ fn test_fns_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_fns_cl() -> Result<(), custos::Error> {
-    let device = custos::CLDevice::new(0)?.select();
+    let device = custos::CLDevice::new(0)?;
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 
@@ -57,7 +57,7 @@ fn test_fns_cl() -> Result<(), custos::Error> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_fns_cuda() -> Result<(), custos::Error> {
-    let device = custos::CudaDevice::new(0)?.select();
+    let device = custos::CudaDevice::new(0)?;
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 

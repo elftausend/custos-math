@@ -1,8 +1,8 @@
-use custos::{AsDev, CPU};
+use custos::CPU;
 use custos_math::Matrix;
 
 fn main() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.]));
     let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.]));

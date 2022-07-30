@@ -13,9 +13,9 @@ use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
 use custos::{Buffer, CLDevice};
 
-impl<T: CDatatype> Matrix<T> {
-    pub fn diagflat(&self) -> Matrix<T> {
-        get_device!(DiagflatOp<T>).unwrap().diagflat(self)
+impl<'a, T: CDatatype> Matrix<'a, T> {
+    pub fn diagflat(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), DiagflatOp<T>).diagflat(self)
     }
 }
 

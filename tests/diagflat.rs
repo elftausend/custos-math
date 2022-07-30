@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, AsDev};
+use custos::cpu::CPU;
 use custos_math::{DiagflatOp, Matrix};
 
 #[cfg(feature = "opencl")]
@@ -8,7 +8,7 @@ use custos_math::cl_diagflat;
 
 #[test]
 fn test_diagflat_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., 3.]));
     let result = device.diagflat(&x);
@@ -23,7 +23,7 @@ fn test_diagflat_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_diagflat_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., 4.]));
     let result = device.diagflat(&x);
@@ -38,7 +38,7 @@ fn test_diagflat_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_diagflat_cuda() {
-    let device = custos::CudaDevice::new(0).unwrap().select();
+    let device = custos::CudaDevice::new(0).unwrap();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., 4.]));
     let result = device.diagflat(&x);
@@ -51,7 +51,7 @@ fn test_diagflat_cuda() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_diagflat_kernel_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let x = Matrix::from((&device, (2, 4), [1.5, 2., 6., 4., 5., 7., 3., 1.]));
     let out = cl_diagflat(&device, &x).unwrap();

@@ -8,14 +8,14 @@ pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);
 }
 
-impl<T: Float + CDatatype> CCE<T> for Matrix<T>
+impl<T: Float + CDatatype> CCE<T> for Matrix<'_, T>
 where
     Box<dyn CCEOp<T>>: CCEOp<T>,
 {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>) {
-        let device = get_device!(CCEOp<T>).unwrap();
-        let loss = cce(&device, self, targets);
-        let grad = cce_grad(&device, self, targets);
+        let device = get_device!(self.device(), CCEOp<T>);
+        let loss = cce(device, self, targets);
+        let grad = cce_grad(device, self, targets);
         (loss, grad)
     }
 }
@@ -33,11 +33,11 @@ pub fn cce<T: Float>(device: &dyn CCEOp<T>, preds: &Matrix<T>, targets: &Matrix<
     device.mean(&device.neg(&device.ln(&confidences)))
 }
 
-pub fn cce_grad<T: Float>(
-    device: &dyn CCEOp<T>,
+pub fn cce_grad<'a, T: Float>(
+    device: &'a dyn CCEOp<T>,
     preds: &Matrix<T>,
     targets: &Matrix<T>,
-) -> Matrix<T> {
+) -> Matrix<'a, T> {
     let grad = device.neg(&device.div(targets, preds));
     device.divs(&grad, T::from_usize(preds.rows()))
 }

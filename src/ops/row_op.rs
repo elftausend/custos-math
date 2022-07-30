@@ -17,14 +17,14 @@ pub trait Row<T> {
 }
 
 
-impl<T: CDatatype> Matrix<T> {
+impl<T: CDatatype> Matrix<'_, T> {
     pub fn add_row(&self, rhs: &Matrix<T>) -> Matrix<T> {
-        let device = get_device!(RowOp<T>).unwrap();
+        let device = get_device!(self.device(), RowOp<T>);
         device.add_row(self, rhs)
     }
 
     pub fn add_row_mut(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(RowOp<T>).unwrap();
+        let device = get_device!(self.device(), RowOp<T>);
         device.add_row_mut(self, rhs)
     }
 }

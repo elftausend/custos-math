@@ -15,9 +15,9 @@ use custos::{
     Buffer, CudaDevice,
 };
 
-impl<T: CDatatype> Matrix<T> {
+impl<T: CDatatype> Matrix<'_, T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
-        get_device!(ClipOp<T>).unwrap().clip(self, min, max)
+        get_device!(self.device(), ClipOp<T>).clip(self, min, max)
     }
 }
 

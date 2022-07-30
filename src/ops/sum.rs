@@ -11,21 +11,21 @@ use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-impl<T: CDatatype> Matrix<T> {
+impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn sum(&self) -> T {
-        get_device!(SumOps<T>).unwrap().sum(self)
+        get_device!(self.device(), SumOps<T>).sum(self)
     }
 
     pub fn mean(&self) -> T {
-        get_device!(SumOps<T>).unwrap().mean(self)
+        get_device!(self.device(), SumOps<T>).mean(self)
     }
 
-    pub fn sum_rows(&self) -> Matrix<T> {
-        get_device!(SumOps<T>).unwrap().sum_rows(self)
+    pub fn sum_rows(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), SumOps<T>).sum_rows(self)
     }
 
-    pub fn sum_cols(&self) -> Matrix<T> {
-        get_device!(SumOps<T>).unwrap().sum_cols(self)
+    pub fn sum_cols(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), SumOps<T>).sum_cols(self)
     }
 }
 

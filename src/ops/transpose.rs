@@ -64,10 +64,10 @@ pub fn cl_transpose<T: CDatatype>(device: CLDevice, x: &Matrix<T>) -> custos::Re
     Ok((out, x.cols(), x.rows()).into())
 }
 
-impl<T: CDatatype + CudaTranspose> Matrix<T> {
+impl<T: CDatatype + CudaTranspose> Matrix<'_, T> {
     #[allow(non_snake_case)]
     pub fn T(&self) -> Matrix<T> {
-        get_device!(TransposeOp<T>).unwrap().transpose(self)
+        get_device!(self.device(), TransposeOp<T>).transpose(self)
     }
 }
 

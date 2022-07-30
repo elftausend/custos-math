@@ -1,4 +1,4 @@
-use custos::{AsDev, Buffer, CPU};
+use custos::{Buffer, CPU};
 #[cfg(feature = "cuda")]
 use custos::{CudaDevice, VecRead};
 use custos_math::RandOp;
@@ -20,7 +20,7 @@ fn test_rand_cuda() -> custos::Result<()> {
 fn test_rand() -> custos::Result<()> {
     use custos_math::Matrix;
 
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let mut a: Matrix<f32> = (Buffer::<f32>::new(&device, 10), 2, 5).into();
     device.rand(&mut a, -5., 6.);

@@ -18,10 +18,10 @@ use crate::cu_ew;
 ///
 /// # Examples
 /// ```
-/// use custos::{CPU, AsDev};
+/// use custos::CPU;
 /// use custos_math::Matrix;
 ///
-/// let device = CPU::new().select();
+/// let device = CPU::new();
 /// let a = Matrix::from((&device, (2, 3), [2, 4, 6, 8, 10, 12]));
 /// let b = Matrix::from((&device, (2, 3), [12, 4, 3, 1, -5, -3]));
 ///
@@ -36,10 +36,10 @@ pub trait BaseOps<T> {
     /// Element-wise addition
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let a = Matrix::from((&device, 2, 3, [2, 4, 6, 8, 10, 12]));
     /// let b = Matrix::from((&device, 2, 3, [12, 4, 3, 1, -5, -3]));
     ///
@@ -51,10 +51,10 @@ pub trait BaseOps<T> {
     /// Element-wise subtraction
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let a = Matrix::from((&device, 2, 3, [2, 4, 6, 8, 10, 12]));
     /// let b = Matrix::from((&device, 2, 3, [12, 4, 3, 1, -5, -3]));
     ///
@@ -66,10 +66,10 @@ pub trait BaseOps<T> {
     /// Element-wise multiplication
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let a = Matrix::from((&device, 2, 3, [2, 4, 6, 8, 10, 12]));
     /// let b = Matrix::from((&device, 2, 3, [12, 4, 3, 1, -5, -3]));
     ///
@@ -81,10 +81,10 @@ pub trait BaseOps<T> {
     /// Element-wise division
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let a = Matrix::from((&device, 2, 3, [2, 4, 6, 8, 10, 12]));
     /// let b = Matrix::from((&device, 2, 3, [12, 4, 3, 1, -5, -3]));
     ///

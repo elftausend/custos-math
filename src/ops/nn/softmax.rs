@@ -1,5 +1,5 @@
-use crate::{cached, ColOp, DiagflatOp, FnsOps, Mat, Matrix, MaxOps, SumOps, TransposeOp};
-use custos::{get_device, number::Float, range, CDatatype, GenericBlas, CPU};
+use crate::{cached, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
+use custos::{get_device, number::Float, range, GenericBlas, CPU};
 
 #[cfg(feature = "opencl")]
 use crate::{
@@ -19,17 +19,17 @@ pub trait Softmax<T> {
     fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: CDatatype + GenericBlas + Float, L: Mat<T>> Softmax<T> for L {
-    fn softmax(&self) -> Matrix<T> {
-        let device = get_device!(SoftmaxOps<T>).unwrap();
-        device.softmax(self.as_mat())
+impl<'a, T: GenericBlas> Matrix<'a, T> {
+    pub fn softmax(&self) -> Matrix<'a, T> {
+        let device = get_device!(self.device(), SoftmaxOps<T>);
+        device.softmax(self)
     }
-
-    fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<T> {
-        let device = get_device!(SoftmaxOps<T>).unwrap();
-        device.softmax_grad(activated.as_mat(), self.as_mat())
+    pub fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<'a, T> {
+        let device = get_device!(self.device(), SoftmaxOps<T>);
+        device.softmax_grad(activated, self)
     }
 }
+
 
 pub trait SoftmaxOps<T> {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T>;

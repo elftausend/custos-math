@@ -17,28 +17,28 @@ pub trait Activations<T> {
     fn relu_grad(&self) -> Matrix<T>;
 }
 
-impl<T: CDatatype + Float+ From<u8>> Activations<T> for Matrix<T> {
+impl<T: CDatatype + Float+ From<u8>> Activations<T> for Matrix<'_, T> {
     #[inline]
     fn tanh(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps<T>).unwrap();
+        let device = get_device!(self.device(), ActivationOps<T>);
         device.tanh(self)
     }
 
     #[inline]
     fn tanh_grad(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps<T>).unwrap();
+        let device = get_device!(self.device(), ActivationOps<T>);
         device.tanh_grad(self)
     }
 
     #[inline]
     fn relu(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps<T>).unwrap();
+        let device = get_device!(self.device(), ActivationOps<T>);
         device.relu(self)
     }
 
     #[inline]
     fn relu_grad(&self) -> Matrix<T> {
-        let device = get_device!(ActivationOps<T>).unwrap();
+        let device = get_device!(self.device(), ActivationOps<T>);
         device.relu_grad(self)
     }
 }

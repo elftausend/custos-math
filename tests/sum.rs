@@ -1,9 +1,9 @@
-use custos::{AsDev, CPU};
+use custos::CPU;
 use custos_math::{Matrix, SumOps};
 
 #[test]
 fn test_sum_ops() {
-    let device = CPU::new().select();
+    let device = CPU::new();
     let a = Matrix::from((
         &device,
         (3, 3),
@@ -26,7 +26,7 @@ fn test_sum_ops() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_sum_ops_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0)?.select();
+    let device = custos::CLDevice::new(0)?;
 
     let a = Matrix::from((
         &device,
@@ -51,7 +51,7 @@ fn test_sum_ops_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_sum_ops_cu() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?.select();
+    let device = custos::CudaDevice::new(0)?;
 
     let a = Matrix::from((
         &device,

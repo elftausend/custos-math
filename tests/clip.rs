@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, AsDev};
+use custos::cpu::CPU;
 use custos_math::{ClipOp, Matrix};
 
 #[cfg(feature = "opencl")]
@@ -6,7 +6,7 @@ use custos::opencl::CLDevice;
 
 #[test]
 fn test_clip_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 
@@ -17,7 +17,7 @@ fn test_clip_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_clip_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 
@@ -28,7 +28,7 @@ fn test_clip_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_clip_cuda() {
-    let device = custos::CudaDevice::new(0).unwrap().select();
+    let device = custos::CudaDevice::new(0).unwrap();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 
