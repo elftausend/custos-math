@@ -90,14 +90,14 @@ fn test_unified_calc() -> custos::Result<()> {
     let a: Buffer<f32> = Buffer {
         ptr: (null_mut(), unified_mem(&cl, a.as_mut_slice())?, 0),
         len,
-        device: device.as_dev(),
+        device: device.dev(),
         flag: BufFlag::Wrapper,
         p: PhantomData
     };
     let b = Buffer {
         ptr: (null_mut(), unified_mem(&cl, b.as_mut_slice())?, 0),
         len,
-        device: device.as_dev(),
+        device: device.dev(),
         flag: BufFlag::Wrapper,
         p: PhantomData
     };
