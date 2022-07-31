@@ -36,7 +36,7 @@ pub trait SumOps<T> {
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<T: Number> SumOps<T> for CPU {
+impl<'a, T: Number> SumOps<T> for CPU {
     fn sum(&self, x: &Matrix<T>) -> T {
         x.iter().map(|num| *num).sum()
         /*let mut sum = T::default();
@@ -102,7 +102,7 @@ impl<T: CDatatype> SumOps<T> for CLDevice {
         cl_to_cpu_scalar(self, x, |device, x| device.mean(&x))
     }
 
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_rows<'a>(&'a self, x: &Matrix<T>) -> Matrix<'a, T> {
         cl_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
     }
 

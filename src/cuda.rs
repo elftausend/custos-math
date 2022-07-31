@@ -9,12 +9,12 @@ use custos::{
     Buffer, CDatatype, CudaDevice,
 };
 
-pub fn cu_scalar_op<T: CDatatype>(
-    device: &CudaDevice,
+pub fn cu_scalar_op<'a, T: CDatatype>(
+    device: &'a CudaDevice,
     lhs: &Buffer<T>,
     rhs: T,
     op: &str,
-) -> custos::Result<Buffer<T>> {
+) -> custos::Result<Buffer<'a, T>> {
     let src = format!(
         r#"extern "C" __global__ void scalar_op({datatype}* lhs, {datatype} rhs, {datatype}* out, int numElements)
             {{
@@ -39,11 +39,11 @@ pub fn cu_scalar_op<T: CDatatype>(
     Ok(out)
 }
 
-pub fn cu_str_op<T: CDatatype>(
-    device: &CudaDevice,
+pub fn cu_str_op<'a, T: CDatatype>(
+    device: &'a CudaDevice,
     lhs: &Buffer<T>,
     op: &str,
-) -> custos::Result<Buffer<T>> {
+) -> custos::Result<Buffer<'a, T>> {
     let src = format!(
         r#"extern "C" __global__ void str_op({datatype}* lhs, {datatype}* out, int numElements)
             {{

@@ -350,8 +350,8 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 }*/
 
 #[cfg(feature = "opencl")]
-impl<T> From<(&CLDevice, Matrix<T>)> for Matrix<T> {
-    fn from(device_matrix: (&CLDevice, Matrix<T>)) -> Self {
+impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
+    fn from(device_matrix: (&'a CLDevice, Matrix<T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
         let y = CLCache::get::<T>(device_matrix.0, device_matrix.1.size());
         let event = unsafe {
@@ -370,8 +370,8 @@ use custos::{
 };
 
 #[cfg(feature = "cuda")]
-impl<T> From<(&CudaDevice, Matrix<T>)> for Matrix<T> {
-    fn from(device_matrix: (&CudaDevice, Matrix<T>)) -> Self {
+impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
+    fn from(device_matrix: (&'a CudaDevice, Matrix<'b, T>)) -> Self {
         let dst = CudaCache::get::<T>(device_matrix.0, device_matrix.1.size());
         cu_write(dst.ptr.2, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))

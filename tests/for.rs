@@ -2,7 +2,7 @@
 #[cfg(feature = "opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
-    use custos::{get_count, range, AsDev, CLDevice, VecRead};
+    use custos::{get_count, range, CLDevice, VecRead};
     use custos_math::Matrix;
     let device = CLDevice::new(0).unwrap();
 

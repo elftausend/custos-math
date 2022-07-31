@@ -55,7 +55,7 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_diagflat<T: CDatatype>(device: &CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<T>> {
+pub fn cl_diagflat<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<'a, T>> {
     use custos::opencl::{CLCache, enqueue_kernel};
 
     let src = format!(

@@ -17,14 +17,14 @@ use std::fmt::Write;
 ///     Ok(())
 /// }
 /// ```
-pub fn cl_gemm<T: CDatatype>(
-    device: &CLDevice,
+pub fn cl_gemm<'a, T: CDatatype>(
+    device: &'a CLDevice,
     m: usize,
     k: usize,
     n: usize,
     lhs: &Buffer<T>,
     rhs: &Buffer<T>,
-) -> Result<Buffer<T>, Error> {
+) -> Result<Buffer<'a, T>, Error> {
     let mut mw = 1;
     for x in &[16, 8, 4, 2, 1] {
         if m % x == 0 {

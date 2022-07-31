@@ -18,9 +18,9 @@ use crate::Matrix;
 ///     Ok(())
 /// }
 /// ```
-pub fn cpu_exec<T, F>(device: &CLDevice, matrix: &Matrix<T>, f: F) -> custos::Result<Matrix<T>>
+pub fn cpu_exec<'a, 'o, T, F>(device: &'o CLDevice, matrix: &Matrix<'a, T>, f: F) -> custos::Result<Matrix<'o, T>>
 where
-    F: Fn(&CPU, &Matrix<T>) -> Matrix<T>,
+    F: for <'b> Fn(&'b CPU, &Matrix<'a, T>) -> Matrix<'b, T>,
     T: Copy + Default,
 {
     let cpu = CPU::new();
@@ -37,7 +37,7 @@ where
     if device.unified_mem() {
         return Ok(Matrix::from((device, f(&cpu, matrix))))
     }
-    
+
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
     Ok(Matrix::from((device, f(&cpu, &cpu_buf))))
@@ -63,14 +63,14 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_lhs_rhs<T, F>(
-    device: &CLDevice,
-    lhs: &Matrix<T>,
-    rhs: &Matrix<T>,
+pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
+    device: &'o CLDevice,
+    lhs: &Matrix<'a, T>,
+    rhs: &Matrix<'a, T>,
     f: F,
-) -> custos::Result<Matrix<T>>
+) -> custos::Result<Matrix<'o, T>>
 where
-    F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>,
+    F: for <'b> Fn(&'b CPU, &Matrix<'a, T>, &Matrix<'a, T>) -> Matrix<'b, T>,
     T: Copy + Default,
 {
     let cpu = CPU::new();

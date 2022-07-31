@@ -20,12 +20,12 @@ use custos::{
 ///     Ok(())
 /// }
 /// ```
-pub fn cu_ew<T: CDatatype>(
-    device: &CudaDevice,
+pub fn cu_ew<'a, T: CDatatype>(
+    device: &'a CudaDevice,
     lhs: &Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,
-) -> custos::Result<Buffer<T>> {
+) -> custos::Result<Buffer<'a, T>> {
     let src = format!(
         r#"extern "C" __global__ void ew({datatype}* lhs, {datatype}* rhs, {datatype}* out, int numElements)
             {{
