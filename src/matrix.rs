@@ -1,10 +1,12 @@
 use std::{
     ffi::c_void,
-    ops::{Add, AddAssign, Mul, Sub, SubAssign, Div}, marker::PhantomData,
+    marker::PhantomData,
+    ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
 };
 
 use custos::{
-    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead, BufFlag, Alloc,
+    get_device, number::Number, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
+    GenericBlas, VecRead,
 };
 #[cfg(feature = "opencl")]
 use custos::{
@@ -327,7 +329,7 @@ impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matr
     }
 }*/
 
-/* 
+/*
 impl<T: Copy + Default> From<(usize, usize)> for Matrix<'_, T> {
     fn from(dims: (usize, usize)) -> Self {
         let device = get_device!(Device<T>).unwrap();

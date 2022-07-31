@@ -1,6 +1,6 @@
-use custos_math::{FnsOps, Matrix, RowOp, cpu_exec_lhs_rhs_mut};
 use custos::{range, CLDevice};
 use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
+use custos_math::{cpu_exec_lhs_rhs_mut, FnsOps, Matrix, RowOp};
 
 #[cfg(feature = "cuda")]
 use custos::{CudaDevice, VecRead};
@@ -14,9 +14,11 @@ fn test_swtich_mut_cl() -> custos::Result<()> {
     device.set_unified_mem(false);
 
     let test = || {
-        let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
+        let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
         let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));
-        cpu_exec_lhs_rhs_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| cpu.add_row_mut(matrix, rhs))?;
+        cpu_exec_lhs_rhs_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| {
+            cpu.add_row_mut(matrix, rhs)
+        })?;
         custos::Result::Ok(matrix.read())
     };
 
@@ -71,19 +73,21 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_switch_mut_cu() -> custos::Result<()> {
     use custos_math::cu_to_cpu_lr_mut;
 
     let device = custos::CudaDevice::new(0)?;
 
-    let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
+    let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
     let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));
-    cu_to_cpu_lr_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| cpu.add_row_mut(matrix, rhs));
-    
+    cu_to_cpu_lr_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| {
+        cpu.add_row_mut(matrix, rhs)
+    });
+
     assert_eq!(matrix.read(), vec![2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
-    
+
     Ok(())
 }
 

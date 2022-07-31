@@ -1,4 +1,4 @@
-use custos::{libs::cpu::CPU, number::Float, range, Buffer, VecRead, Alloc};
+use custos::{libs::cpu::CPU, number::Float, range, Alloc, Buffer, VecRead};
 #[cfg(feature = "opencl")]
 use custos::{libs::opencl::CLDevice, set_count};
 use custos_math::Matrix;

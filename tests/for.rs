@@ -90,7 +90,7 @@ fn test_nested_for() {
             assert!(get_count() == 5);
 
             for _ in range(10) {
-                let _ = &d +& e;
+                let _ = &d + &e;
                 assert!(get_count() == 6);
             }
         }

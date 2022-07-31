@@ -1,4 +1,7 @@
-use custos::{Buffer, CDatatype, CLDevice, Error, opencl::{CLCache, enqueue_kernel}};
+use custos::{
+    opencl::{enqueue_kernel, CLCache},
+    Buffer, CDatatype, CLDevice, Error,
+};
 use std::fmt::Write;
 
 /// OpenCL matrix multiplication of two buffers / matrices.
@@ -112,7 +115,7 @@ pub fn cl_gemm<'a, T: CDatatype>(
 
     let gws = [f, s, 0];
 
-    let out = CLCache::get::<T>(device, n*m);
+    let out = CLCache::get::<T>(device, n * m);
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }

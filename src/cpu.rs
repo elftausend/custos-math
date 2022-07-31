@@ -24,14 +24,21 @@ pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
     f: F,
 ) -> Matrix<'a, T> {
     let mut y = cached(device, lhs.dims());
-    
+
     for (idx, value) in y.iter_mut().enumerate() {
         f(value, lhs[idx], scalar)
     }
     y
 }
 
-pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(lhs: &[T], lhs_rows: usize, lhs_cols: usize, rhs: &[T], out: &mut [T], f: F) {
+pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(
+    lhs: &[T],
+    lhs_rows: usize,
+    lhs_cols: usize,
+    rhs: &[T],
+    out: &mut [T],
+    f: F,
+) {
     for i in 0..lhs_rows {
         let index = i * lhs_cols;
         let x = &lhs[index..index + lhs_cols];
@@ -42,7 +49,13 @@ pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(lhs: &[T], lhs_rows: usize
     }
 }
 
-pub fn row_op_slice_lhs<T: Copy, F: Fn(&mut T, T)>(lhs: &mut [T], lhs_rows: usize, lhs_cols: usize, rhs: &[T], f: F) {
+pub fn row_op_slice_lhs<T: Copy, F: Fn(&mut T, T)>(
+    lhs: &mut [T],
+    lhs_rows: usize,
+    lhs_cols: usize,
+    rhs: &[T],
+    f: F,
+) {
     for i in 0..lhs_rows {
         let index = i * lhs_cols;
 
@@ -73,7 +86,6 @@ pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
 ) -> Matrix<'a, T> {
     let mut out = cached(device, lhs.dims());
 
-
     // TODO: refactor to function
     //rows
     let mut i = 0;
@@ -88,7 +100,11 @@ pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
     out
 }
 
-pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(device: &'a CPU, x: &Matrix<T>, f: F) -> Matrix<'a, T> {
+pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(
+    device: &'a CPU,
+    x: &Matrix<T>,
+    f: F,
+) -> Matrix<'a, T> {
     let mut out = CPUCache::get::<T>(device, x.size());
 
     for (idx, value) in out.iter_mut().enumerate() {

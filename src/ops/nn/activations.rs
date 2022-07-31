@@ -17,7 +17,7 @@ pub trait Activations<T> {
     fn relu_grad(&self) -> Matrix<T>;
 }
 
-impl<T: CDatatype + Float+ From<u8>> Activations<T> for Matrix<'_, T> {
+impl<T: CDatatype + Float + From<u8>> Activations<T> for Matrix<'_, T> {
     #[inline]
     fn tanh(&self) -> Matrix<T> {
         let device = get_device!(self.device(), ActivationOps<T>);
@@ -79,7 +79,7 @@ impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     }
 }
 
-impl<T: Float+From<u8>> ActivationOps<T> for CPU  {
+impl<T: Float + From<u8>> ActivationOps<T> for CPU {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))

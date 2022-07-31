@@ -55,8 +55,11 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_diagflat<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<'a, T>> {
-    use custos::opencl::{CLCache, enqueue_kernel};
+pub fn cl_diagflat<'a, T: CDatatype>(
+    device: &'a CLDevice,
+    x: &Matrix<T>,
+) -> custos::Result<Buffer<'a, T>> {
+    use custos::opencl::{enqueue_kernel, CLCache};
 
     let src = format!(
         r#"__kernel void diagflat(__global const {datatype}* input, const int cols, __global {datatype}* output) {{
@@ -70,6 +73,12 @@ pub fn cl_diagflat<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> cus
     );
 
     let out = CLCache::get::<T>(device, x.cols() * x.cols() * x.rows());
-    enqueue_kernel(device, &src, [x.cols(), x.rows(), 0], None, &[x, &(x.cols() as i32), &out])?;
+    enqueue_kernel(
+        device,
+        &src,
+        [x.cols(), x.rows(), 0],
+        None,
+        &[x, &(x.cols() as i32), &out],
+    )?;
     Ok(out)
 }

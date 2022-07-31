@@ -1,4 +1,4 @@
-use crate::{cpu::row_op, Matrix, row_op_slice_lhs};
+use crate::{cpu::row_op, row_op_slice_lhs, Matrix};
 use custos::{cpu::CPU, get_device, number::Number, CDatatype};
 
 #[cfg(feature = "opencl")]
@@ -15,7 +15,6 @@ pub trait Row<T> {
     fn add_row(&mut self, rhs: &Matrix<T>) -> Matrix<T>;
     fn add_row_mut(&mut self, rhs: &Matrix<T>);
 }
-
 
 impl<T: CDatatype> Matrix<'_, T> {
     pub fn add_row(&self, rhs: &Matrix<T>) -> Matrix<T> {
@@ -53,7 +52,8 @@ impl<T: CDatatype> RowOp<T> for CLDevice {
     }
 
     fn add_row_mut(&self, lhs: &mut Matrix<T>, rhs: &Matrix<T>) {
-        opencl::cpu_exec_lhs_rhs_mut(self, lhs, rhs, |cpu, lhs, rhs| cpu.add_row_mut(lhs, rhs)).unwrap();
+        opencl::cpu_exec_lhs_rhs_mut(self, lhs, rhs, |cpu, lhs, rhs| cpu.add_row_mut(lhs, rhs))
+            .unwrap();
     }
 }
 
@@ -64,6 +64,8 @@ impl<T: CDatatype> RowOp<T> for CudaDevice {
     }
 
     fn add_row_mut(&self, lhs: &mut Matrix<T>, rhs: &Matrix<T>) {
-        cu_to_cpu_lr_mut(self, lhs, rhs, |device, lhs, rhs| device.add_row_mut(lhs, rhs))
+        cu_to_cpu_lr_mut(self, lhs, rhs, |device, lhs, rhs| {
+            device.add_row_mut(lhs, rhs)
+        })
     }
 }

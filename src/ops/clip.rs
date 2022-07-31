@@ -50,7 +50,7 @@ fn ocl_clip<'a, T: CDatatype>(
     min: T,
     max: T,
 ) -> custos::Result<Matrix<'a, T>> {
-    use custos::opencl::{CLCache, enqueue_kernel};
+    use custos::opencl::{enqueue_kernel, CLCache};
 
     let src = format!(
         "

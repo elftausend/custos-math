@@ -1,7 +1,7 @@
 use crate::Matrix;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
-use custos::{get_device, number::Float, Buffer, CPU, Alloc};
+use custos::{get_device, number::Float, Alloc, Buffer, CPU};
 //use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
 #[cfg(feature = "opencl")]

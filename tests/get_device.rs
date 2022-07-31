@@ -31,7 +31,6 @@ fn test_matrix_read_cl() -> Result<(), Error> {
     Ok(())
 }
 
-
 #[test]
 fn test_baseops() -> Result<(), Error> {
     let device = CPU::new();

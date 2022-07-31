@@ -29,8 +29,11 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_transpose<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> custos::Result<Matrix<'a, T>> {
-    use custos::opencl::{CLCache, enqueue_kernel};
+pub fn cl_transpose<'a, T: CDatatype>(
+    device: &'a CLDevice,
+    x: &Matrix<T>,
+) -> custos::Result<Matrix<'a, T>> {
+    use custos::opencl::{enqueue_kernel, CLCache};
 
     let src = format!(
         "

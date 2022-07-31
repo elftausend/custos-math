@@ -7,9 +7,10 @@ pub use switching::*;
 pub use tew::*;
 
 use custos::{
-    libs::opencl::{cl_device::CLDevice},
+    libs::opencl::cl_device::CLDevice,
     opencl::{
-        api::{enqueue_write_buffer, wait_for_event}, CLCache, enqueue_kernel, AsClCvoidPtr,
+        api::{enqueue_write_buffer, wait_for_event},
+        enqueue_kernel, AsClCvoidPtr, CLCache,
     },
     Buffer, CDatatype, Error,
 };
@@ -53,7 +54,7 @@ pub fn cl_scalar_op<'a, T: CDatatype>(
 
     let out = CLCache::get::<T>(device, x.size());
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &scalar, &out])?;
-    
+
     Ok((out, x.dims()).into())
 }
 

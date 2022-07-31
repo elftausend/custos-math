@@ -51,7 +51,7 @@ fn test_row_op_mut() {
     assert_eq!(a.as_slice(), &[2., 4., 6., 5., 7., 9., 8., 10., 12.]);
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_row_op_mut_cl() -> custos::Result<()> {
     let device = custos::CLDevice::new(0)?;
@@ -64,7 +64,7 @@ fn test_row_op_mut_cl() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 #[test]
 fn test_row_op_mut_cu() -> custos::Result<()> {
     let device = custos::CudaDevice::new(0)?;

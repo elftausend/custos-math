@@ -18,7 +18,7 @@ custos = "0.4.0"
 
 # to disable the default features (cuda, opencl) and use an own set of features:
 #custos-math = {version = "0.2.0", default-features=false, features=["opencl", "safe"]}
-#custos = { version="0.2.1", default-features = false, features=["opencl", "safe"]}
+#custos = { version="0.4.0", default-features = false, features=["opencl", "safe"]}
 ```
 
 ## Example

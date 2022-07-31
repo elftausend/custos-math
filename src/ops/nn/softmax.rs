@@ -1,12 +1,12 @@
 use crate::{cached, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
-use custos::{get_device, number::Float, range, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
 use crate::{
     cl_diagflat,
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
+use custos::{get_device, number::Float, range, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
-use custos::{CLDevice, CDatatype};
+use custos::{CDatatype, CLDevice};
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_lr, cu_to_cpu_s};
@@ -28,7 +28,6 @@ impl<'a, T: GenericBlas> Matrix<'a, T> {
         device.softmax_grad(activated, self)
     }
 }
-
 
 pub trait SoftmaxOps<T> {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T>;

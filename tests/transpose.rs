@@ -1,4 +1,4 @@
-use custos::{cpu::CPU};
+use custos::cpu::CPU;
 use custos_math::Matrix;
 
 #[cfg(feature = "cuda")]
