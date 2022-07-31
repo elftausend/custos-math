@@ -2,9 +2,9 @@
 #[cfg(feature = "opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
-    use custos::{get_count, range, AsDev, CLDevice, VecRead};
+    use custos::{get_count, range, CLDevice, VecRead};
     use custos_math::Matrix;
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1i32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -45,7 +45,7 @@ fn test_use_range_for_ew_add() {
     use custos::{range, AsDev, CLDevice, VecRead};
     use custos_math::Matrix;
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1i32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -75,9 +75,9 @@ fn test_use_range_for_ew_add() {
 #[cfg(not(feature = "safe"))]
 #[test]
 fn test_nested_for() {
-    use custos::{get_count, range, AsDev, CPU};
+    use custos::{get_count, range, CPU};
     use custos_math::Matrix;
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 5), [1i32, 4, 2, 9, 1]));
     let b = Matrix::from((&device, (1, 5), [1, 4, 2, 9, 1]));
@@ -106,7 +106,7 @@ fn test_nested_for() {
     use custos::{range, AsDev, CPU};
     use custos_math::Matrix;
 
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 5), [1i32, 4, 2, 9, 1]));
     let b = Matrix::from((&device, (1, 5), [1, 4, 2, 9, 1]));

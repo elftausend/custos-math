@@ -15,9 +15,9 @@ use custos::{
     Buffer, CudaDevice,
 };
 
-impl<T: CDatatype> Matrix<T> {
+impl<T: CDatatype> Matrix<'_, T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
-        get_device!(ClipOp<T>).unwrap().clip(self, min, max)
+        get_device!(self.device(), ClipOp<T>).clip(self, min, max)
     }
 }
 
@@ -44,12 +44,12 @@ impl<T: Number> ClipOp<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-fn ocl_clip<T: CDatatype>(
-    device: CLDevice,
+fn ocl_clip<'a, T: CDatatype>(
+    device: &'a CLDevice,
     x: &Matrix<T>,
     min: T,
     max: T,
-) -> custos::Result<Matrix<T>> {
+) -> custos::Result<Matrix<'a, T>> {
     use custos::opencl::{CLCache, enqueue_kernel};
 
     let src = format!(
@@ -79,17 +79,17 @@ fn ocl_clip<T: CDatatype>(
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        ocl_clip(self.clone(), x, min, max).unwrap()
+        ocl_clip(self, x, min, max).unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
-pub fn cu_clip<T: CDatatype>(
-    device: &CudaDevice,
+pub fn cu_clip<'a, T: CDatatype>(
+    device: &'a CudaDevice,
     x: &Buffer<T>,
     min: T,
     max: T,
-) -> custos::Result<Buffer<T>> {
+) -> custos::Result<Buffer<'a, T>> {
     let src = format!(
         r#"extern "C" __global__ void clip({datatype}* lhs, {datatype} min, {datatype} max, {datatype}* out, int numElements)
             {{

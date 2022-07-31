@@ -12,25 +12,25 @@ use crate::opencl::cl_str_op;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
-impl<T: CDatatype + Float> Matrix<T> {
-    pub fn exp(&self) -> Matrix<T> {
-        get_device!(FnsOps<T>).unwrap().exp(self)
+impl<'a, T: CDatatype + Float> Matrix<'a, T> {
+    pub fn exp(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), FnsOps<T>).exp(self)
     }
 
-    pub fn ln(&self) -> Matrix<T> {
-        get_device!(FnsOps<T>).unwrap().ln(self)
+    pub fn ln(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), FnsOps<T>).ln(self)
     }
 
-    pub fn neg(&self) -> Matrix<T> {
-        get_device!(FnsOps<T>).unwrap().neg(self)
+    pub fn neg(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), FnsOps<T>).neg(self)
     }
 
-    pub fn powf(&self, rhs: T) -> Matrix<T> {
-        get_device!(FnsOps<T>).unwrap().powf(self, rhs)
+    pub fn powf(&self, rhs: T) -> Matrix<'a, T> {
+        get_device!(self.device(), FnsOps<T>).powf(self, rhs)
     }
 
-    pub fn powi(&self, rhs: i32) -> Matrix<T> {
-        get_device!(FnsOps<T>).unwrap().powi(self, rhs)
+    pub fn powi(&self, rhs: i32) -> Matrix<'a, T> {
+        get_device!(self.device(), FnsOps<T>).powi(self, rhs)
     }
 }
 

@@ -39,12 +39,12 @@ impl <T: !GenericOCL>Both for T {
 ///     Ok(())
 /// }
 /// ```
-pub fn cl_tew<T: CDatatype>(
-    device: &CLDevice,
+pub fn cl_tew<'a, T: CDatatype>(
+    device: &'a CLDevice,
     lhs: &Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,
-) -> custos::Result<Buffer<T>> {
+) -> custos::Result<Buffer<'a, T>> {
     let src = format!("
         __kernel void eop(__global {datatype}* self, __global const {datatype}* rhs, __global {datatype}* out) {{
             size_t id = get_global_id(0);

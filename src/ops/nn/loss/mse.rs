@@ -11,11 +11,11 @@ pub fn mse<T: Copy, D: BaseOps<T> + SumOps<T>>(
     device.mean(&device.mul(&x, &x))
 }
 
-pub fn mse_grad<T: Number, D: BaseOps<T> + AdditionalOps<T>>(
-    device: &D,
+pub fn mse_grad<'a, T: Number, D: BaseOps<T> + AdditionalOps<T>>(
+    device: &'a D,
     preds: &Matrix<T>,
     targets: &Matrix<T>,
-) -> Matrix<T> {
+) -> Matrix<'a, T> {
     let x = device.sub(preds, targets);
     device.divs(
         &device.divs(&device.muls(&x, T::two()), T::from_usize(preds.cols())),

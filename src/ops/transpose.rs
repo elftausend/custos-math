@@ -29,7 +29,7 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_transpose<T: CDatatype>(device: CLDevice, x: &Matrix<T>) -> custos::Result<Matrix<T>> {
+pub fn cl_transpose<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> custos::Result<Matrix<'a, T>> {
     use custos::opencl::{CLCache, enqueue_kernel};
 
     let src = format!(
@@ -64,10 +64,10 @@ pub fn cl_transpose<T: CDatatype>(device: CLDevice, x: &Matrix<T>) -> custos::Re
     Ok((out, x.cols(), x.rows()).into())
 }
 
-impl<T: CDatatype + CudaTranspose> Matrix<T> {
+impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
     #[allow(non_snake_case)]
     pub fn T(&self) -> Matrix<T> {
-        get_device!(TransposeOp<T>).unwrap().transpose(self)
+        get_device!(self.device(), TransposeOp<T>).transpose(self)
     }
 }
 
@@ -86,7 +86,7 @@ impl<T: Default + Copy> TransposeOp<T> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> TransposeOp<T> for CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_transpose(self.clone(), x).unwrap()
+        cl_transpose(self, x).unwrap()
     }
 }
 

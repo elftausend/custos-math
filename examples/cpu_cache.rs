@@ -1,8 +1,8 @@
-use custos::{cpu::CPU_CACHE, AsDev, Node, CPU};
+use custos::{cpu::CPU_CACHE, Node, CPU};
 use custos_math::Matrix;
 
 fn main() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::<i16>::new(&device, (100, 100));
     let b = Matrix::<i16>::new(&device, (100, 100));

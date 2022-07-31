@@ -1,10 +1,10 @@
 use std::{
     ffi::c_void,
-    ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
+    ops::{Add, AddAssign, Mul, Sub, SubAssign, Div}, marker::PhantomData,
 };
 
 use custos::{
-    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead, BufFlag,
+    get_device, number::Number, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, VecRead, BufFlag, Alloc,
 };
 #[cfg(feature = "opencl")]
 use custos::{
@@ -19,10 +19,10 @@ use custos::{
 /// # Example
 /// The following example creates a zeroed (or values set to default) Matrix with the given dimensions.
 /// ```
-/// use custos::{CPU, AsDev};
+/// use custos::CPU;
 /// use custos_math::Matrix;
 ///
-/// let device = CPU::new().select();
+/// let device = CPU::new();
 /// let m = Matrix::<i32>::new(&device, (5, 8));
 ///
 /// assert_eq!(m.rows(), 5);
@@ -31,29 +31,34 @@ use custos::{
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
 #[derive(Clone)]
-pub struct Matrix<T> {
-    data: Buffer<T>,
+pub struct Matrix<'a, T> {
+    data: Buffer<'a, T>,
     dims: (usize, usize),
 }
 
-impl<T> Matrix<T> {
+impl<'a, T> Matrix<'a, T> {
     /// Returns an empty matrix with the specified dimensions (rows, cols).
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let m = Matrix::<f64>::new(&device, (20, 10));
     ///
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
-    pub fn new<D: Device<T>>(device: &D, dims: (usize, usize)) -> Matrix<T> {
+    pub fn new<D: Alloc<T>>(device: &D, dims: (usize, usize)) -> Matrix<T> {
         Matrix {
             data: Buffer::new(device, dims.0 * dims.1),
             dims,
         }
+    }
+
+    #[inline]
+    pub fn device(&self) -> Device {
+        self.data.device
     }
 
     #[inline]
@@ -73,18 +78,18 @@ impl<T> Matrix<T> {
     /// assert_eq!(vec![1., 2., 3., 3., 2., 1.,], read);
     /// ```
     #[inline]
-    pub fn as_buf(&self) -> &Buffer<T> {
+    pub fn as_buf(&self) -> &Buffer<'a, T> {
         &self.data
     }
 
     #[inline]
-    pub fn to_buf(self) -> Buffer<T> {
+    pub fn to_buf(self) -> Buffer<'a, T> {
         self.data
     }
 
     /// Returns a mutable reference to the underlying buffer.
     #[inline]
-    pub fn as_mut_buf(&mut self) -> &mut Buffer<T> {
+    pub fn as_mut_buf(&mut self) -> &mut Buffer<'a, T> {
         &mut self.data
     }
 
@@ -101,10 +106,10 @@ impl<T> Matrix<T> {
     ///
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.rows(), 2)
     /// ```
@@ -117,10 +122,10 @@ impl<T> Matrix<T> {
     ///
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let matrix = Matrix::<i32>::new(&device, (2, 5));
     /// assert_eq!(matrix.cols(), 5)
     /// ```
@@ -133,10 +138,10 @@ impl<T> Matrix<T> {
     ///
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     /// let matrix = Matrix::<u16>::new(&device, (4, 12));
     /// assert_eq!(matrix.size(), 48)
     /// ```
@@ -158,10 +163,10 @@ impl<T> Matrix<T> {
     /// Matrix multiplication. Uses current global device.
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     ///
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
     /// let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));
@@ -176,7 +181,7 @@ impl<T> Matrix<T> {
     where
         T: CDatatype + GenericBlas,
     {
-        let device = get_device!(Gemm<T>).unwrap();
+        let device = get_device!(self.device(), Gemm<T>);
         device.gemm(self, rhs)
     }
 
@@ -204,10 +209,10 @@ impl<T> Matrix<T> {
     ///
     /// # Example
     /// ```
-    /// use custos::{CPU, AsDev};
+    /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
-    /// let device = CPU::new().select();
+    /// let device = CPU::new();
     ///
     /// let a = Matrix::from((&device, (2, 2), [5, 7, 2, 10,]));
     /// assert_eq!(a.read(), vec![5, 7, 2, 10])
@@ -216,12 +221,12 @@ impl<T> Matrix<T> {
     where
         T: Default + Copy,
     {
-        let device = get_device!(VecRead<T>).unwrap();
+        let device = get_device!(self.device(), VecRead<T>);
         device.read(self.as_buf())
     }
 }
 
-impl<T> Default for Matrix<T> {
+impl<T> Default for Matrix<'_, T> {
     fn default() -> Self {
         Self {
             data: Default::default(),
@@ -230,15 +235,15 @@ impl<T> Default for Matrix<T> {
     }
 }
 
-impl<T> std::ops::Deref for Matrix<T> {
-    type Target = Buffer<T>;
+impl<'a, T> std::ops::Deref for Matrix<'a, T> {
+    type Target = Buffer<'a, T>;
 
     fn deref(&self) -> &Self::Target {
         self.as_buf()
     }
 }
 
-impl<T> std::ops::DerefMut for Matrix<T> {
+impl<'a, T> std::ops::DerefMut for Matrix<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut_buf()
     }
@@ -246,9 +251,9 @@ impl<T> std::ops::DerefMut for Matrix<T> {
 
 // From conversions
 
-impl<T> From<(Buffer<T>, (usize, usize))> for Matrix<T> {
+impl<'a, T> From<(Buffer<'a, T>, (usize, usize))> for Matrix<'a, T> {
     #[inline]
-    fn from(ptr_dims: (Buffer<T>, (usize, usize))) -> Self {
+    fn from(ptr_dims: (Buffer<'a, T>, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
         Matrix {
             data: ptr_dims.0,
@@ -258,9 +263,9 @@ impl<T> From<(Buffer<T>, (usize, usize))> for Matrix<T> {
 }
 
 // no tuple for dims
-impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
+impl<'a, T> From<(Buffer<'a, T>, usize, usize)> for Matrix<'a, T> {
     #[inline]
-    fn from(ptr_dims: (Buffer<T>, usize, usize)) -> Self {
+    fn from(ptr_dims: (Buffer<'a, T>, usize, usize)) -> Self {
         let dims = (ptr_dims.1, ptr_dims.2);
         Matrix {
             data: ptr_dims.0,
@@ -272,7 +277,7 @@ impl<T> From<(Buffer<T>, usize, usize)> for Matrix<T> {
 // TODO: unsafe from raw parts?
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
-impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
+impl<T> From<(*mut T, (usize, usize))> for Matrix<'_, T> {
     #[inline]
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
@@ -280,7 +285,10 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: dims.0 * dims.1,
+                // Mind default device, this will not work
+                device: Default::default(),
                 flag: BufFlag::Wrapper,
+                p: PhantomData,
             },
             dims,
         }
@@ -290,21 +298,24 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<T> {
 // TODO: unsafe from raw parts?
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
-impl<T> From<(*mut T, usize, usize)> for Matrix<T> {
+impl<T> From<(*mut T, usize, usize)> for Matrix<'_, T> {
     #[inline]
     fn from(ptr_dims: (*mut T, usize, usize)) -> Self {
         Matrix {
             data: Buffer {
                 ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
                 len: ptr_dims.1 * ptr_dims.2,
+                device: Device::default(),
                 flag: BufFlag::Wrapper,
+                p: PhantomData,
             },
             dims: (ptr_dims.1, ptr_dims.2),
         }
     }
 }
 
-impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<T> {
+/*
+impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matrix<'_, T> {
     fn from(dims_slice: ((usize, usize), &[T; N])) -> Self {
         let device = get_device!(Device<T>).unwrap();
 
@@ -314,9 +325,10 @@ impl<T: Copy + Default, const N: usize> From<((usize, usize), &[T; N])> for Matr
             dims: dims_slice.0,
         }
     }
-}
+}*/
 
-impl<T: Copy + Default> From<(usize, usize)> for Matrix<T> {
+/* 
+impl<T: Copy + Default> From<(usize, usize)> for Matrix<'_, T> {
     fn from(dims: (usize, usize)) -> Self {
         let device = get_device!(Device<T>).unwrap();
         let buffer = Buffer::<T>::from((&device, dims.0 * dims.1));
@@ -325,7 +337,7 @@ impl<T: Copy + Default> From<(usize, usize)> for Matrix<T> {
     }
 }
 
-impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<T> {
+impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
     fn from(dims_data: (usize, usize, Vec<T>)) -> Self {
         let device = get_device!(Device<T>).unwrap();
         let buffer = Buffer::<T>::from((device, dims_data.2));
@@ -335,11 +347,11 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<T> {
             dims: (dims_data.0, dims_data.1),
         }
     }
-}
+}*/
 
 #[cfg(feature = "opencl")]
-impl<T> From<(&CLDevice, Matrix<T>)> for Matrix<T> {
-    fn from(device_matrix: (&CLDevice, Matrix<T>)) -> Self {
+impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
+    fn from(device_matrix: (&'a CLDevice, Matrix<T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
         let y = CLCache::get::<T>(device_matrix.0, device_matrix.1.size());
         let event = unsafe {
@@ -358,15 +370,15 @@ use custos::{
 };
 
 #[cfg(feature = "cuda")]
-impl<T> From<(&CudaDevice, Matrix<T>)> for Matrix<T> {
-    fn from(device_matrix: (&CudaDevice, Matrix<T>)) -> Self {
+impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
+    fn from(device_matrix: (&'a CudaDevice, Matrix<'b, T>)) -> Self {
         let dst = CudaCache::get::<T>(device_matrix.0, device_matrix.1.size());
         cu_write(dst.ptr.2, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))
     }
 }
 
-impl<T: Copy, D: Device<T>, const N: usize> From<(&D, (usize, usize), [T; N])> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>, const N: usize> From<(&D, (usize, usize), [T; N])> for Matrix<'_, T> {
     fn from(dims_slice: (&D, (usize, usize), [T; N])) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -377,7 +389,7 @@ impl<T: Copy, D: Device<T>, const N: usize> From<(&D, (usize, usize), [T; N])> f
 }
 
 // no tuple for dims
-impl<T: Copy, D: Device<T>, const N: usize> From<(&D, usize, usize, [T; N])> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>, const N: usize> From<(&D, usize, usize, [T; N])> for Matrix<'_, T> {
     fn from(dims_slice: (&D, usize, usize, [T; N])) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -387,7 +399,7 @@ impl<T: Copy, D: Device<T>, const N: usize> From<(&D, usize, usize, [T; N])> for
     }
 }
 
-impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), Vec<T>)> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), Vec<T>)> for Matrix<'_, T> {
     fn from(dims_slice: (&D, (usize, usize), Vec<T>)) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -398,7 +410,7 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), Vec<T>)> for Matrix<T> {
 }
 
 // no tuple for dims
-impl<T: Copy, D: Device<T>> From<(&D, usize, usize, Vec<T>)> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>> From<(&D, usize, usize, Vec<T>)> for Matrix<'_, T> {
     fn from(dims_slice: (&D, usize, usize, Vec<T>)) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -408,7 +420,7 @@ impl<T: Copy, D: Device<T>> From<(&D, usize, usize, Vec<T>)> for Matrix<T> {
     }
 }
 
-impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &[T])> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), &[T])> for Matrix<'_, T> {
     fn from(dims_slice: (&D, (usize, usize), &[T])) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -419,7 +431,7 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &[T])> for Matrix<T> {
 }
 
 // no tuple for dims
-impl<T: Copy, D: Device<T>> From<(&D, usize, usize, &[T])> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>> From<(&D, usize, usize, &[T])> for Matrix<'_, T> {
     fn from(dims_slice: (&D, usize, usize, &[T])) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -429,7 +441,7 @@ impl<T: Copy, D: Device<T>> From<(&D, usize, usize, &[T])> for Matrix<T> {
     }
 }
 
-impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<T> {
+impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<'_, T> {
     fn from(dims_slice: (&D, (usize, usize), &Vec<T>)) -> Self {
         let buffer = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -441,107 +453,108 @@ impl<T: Copy, D: Device<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<T> {
 
 //-------------Add-------------
 
-impl<T: CDatatype> Add<Self> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<Self> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.add(self, rhs)
     }
 }
 
-impl<T: CDatatype> Add<Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.add(&self, &rhs)
     }
 }
 
-impl<T: CDatatype> Add<&Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<&Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.add(&self, rhs)
     }
 }
 
-impl<T: CDatatype> Add<Matrix<T>> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<Matrix<'a, T>> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: Matrix<T>) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.add(self, &rhs)
     }
 }
 
-impl<T: CDatatype> Add<T> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<T> for &'a Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: T) -> Self::Output {
         self.adds(rhs)
     }
 }
 
-impl<T: CDatatype> Add<T> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Add<T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn add(self, rhs: T) -> Self::Output {
-        self.adds(rhs)
+        let x = self.adds(rhs);
+        x
     }
 }
 
 //-------------Sub-------------
 
-impl<T: CDatatype> Sub<Self> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<Self> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.sub(self, rhs)
     }
 }
 
-impl<T: CDatatype> Sub<Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.sub(&self, &rhs)
     }
 }
 
-impl<T: CDatatype> Sub<&Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<&Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.sub(&self, rhs)
     }
 }
 
-impl<T: CDatatype> Sub<Matrix<T>> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<Matrix<'a, T>> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, rhs: Matrix<T>) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.sub(self, &rhs)
     }
 }
 
-impl<T: CDatatype> Sub<T> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<T> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, _rhs: T) -> Self::Output {
         todo!()
-        //self.subs(rhs)
+        //self.subs
     }
 }
 
-impl<T: CDatatype> Sub<T> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Sub<T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn sub(self, _rhs: T) -> Self::Output {
         todo!()
@@ -551,51 +564,51 @@ impl<T: CDatatype> Sub<T> for Matrix<T> {
 
 //-------------Mul-------------
 
-impl<T: CDatatype> Mul<Self> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<Self> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.mul(self, rhs)
     }
 }
 
-impl<T: CDatatype> Mul<Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.mul(&self, &rhs)
     }
 }
 
-impl<T: CDatatype> Mul<&Self> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<&Self> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: &Self) -> Self::Output {
-        let device = get_device!(BaseOps<T>).unwrap();
+        let device = get_device!(self.device(), BaseOps<T>);
         device.mul(&self, rhs)
     }
 }
 
-impl<T: CDatatype> Mul<T> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: T) -> Self::Output {
         self.muls(rhs)
     }
 }
 
-impl<T: CDatatype> Mul<&T> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<&T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: &T) -> Self::Output {
         self.muls(*rhs)
     }
 }
 
-impl<T: CDatatype> Mul<T> for &Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Mul<T> for &'a Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: T) -> Self::Output {
         self.muls(rhs)
@@ -604,57 +617,57 @@ impl<T: CDatatype> Mul<T> for &Matrix<T> {
 
 // div
 
-impl<T: CDatatype> Div<T> for Matrix<T> {
-    type Output = Matrix<T>;
+impl<'a, T: CDatatype> Div<T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
 
     fn div(self, rhs: T) -> Self::Output {
         self.divs(rhs)
     }
 }
 
-impl<T: CDatatype> AddAssign<&Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> AddAssign<&Matrix<'_, T>> for Matrix<'_, T> {
     fn add_assign(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.add_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype> AddAssign<Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> AddAssign<Matrix<'_, T>> for Matrix<'_, T> {
     fn add_assign(&mut self, rhs: Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.add_assign(self, &rhs)
     }
 }
 
-impl<T: CDatatype> SubAssign<&Matrix<T>> for &mut Matrix<T> {
+impl<T: CDatatype> SubAssign<&Matrix<'_, T>> for &mut Matrix<'_, T> {
     fn sub_assign(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.sub_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype> SubAssign<Matrix<T>> for &mut Matrix<T> {
+impl<T: CDatatype> SubAssign<Matrix<'_, T>> for &mut Matrix<'_, T> {
     fn sub_assign(&mut self, rhs: Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.sub_assign(self, &rhs)
     }
 }
 
-impl<T: CDatatype> SubAssign<&Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> SubAssign<&Matrix<'_, T>> for Matrix<'_, T> {
     fn sub_assign(&mut self, rhs: &Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.sub_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype> SubAssign<Matrix<T>> for Matrix<T> {
+impl<T: CDatatype> SubAssign<Matrix<'_, T>> for Matrix<'_, T> {
     fn sub_assign(&mut self, rhs: Matrix<T>) {
-        let device = get_device!(AssignOps<T>).unwrap();
+        let device = get_device!(self.device(), AssignOps<T>);
         device.sub_assign(self, &rhs)
     }
 }
 
-impl<T: Number> core::fmt::Debug for Matrix<T> {
+impl<T: Number> core::fmt::Debug for Matrix<'_, T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let data = self.read();
 

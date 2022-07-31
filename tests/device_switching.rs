@@ -7,14 +7,14 @@ use custos::opencl::{
     CLCache,
 };
 #[cfg(feature = "opencl")]
-use custos::{cpu::CPU, opencl::CLDevice, range, AsDev};
+use custos::{cpu::CPU, opencl::CLDevice, range};
 
 #[cfg(feature = "opencl")]
 #[test]
 fn test_device_switching() -> Result<(), custos::Error> {
     use custos_math::{BaseOps, Matrix};
 
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
     let a = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
     let b = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
 
@@ -36,7 +36,7 @@ fn test_device_switching() -> Result<(), custos::Error> {
 fn test_device_switching_s() -> Result<(), custos::Error> {
     use custos_math::{BaseOps, Matrix};
 
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
     let a = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
     let b = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
 

@@ -13,9 +13,9 @@ use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
 use custos::{Buffer, CLDevice};
 
-impl<T: CDatatype> Matrix<T> {
-    pub fn diagflat(&self) -> Matrix<T> {
-        get_device!(DiagflatOp<T>).unwrap().diagflat(self)
+impl<'a, T: CDatatype> Matrix<'a, T> {
+    pub fn diagflat(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), DiagflatOp<T>).diagflat(self)
     }
 }
 
@@ -55,7 +55,7 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_diagflat<T: CDatatype>(device: &CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<T>> {
+pub fn cl_diagflat<'a, T: CDatatype>(device: &'a CLDevice, x: &Matrix<T>) -> custos::Result<Buffer<'a, T>> {
     use custos::opencl::{CLCache, enqueue_kernel};
 
     let src = format!(

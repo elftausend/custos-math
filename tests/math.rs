@@ -1,4 +1,4 @@
-use custos::{libs::cpu::CPU, number::Float, range, AsDev, Buffer, Device, VecRead};
+use custos::{libs::cpu::CPU, number::Float, range, Buffer, VecRead, Alloc};
 #[cfg(feature = "opencl")]
 use custos::{libs::opencl::CLDevice, set_count};
 use custos_math::Matrix;
@@ -6,14 +6,14 @@ use custos_math::Matrix;
 #[test]
 fn add() -> Result<(), OCLError> {
 
-    let device = CPU.select();
+    let device = CPU;
 
     let lhs = Buffer::from((&device, [4., 1., 2.,]));
     let rhs = Buffer::from((&device, [4., 1., 2.,]));
 
     let native = lhs + rhs;
 
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
 
     let lhs = Buffer::from((&device, [4., 1., 2.,]));
     let rhs = Buffer::from((&device, [4., 1., 2.,]));
@@ -25,7 +25,7 @@ fn add() -> Result<(), OCLError> {
 }
 */
 
-pub fn read<T, D: Device<T>>(device: D, buf: Buffer<T>) -> Vec<T>
+pub fn read<T, D: Alloc<T>>(device: D, buf: Buffer<T>) -> Vec<T>
 where
     D: VecRead<T>,
 {
@@ -35,7 +35,7 @@ where
 #[cfg(feature = "opencl")]
 #[test]
 fn test_element_wise_add_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -49,7 +49,7 @@ fn test_element_wise_add_cl() {
 
 #[test]
 fn test_element_wise_add_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -62,7 +62,7 @@ fn test_element_wise_add_cpu() {
 
 #[test]
 fn test_ew_add_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -76,7 +76,7 @@ fn test_ew_add_cpu() {
 fn test_ew_add_cuda() -> custos::Result<()> {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -91,7 +91,7 @@ fn test_ew_add_cuda() -> custos::Result<()> {
 fn test_ew_add_large_cuda() -> custos::Result<()> {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let a = Matrix::from((&device, (1, 1000), [1.; 1000]));
     let b = Matrix::from((&device, (1, 1000), [1.5; 1000]));
@@ -104,7 +104,7 @@ fn test_ew_add_large_cuda() -> custos::Result<()> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_add_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -117,7 +117,7 @@ fn test_ew_add_cl() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_add_cl_f64() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
     let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
@@ -128,7 +128,7 @@ fn test_ew_add_cl_f64() {
 
 #[test]
 fn test_ew_sub_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -140,7 +140,7 @@ fn test_ew_sub_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_sub_cl() {
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -154,7 +154,7 @@ fn test_ew_sub_cl() {
 fn test_ew_sub_cuda() -> custos::Result<()> {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
     let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
@@ -167,7 +167,7 @@ fn test_ew_sub_cuda() -> custos::Result<()> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_mul_cpu_a_cl() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -177,7 +177,7 @@ fn test_ew_mul_cpu_a_cl() {
         assert_eq!(vec![1, 16, 4, 81], device.read(c.as_buf()));
     }
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -193,7 +193,7 @@ fn test_ew_mul_cpu_a_cl() {
 fn test_ew_mul_cuda() {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0).unwrap().select();
+    let device = CudaDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -207,7 +207,7 @@ fn test_ew_mul_cuda() {
 #[cfg(any(not(target_os = "macos"), not(feature = "opencl")))]
 #[test]
 fn test_gemm_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (1, 4), [1f64, 4., 2., 9.]));
     let b = Matrix::from((&device, (4, 1), [5., 4., 2., 9.]));
@@ -223,7 +223,7 @@ fn test_gemm_cpu() {
 fn test_gemm() {
     use custos_math::Gemm;
 
-    let cpu = CPU::new().select();
+    let cpu = CPU::new();
 
     let a = Matrix::from((&cpu, (1, 4), [1., 4., 2., 9.]));
     let b = Matrix::from((&cpu, (4, 1), [5., 4., 2., 9.]));
@@ -281,7 +281,7 @@ fn test_larger_gemm_cl_f64() {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -316,7 +316,7 @@ fn test_larger_gemm_cl() {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -350,7 +350,7 @@ fn test_larger_gemm() {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let cpu = CPU::new().select();
+    let cpu = CPU::new();
 
     let a = Matrix::from((&cpu, (5, 7), arr1));
     let b = Matrix::from((&cpu, (7, 10), arr2));
@@ -386,7 +386,7 @@ fn test_larger_gemm_cuda() -> custos::Result<()> {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -406,10 +406,10 @@ fn test_cuda_gemm_speed() -> custos::Result<()> {
     const ROWS: usize = 4000;
     const COLS: usize = ROWS;
 
-    let device = custos::CudaDevice::new(0)?.select();
+    let device = custos::CudaDevice::new(0)?;
 
     let stream = create_stream()?;
-    unsafe { cublasSetStream_v2(device.inner.borrow().handle().0, stream.0) }.to_result()?;
+    unsafe { cublasSetStream_v2(device.handle().0, stream.0) }.to_result()?;
 
     let a = Matrix::from((&device, (ROWS, COLS), vec![2.3f32; ROWS * COLS]));
     let b = Matrix::from((&device, (COLS, ROWS), vec![1.9; ROWS * COLS]));

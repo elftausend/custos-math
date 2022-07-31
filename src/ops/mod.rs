@@ -38,25 +38,24 @@ use custos::CLDevice;
 
 #[cfg(feature = "opencl")]
 ///OpenCL
-pub fn cl_to_cpu_lr<T: Copy + Default, F: Fn(&CPU, &Matrix<T>, &Matrix<T>) -> Matrix<T>>(
-    device: &CLDevice,
-    lhs: &Matrix<T>,
-    rhs: &Matrix<T>,
-    f: F,
-) -> Matrix<T> {
+pub fn cl_to_cpu_lr<'a, 'o, T, F>(device: &'a CLDevice, lhs: &Matrix<T>, rhs: &Matrix<T>, f: F) -> Matrix<'a, T> 
+where
+    T: Copy + Default,
+    F: for <'b> Fn(&'b CPU, &Matrix<T>, &Matrix<T>) -> Matrix<'b, T>
+{
     use crate::opencl::cpu_exec_lhs_rhs;
     cpu_exec_lhs_rhs(device, lhs, rhs, f).unwrap()
 }
 
 #[cfg(feature = "opencl")]
 ///OpenCL
-pub fn cl_to_cpu_s<T: Copy + Default, F: Fn(&CPU, &Matrix<T>) -> Matrix<T>>(
-    device: &CLDevice,
-    x: &Matrix<T>,
-    f: F,
-) -> Matrix<T> {
+pub fn cl_to_cpu_s<'a, 'o, T, F>(device: &'o CLDevice, x: &Matrix<'a, T>, f: F) -> Matrix<'o, T> 
+where
+    T: Copy + Default,
+    F: for <'b> Fn(&'b CPU, &Matrix<'a, T>) -> Matrix<'b, T>,
+{
     use crate::opencl::cpu_exec;
-    cpu_exec(device, x, f).unwrap()
+    cpu_exec(device, x, &f).unwrap()
 }
 
 #[cfg(feature = "opencl")]

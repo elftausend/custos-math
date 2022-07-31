@@ -1,5 +1,5 @@
 use custos_math::{FnsOps, Matrix, RowOp, cpu_exec_lhs_rhs_mut};
-use custos::{range, AsDev, CLDevice};
+use custos::{range, CLDevice};
 use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 
 #[cfg(feature = "cuda")]
@@ -9,7 +9,7 @@ use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
 #[test]
 fn test_swtich_mut_cl() -> custos::Result<()> {
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
     let unified = device.unified_mem();
     device.set_unified_mem(false);
 
@@ -33,7 +33,7 @@ fn test_swtich_mut_cl() -> custos::Result<()> {
 fn test_unified_mem_device_switch() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
 
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
@@ -53,7 +53,7 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
 
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
@@ -76,7 +76,7 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 fn test_switch_mut_cu() -> custos::Result<()> {
     use custos_math::cu_to_cpu_lr_mut;
 
-    let device = custos::CudaDevice::new(0)?.select();
+    let device = custos::CudaDevice::new(0)?;
 
     let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.,]));
     let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));

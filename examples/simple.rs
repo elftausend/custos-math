@@ -1,13 +1,13 @@
 use custos::{
     libs::{cpu::CPU, opencl::CLDevice},
-    AsDev, VecRead,
+    VecRead,
 };
 use custos_math::{BaseOps, Matrix};
 
 fn main() -> custos::Result<()> {
     //select() ... sets CPU as 'global device'
     // -> when device is not specified in an operation, the 'global device' is used
-    let cpu = CPU::new().select();
+    let cpu = CPU::new();
 
     with_select(&cpu);
     specify_device(&cpu);
@@ -34,7 +34,7 @@ fn specify_device(cpu: &CPU) {
 
 fn using_opencl() -> custos::Result<()> {
     //OpenCL device (GPU)
-    let cl = CLDevice::new(0)?.select();
+    let cl = CLDevice::new(0)?;
 
     let a = Matrix::from((&cl, (2, 2), [0.25f32, 0.5, 0.75, 1.]));
     let b = Matrix::from((&cl, (2, 2), [1., 2., 3., 4.]));

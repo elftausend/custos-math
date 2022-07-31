@@ -49,12 +49,12 @@ pub trait AssignOps<T> {
     fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>);
 }
 
-pub fn ew_op<T: Copy + Default, F: Fn(T, T) -> T>(
-    device: &CPU,
+pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
+    device: &'a CPU,
     lhs: &Matrix<T>,
     rhs: &Matrix<T>,
     f: F,
-) -> Matrix<T> {
+) -> Matrix<'a, T> {
     let mut out = CPUCache::get::<T>(device, lhs.size());
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()

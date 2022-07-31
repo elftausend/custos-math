@@ -1,6 +1,6 @@
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
-use custos::{libs::cpu::CPU, AsDev, VecRead};
+use custos::{libs::cpu::CPU, VecRead};
 use custos_math::Matrix;
 
 #[test]
@@ -12,7 +12,7 @@ fn test_matrix() {
 
 #[test]
 fn test_matrix_read() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let matrix = Matrix::from((&device, (2, 3), [1.51, 6.123, 7., 5.21, 8.62, 4.765]));
     let read = matrix.read();
@@ -24,7 +24,7 @@ fn test_matrix_read() {
 fn test_each_op() {
     use custos_math::each_op;
     CLDevice::new(0).unwrap();
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let res = each_op(&device, &x, |x| x + 1);
@@ -33,7 +33,7 @@ fn test_each_op() {
 
 #[test]
 fn test_print() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     println!("x: {:?}", x);
@@ -41,7 +41,7 @@ fn test_print() {
 
 #[test]
 fn test_sub_assign_cpu() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -53,7 +53,7 @@ fn test_sub_assign_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_sub_assign_cl() -> custos::Result<()> {
-    let device = CLDevice::new(0)?.select();
+    let device = CLDevice::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -68,7 +68,7 @@ fn test_sub_assign_cl() -> custos::Result<()> {
 fn test_sub_assign_cuda() -> custos::Result<()> {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -83,7 +83,7 @@ fn test_sub_assign_cuda() -> custos::Result<()> {
 fn test_add_assign_cuda() -> custos::Result<()> {
     use custos::CudaDevice;
 
-    let device = CudaDevice::new(0)?.select();
+    let device = CudaDevice::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -95,7 +95,7 @@ fn test_add_assign_cuda() -> custos::Result<()> {
 
 #[test]
 fn test_debug_fmt() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::<i32>::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     println!("{x:?}");
@@ -108,7 +108,7 @@ fn slice_fn<T>(x: &[T]) -> &T {
 
 #[test]
 fn test_deref() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let x = Matrix::<i32>::from((&device, (1, 3), [9, 3, 4]));
     let item = *slice_fn(&x);
@@ -121,7 +121,7 @@ fn test_range_gemm() {
     let k = 2;
     let n = 3;
 
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((
         &device,
