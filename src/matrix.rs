@@ -4,15 +4,26 @@ use std::{
     ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
 };
 
+use crate::{AssignOps, BaseOps, Gemm};
+
 use custos::{
     get_device, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
-    GenericBlas, VecRead, cache::Cache,
+    GenericBlas, VecRead
 };
 #[cfg(feature = "opencl")]
 use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
-    CLDevice,
+    CLDevice
 };
+
+#[cfg(feature = "cuda")]
+use custos::{
+    cuda::api::cu_write,
+    CudaDevice,
+};
+
+#[cfg(any(feature="cuda", feature="opencl"))]
+use custos::cache::Cache;
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -361,17 +372,10 @@ impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     }
 }
 
-use crate::{AssignOps, BaseOps, Gemm};
-#[cfg(feature = "cuda")]
-use custos::{
-    cuda::{api::cu_write, CudaCache},
-    CudaDevice,
-};
-
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CudaDevice, Matrix<'b, T>)) -> Self {
-        let dst = CudaCache::get::<T>(device_matrix.0, device_matrix.1.size());
+        let dst = Cache::get(device_matrix.0, device_matrix.1.size());
         cu_write(dst.ptr.2, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))
     }

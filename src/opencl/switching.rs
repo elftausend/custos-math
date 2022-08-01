@@ -42,7 +42,7 @@ where
             unsafe { construct_buffer(device, no_drop.to_buf())}.map(|buf| (buf, dims).into())
         });
     }
-
+    
     let cpu = CPU::new();
 
     // convert an OpenCL buffer to a cpu buffer
@@ -89,8 +89,7 @@ where
             let no_drop_dims = no_drop.dims();
             // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
             unsafe { construct_buffer(device, no_drop.to_buf()) }.map(|buf| (buf, no_drop_dims).into())
-        });
-        
+        }); 
     }
     
     // convert an OpenCL buffer to a cpu buffer

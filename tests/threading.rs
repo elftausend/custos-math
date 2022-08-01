@@ -203,7 +203,7 @@ fn test_threading_cl_a() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {
-    use custos::{cuda::CUDA_CACHE, CudaDevice};
+    use custos::CudaDevice;
     use custos_math::Matrix;
     use std::thread::JoinHandle;
 
@@ -219,7 +219,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CUDA_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(100) {
             let c = &a - &b;
@@ -227,13 +227,13 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        CUDA_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        CUDA_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
         Ok(())
     });
 
@@ -247,7 +247,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CUDA_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
     });
 
     let th2 = std::thread::spawn(|| {

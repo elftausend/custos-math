@@ -28,9 +28,9 @@ pub use scalar::*;
 pub use sum::*;
 pub use transpose::*;
 
-#[cfg(any(feature = "opencl", feature = "cuda"))]
+#[cfg(feature = "opencl")]
 use crate::Matrix;
-#[cfg(any(feature = "opencl", feature = "cuda"))]
+#[cfg(feature = "opencl")]
 use custos::cpu::CPU;
 
 #[cfg(feature = "opencl")]

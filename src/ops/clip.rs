@@ -11,7 +11,7 @@ use custos::CLDevice;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::{
-    cuda::{launch_kernel1d, CudaCache},
+    cuda::launch_kernel1d,
     Buffer, CudaDevice,
 };
 
@@ -110,7 +110,7 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = CudaCache::get::<T>(device, x.len());
+    let out = Cache::get::<T, _>(device, x.len());
     launch_kernel1d(
         x.len(),
         device,

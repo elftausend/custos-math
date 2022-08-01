@@ -5,8 +5,8 @@ pub use ew::*;
 pub use switching::*;
 
 use custos::{
-    cuda::{launch_kernel1d, CudaCache},
-    Buffer, CDatatype, CudaDevice,
+    cuda::launch_kernel1d,
+    Buffer, CDatatype, CudaDevice, cache::Cache,
 };
 
 pub fn cu_scalar_op<'a, T: CDatatype>(
@@ -28,7 +28,7 @@ pub fn cu_scalar_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = CudaCache::get::<T>(device, lhs.len);
+    let out = Cache::get::<T, _>(device, lhs.len);
     launch_kernel1d(
         lhs.len,
         device,
@@ -57,7 +57,7 @@ pub fn cu_str_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = CudaCache::get::<T>(device, lhs.len);
+    let out = Cache::get::<T, _>(device, lhs.len);
     launch_kernel1d(lhs.len, device, &src, "str_op", vec![&lhs, &out, &lhs.len])?;
     Ok(out)
 }

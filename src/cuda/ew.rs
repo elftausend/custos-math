@@ -1,6 +1,6 @@
 use custos::{
-    cuda::{launch_kernel1d, CudaCache},
-    Buffer, CDatatype, CudaDevice,
+    cuda::launch_kernel1d,
+    Buffer, CDatatype, CudaDevice, cache::Cache,
 };
 
 /// Element-wise operations. The op/operation is usually "+", "-", "*", "/".
@@ -39,7 +39,7 @@ pub fn cu_ew<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out: Buffer<T> = CudaCache::get(device, lhs.len);
+    let out: Buffer<T> = Cache::get(device, lhs.len);
 
     launch_kernel1d(lhs.len, device, &src, "ew", vec![lhs, rhs, &out, &lhs.len])?;
 

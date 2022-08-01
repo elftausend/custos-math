@@ -9,12 +9,12 @@ use custos::CLDevice;
 
 #[cfg(feature = "cuda")]
 use custos::{
-    cuda::{
-        api::cublas::{cublasDgeam, cublasOperation_t, cublasSgeam, CublasHandle},
-        CudaCache,
-    },
-    CUdeviceptr,
+    cuda::api::cublas::{cublasDgeam, cublasOperation_t, cublasSgeam, CublasHandle},
+    CUdeviceptr
 };
+
+#[cfg(any(feature="cuda", feature="opencl"))]
+use custos::cache::Cache;
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
@@ -33,7 +33,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
     device: &'a CLDevice,
     x: &Matrix<T>,
 ) -> custos::Result<Matrix<'a, T>> {
-    use custos::{opencl::enqueue_kernel, cache::Cache};
+    use custos::opencl::enqueue_kernel;
 
     let src = format!(
         "
@@ -96,7 +96,7 @@ impl<T: CDatatype> TransposeOp<T> for CLDevice {
 #[cfg(feature = "cuda")]
 impl<T: CudaTranspose> TransposeOp<T> for custos::CudaDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let out = CudaCache::get(self, x.len());
+        let out = Cache::get(self, x.len());
         T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.2, out.ptr.2).unwrap();
         (out, x.cols(), x.rows()).into()
     }
