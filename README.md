@@ -17,18 +17,18 @@ custos-math = "0.2.0"
 custos = "0.4.0"
 
 # to disable the default features (cuda, opencl) and use an own set of features:
-#custos-math = {version = "0.2.0", default-features=false, features=["opencl", "safe"]}
-#custos = { version="0.4.0", default-features = false, features=["opencl", "safe"]}
+#custos-math = {version = "0.2.0", default-features=false, features=["opencl"]}
+#custos = { version="0.4.0", default-features = false, features=["opencl"]}
 ```
 
 ## Example
 
 ```rust
-use custos::{CPU, AsDev};
+use custos::CPU;
 use custos_math::Matrix;
 
 fn main() {
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
     let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));

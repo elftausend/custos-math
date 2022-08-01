@@ -2,10 +2,7 @@
 use std::ffi::c_void;
 
 #[cfg(feature = "opencl")]
-use custos::opencl::{
-    api::{enqueue_write_buffer, wait_for_event},
-    CLCache,
-};
+use custos::opencl::api::{enqueue_write_buffer, wait_for_event};
 #[cfg(feature = "opencl")]
 use custos::{cpu::CPU, opencl::CLDevice, range};
 
@@ -34,6 +31,7 @@ fn test_device_switching() -> Result<(), custos::Error> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_device_switching_s() -> Result<(), custos::Error> {
+    use custos::cache::Cache;
     use custos_math::{BaseOps, Matrix};
 
     let device = CLDevice::new(0)?;
@@ -46,7 +44,7 @@ fn test_device_switching_s() -> Result<(), custos::Error> {
     let c = Matrix::from((&cpu, c.dims(), c.read()));
     let d_cpu = cpu.add(&c, &c);
 
-    let y = CLCache::get::<f32>(&device, d_cpu.size());
+    let y = Cache::get::<f32, _>(&device, d_cpu.size());
     let event = unsafe {
         enqueue_write_buffer(
             &device.queue(),

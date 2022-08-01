@@ -1,6 +1,6 @@
 use custos::{
-    opencl::{enqueue_kernel, CLCache},
-    Buffer, CDatatype, CLDevice, Error,
+    opencl::enqueue_kernel,
+    Buffer, CDatatype, CLDevice, Error, cache::Cache,
 };
 use std::fmt::Write;
 
@@ -115,7 +115,7 @@ pub fn cl_gemm<'a, T: CDatatype>(
 
     let gws = [f, s, 0];
 
-    let out = CLCache::get::<T>(device, n * m);
+    let out = Cache::get::<T, _>(device, n * m);
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }

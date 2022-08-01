@@ -10,9 +10,9 @@ use custos::{
     libs::opencl::cl_device::CLDevice,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
-        enqueue_kernel, AsClCvoidPtr, CLCache,
+        enqueue_kernel, AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error,
+    Buffer, CDatatype, Error, cache::Cache,
 };
 
 use crate::Matrix;
@@ -33,7 +33,7 @@ pub fn cl_str_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = CLCache::get::<T>(&device, x.size());
+    let out = Cache::get::<T, _>(device, x.size());
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }
@@ -52,7 +52,7 @@ pub fn cl_scalar_op<'a, T: CDatatype>(
         }}
     ", datatype=T::as_c_type_str());
 
-    let out = CLCache::get::<T>(device, x.size());
+    let out = Cache::get::<T, _>(device, x.size());
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &scalar, &out])?;
 
     Ok((out, x.dims()).into())

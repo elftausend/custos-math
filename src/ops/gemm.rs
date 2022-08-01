@@ -1,4 +1,4 @@
-use custos::{cpu::CPUCache, GenericBlas, CPU};
+use custos::{GenericBlas, CPU, cache::Cache};
 
 #[cfg(feature = "opencl")]
 use custos::CDatatype;
@@ -37,7 +37,7 @@ impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
         let k = lhs.dims().1;
         let n = rhs.dims().1;
 
-        let mut c = CPUCache::get(self, m * n);
+        let mut c = Cache::get(self, m * n);
         T::gemm(m, n, k, lhs, rhs, &mut c);
         (c, (m, n)).into()
     }

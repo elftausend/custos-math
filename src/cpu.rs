@@ -7,14 +7,14 @@ pub use correlate::*;
 pub use ew::*;
 
 use custos::{
-    cpu::{CPUCache, CPU},
-    number::Number,
+    CPU,
+    number::Number, cache::Cache,
 };
 
 use crate::Matrix;
 
 pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
-    (CPUCache::get::<T>(device, dims.0 * dims.1), dims).into()
+    (Cache::get(device, dims.0 * dims.1), dims).into()
 }
 
 pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
@@ -105,7 +105,7 @@ pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(
     x: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = CPUCache::get::<T>(device, x.size());
+    let mut out = Cache::get(device, x.size());
 
     for (idx, value) in out.iter_mut().enumerate() {
         *value = f(x[idx]);

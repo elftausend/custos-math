@@ -20,7 +20,8 @@ fn test_threading_cpu() {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(500) {
             let c = &a - &b;
@@ -28,13 +29,13 @@ fn test_threading_cpu() {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
     });
 
     let th1_cpu = std::thread::spawn(|| {
@@ -47,7 +48,7 @@ fn test_threading_cpu() {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(500) {
             let c = &a - &b;
@@ -55,13 +56,13 @@ fn test_threading_cpu() {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
     });
 
     let th2 = std::thread::spawn(|| {
@@ -79,11 +80,11 @@ fn test_threading_cpu() {
                     let d = &a * &b * &c;
                     let _ = &d + &c - (&b + &a * &d);
                 }
-                CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 7));
+                assert_eq!(device.cache.borrow().nodes.len(), 7);
             }
         } //'device' is dropped
 
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 0));
+       // assert_eq!(device.cache.borrow().nodes.len(), 0);
     });
 
     let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
@@ -94,9 +95,9 @@ fn test_threading_cpu() {
         assert_eq!(c.read(), vec![2., -1., -1., -1., 1., 0.]);
     }
 
-    CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+    assert_eq!(device.cache.borrow().nodes.len(), 1);
 
-    use custos::cpu::CPU_CACHE;
+    
     use custos_math::Matrix;
 
     th1_cl.join().unwrap();
@@ -108,7 +109,6 @@ fn test_threading_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_threading_cl_a() {
-    use custos::{cpu::CPU_CACHE, opencl::CL_CACHE};
     use custos_math::Matrix;
     let device = CLDevice::new(0).unwrap();
 
@@ -122,7 +122,7 @@ fn test_threading_cl_a() {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CL_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(100) {
             let c = &a - &b;
@@ -130,13 +130,13 @@ fn test_threading_cl_a() {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        CL_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        CL_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
     });
 
     let th1_cpu = std::thread::spawn(|| {
@@ -149,7 +149,7 @@ fn test_threading_cl_a() {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 1));
+        assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(100) {
             let c = &a - &b;
@@ -157,13 +157,13 @@ fn test_threading_cl_a() {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 8));
+        assert_eq!(device.cache.borrow().nodes.len(), 8);
     });
 
     let th2 = std::thread::spawn(|| {
@@ -181,11 +181,9 @@ fn test_threading_cl_a() {
                     let d = &a * &b * &c;
                     let _ = &d + &c - (&b + &a * &d);
                 }
-                CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 7));
+                assert_eq!(device.cache.borrow().nodes.len(), 7);
             }
         } //'device' is dropped
-
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 0));
     });
 
     let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
@@ -205,7 +203,7 @@ fn test_threading_cl_a() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {
-    use custos::{cpu::CPU_CACHE, cuda::CUDA_CACHE, CudaDevice};
+    use custos::{cuda::CUDA_CACHE, CudaDevice};
     use custos_math::Matrix;
     use std::thread::JoinHandle;
 
@@ -264,7 +262,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
         let d = &a * &b * &c;
         let _ = &d + &c - (&b + &a * &d);
 
-        CPU_CACHE.with(|f| assert!(f.borrow().nodes.len() == 7));
+        assert_eq!(device.cache.borrow().nodes.len(), 7);
     });
 
     let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));

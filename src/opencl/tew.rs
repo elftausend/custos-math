@@ -1,6 +1,6 @@
 use custos::{
-    opencl::{enqueue_kernel, CLCache},
-    Buffer, CDatatype, CLDevice,
+    opencl::enqueue_kernel,
+    Buffer, CDatatype, CLDevice, cache::Cache,
 };
 
 trait Both {
@@ -56,7 +56,7 @@ pub fn cl_tew<'a, T: CDatatype>(
     ", datatype=T::as_c_type_str());
 
     let gws = [lhs.len, 0, 0];
-    let out = CLCache::get::<T>(device, lhs.len);
+    let out = Cache::get::<T, _>(device, lhs.len);
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }

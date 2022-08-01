@@ -5,15 +5,12 @@ use std::{
 };
 
 use custos::{
-    get_device, number::Number, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
-    GenericBlas, VecRead,
+    get_device, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
+    GenericBlas, VecRead, cache::Cache,
 };
 #[cfg(feature = "opencl")]
 use custos::{
-    opencl::{
-        api::{enqueue_write_buffer, wait_for_event},
-        CLCache,
-    },
+    opencl::api::{enqueue_write_buffer, wait_for_event},
     CLDevice,
 };
 
@@ -355,7 +352,7 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CLDevice, Matrix<T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
-        let y = CLCache::get::<T>(device_matrix.0, device_matrix.1.size());
+        let y = Cache::get::<T, _>(device_matrix.0, device_matrix.1.size());
         let event = unsafe {
             enqueue_write_buffer(&device_matrix.0.queue(), y.ptr.1, &device_matrix.1, true).unwrap()
         };
@@ -503,8 +500,7 @@ impl<'a, T: CDatatype> Add<T> for Matrix<'a, T> {
     type Output = Matrix<'a, T>;
 
     fn add(self, rhs: T) -> Self::Output {
-        let x = self.adds(rhs);
-        x
+        self.adds(rhs)
     }
 }
 
@@ -669,7 +665,7 @@ impl<T: CDatatype> SubAssign<Matrix<'_, T>> for Matrix<'_, T> {
     }
 }
 
-impl<T: Number> core::fmt::Debug for Matrix<'_, T> {
+impl<T: Default + Copy + core::fmt::Debug> core::fmt::Debug for Matrix<'_, T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let data = self.read();
 

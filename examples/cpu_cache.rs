@@ -1,4 +1,4 @@
-use custos::{cpu::CPU_CACHE, Node, CPU};
+use custos::{Node, CPU};
 use custos_math::Matrix;
 
 fn main() {
@@ -8,11 +8,12 @@ fn main() {
     let b = Matrix::<i16>::new(&device, (100, 100));
 
     let out = a + b;
-    let ptr = CPU_CACHE.with(|cache| {
-        let cache = cache.borrow();
+    let ptr = {
+        let cache = device.cache.borrow();
         let mut node = Node::new(100 * 100);
         node.idx = 0;
         cache.nodes.get(&node).unwrap().ptr
-    });
+    };
+    
     assert!(ptr == out.as_buf().ptr.0 as *mut u8);
 }

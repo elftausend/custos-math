@@ -45,7 +45,7 @@ pub fn cl_to_cpu_lr<'a, 'o, T, F>(
     f: F,
 ) -> Matrix<'a, T>
 where
-    T: Copy + Default,
+    T: Copy + Default + std::fmt::Debug,
     F: for<'b> Fn(&'b CPU, &Matrix<T>, &Matrix<T>) -> Matrix<'b, T>,
 {
     use crate::opencl::cpu_exec_lhs_rhs;
@@ -56,7 +56,7 @@ where
 ///OpenCL
 pub fn cl_to_cpu_s<'a, 'o, T, F>(device: &'o CLDevice, x: &Matrix<'a, T>, f: F) -> Matrix<'o, T>
 where
-    T: Copy + Default,
+    T: Copy + Default + std::fmt::Debug,
     F: for<'b> Fn(&'b CPU, &Matrix<'a, T>) -> Matrix<'b, T>,
 {
     use crate::opencl::cpu_exec;

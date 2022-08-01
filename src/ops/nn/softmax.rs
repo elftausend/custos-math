@@ -127,7 +127,7 @@ impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CudaDevice {
 // TODO: Softmax running on the opencl device
 impl<T: GenericBlas + Float> SoftmaxOps<T> for CLDevice {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
-        cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(&inputs))
+        cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(inputs))
     }
 
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
@@ -169,6 +169,6 @@ pub fn cl_softmax<'a, T: CDatatype>(
     jacobian.reshape((cols, cols));
 
     // rows cols x cols cols
-    let res = device.gemm(&grads, &jacobian);
+    let res = device.gemm(grads, &jacobian);
     Ok(res)
 }

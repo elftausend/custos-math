@@ -1,4 +1,4 @@
-use custos::{cpu::CPUCache, number::Number, Buffer, CPU};
+use custos::{number::Number, Buffer, CPU, cache::Cache};
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -55,7 +55,7 @@ pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
     rhs: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = CPUCache::get::<T>(device, lhs.size());
+    let mut out = Cache::get(device, lhs.size());
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()
 }

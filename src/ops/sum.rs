@@ -36,9 +36,9 @@ pub trait SumOps<T> {
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
-impl<'a, T: Number> SumOps<T> for CPU {
+impl<T: Number> SumOps<T> for CPU {
     fn sum(&self, x: &Matrix<T>) -> T {
-        x.iter().map(|num| *num).sum()
+        x.iter().copied().sum()
         /*let mut sum = T::default();
         for value in x.as_slice() {
             sum += *value;
@@ -95,19 +95,19 @@ impl<'a, T: Number> SumOps<T> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> SumOps<T> for CLDevice {
     fn sum(&self, x: &Matrix<T>) -> T {
-        cl_to_cpu_scalar(self, x, |device, x| device.sum(&x))
+        cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
     }
 
     fn mean(&self, x: &Matrix<T>) -> T {
-        cl_to_cpu_scalar(self, x, |device, x| device.mean(&x))
+        cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
     }
 
     fn sum_rows<'a>(&'a self, x: &Matrix<T>) -> Matrix<'a, T> {
-        cl_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
+        cl_to_cpu_s(self, x, |device, x| device.sum_rows(x))
     }
 
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
+        cl_to_cpu_s(self, x, |device, x| device.sum_cols(x))
     }
 }
 

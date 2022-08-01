@@ -33,7 +33,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
     device: &'a CLDevice,
     x: &Matrix<T>,
 ) -> custos::Result<Matrix<'a, T>> {
-    use custos::opencl::{enqueue_kernel, CLCache};
+    use custos::{opencl::enqueue_kernel, cache::Cache};
 
     let src = format!(
         "
@@ -62,8 +62,8 @@ pub fn cl_transpose<'a, T: CDatatype>(
     );
 
     let gws = [x.size(), 0, 0];
-    let out = CLCache::get::<T>(&device, x.size());
-    enqueue_kernel(&device, &src, gws, None, &[x, &out])?;
+    let out = Cache::get::<T, _>(device, x.size());
+    enqueue_kernel(device, &src, gws, None, &[x, &out])?;
     Ok((out, x.cols(), x.rows()).into())
 }
 

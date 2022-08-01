@@ -32,7 +32,7 @@ fn test_swtich_mut_cl() -> custos::Result<()> {
 }
 
 #[test]
-fn test_unified_mem_device_switch() -> custos::Result<()> {
+fn test_unified_mem_device_switch_exact() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
 
     let device = CLDevice::new(0)?;
@@ -40,14 +40,14 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
     let start = std::time::Instant::now();
-    for _ in range(100) {
+    for _ in range(10000) {
         let _m = cpu_exec(&device, &a, |cpu, m| cpu.neg(&m))?;
     }
 
     println!("duration: {:?}", start.elapsed());
 
     let m = cpu_exec(&device, &a, |cpu, m| cpu.neg(&m))?;
-    println!("m: {m:?}");
+    println!("return m: {m:?}");
     Ok(())
 }
 

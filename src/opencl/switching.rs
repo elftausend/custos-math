@@ -1,3 +1,5 @@
+use std::{fmt::Debug};
+
 use custos::{opencl::construct_buffer, CLDevice, VecRead, WriteBuf, CPU};
 
 use crate::Matrix;
@@ -25,21 +27,23 @@ pub fn cpu_exec<'a, 'o, T, F>(
 ) -> custos::Result<Matrix<'o, T>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<'a, T>) -> Matrix<'b, T>,
-    T: Copy + Default,
+    T: Copy + Default + Debug,
 {
-    let cpu = CPU::new();
-
-    if device.unified_mem() && !cfg!(feature = "safe") {
-        // host ptr matrix
-        let no_drop = f(&cpu, matrix);
-        let dims = no_drop.dims();
-        // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return construct_buffer(device, no_drop.to_buf()).map(|buf| (buf, dims).into());
-    }
-
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, matrix))));
+        // Using the global cpu in order to get a (correct) cache entry.
+        // Due to the (new) caching architecture, using a local cache isn't possible, 
+        // as the cache is newly created every iteration.
+        return custos::GLOBAL_CPU.with(|cpu| {
+            // host ptr matrix
+            let no_drop = f(cpu, matrix);
+
+            let dims = no_drop.dims();
+            // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
+            unsafe { construct_buffer(device, no_drop.to_buf())}.map(|buf| (buf, dims).into())
+        });
     }
+
+    let cpu = CPU::new();
 
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
@@ -74,20 +78,21 @@ pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
 ) -> custos::Result<Matrix<'o, T>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<'a, T>, &Matrix<'a, T>) -> Matrix<'b, T>,
-    T: Copy + Default,
+    T: Copy + Default + Debug,
 {
     let cpu = CPU::new();
 
-    if device.unified_mem() && !cfg!(feature = "safe") {
-        let no_drop = f(&cpu, lhs, rhs);
-        let no_drop_dims = no_drop.dims();
-        // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return construct_buffer(device, no_drop.to_buf()).map(|buf| (buf, no_drop_dims).into());
-    }
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
-    }
+        return custos::GLOBAL_CPU.with(|cpu| {
+            let no_drop = f(cpu, lhs, rhs);
 
+            let no_drop_dims = no_drop.dims();
+            // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
+            unsafe { construct_buffer(device, no_drop.to_buf()) }.map(|buf| (buf, no_drop_dims).into())
+        });
+        
+    }
+    
     // convert an OpenCL buffer to a cpu buffer
     let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
     let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
