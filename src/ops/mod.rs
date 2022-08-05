@@ -57,7 +57,7 @@ where
 pub fn cl_to_cpu_s<'a, 'o, T, F>(device: &'o CLDevice, x: &Matrix<'a, T>, f: F) -> Matrix<'o, T>
 where
     T: Copy + Default + std::fmt::Debug,
-    F: for<'b> Fn(&'b CPU, &Matrix<'a, T>) -> Matrix<'b, T>,
+    F: for<'b> Fn(&'b CPU, &Matrix<'_, T>) -> Matrix<'b, T>,
 {
     use crate::opencl::cpu_exec;
     cpu_exec(device, x, &f).unwrap()

@@ -69,7 +69,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
 
 impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
     #[allow(non_snake_case)]
-    pub fn T(&self) -> Matrix<T> {
+    pub fn T(&self) -> Matrix<'a, T> {
         get_device!(self.device(), TransposeOp<T>).transpose(self)
     }
 }

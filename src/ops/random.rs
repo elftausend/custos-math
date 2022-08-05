@@ -17,7 +17,7 @@ impl<T: Float> RandBuf<T> for Buffer<'_, T> {
     }
 }
 
-impl<T: Float> Matrix<'_, T> {
+impl<'a, T: Float> Matrix<'a, T> {
     pub fn rand(&mut self, lo: T, hi: T) {
         self.as_mut_buf().rand(lo, hi);
     }

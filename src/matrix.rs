@@ -187,7 +187,7 @@ impl<'a, T> Matrix<'a, T> {
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
     #[inline]
-    pub fn gemm(&self, rhs: &Matrix<T>) -> Matrix<T>
+    pub fn gemm(&self, rhs: &Matrix<'a, T>) -> Matrix<'a, T>
     where
         T: CDatatype + GenericBlas,
     {
@@ -361,7 +361,7 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 
 #[cfg(feature = "opencl")]
 impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
-    fn from(device_matrix: (&'a CLDevice, Matrix<T>)) -> Self {
+    fn from(device_matrix: (&'a CLDevice, Matrix<'b, T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
         let y = Cache::get::<T, _>(device_matrix.0, device_matrix.1.size());
         let event = unsafe {
@@ -381,74 +381,94 @@ impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     }
 }
 
-impl<T: Copy, D: Alloc<T>, const N: usize> From<(&D, (usize, usize), [T; N])> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, (usize, usize), [T; N])) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.2));
+impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, (usize, usize), [T; N])) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
-            data: buffer,
+            data,
+            dims: dims_slice.1,
+        }
+    }
+}
+
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize)> for Matrix<'a, T> {
+    fn from(device_dims: (&'a D, usize, usize)) -> Self {
+        let data = Buffer::new(device_dims.0, device_dims.1*device_dims.2);
+        Matrix {
+            data,
+            dims: (device_dims.1, device_dims.2),
+        }
+    }
+}
+
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize))> for Matrix<'a, T> {
+    fn from(device_dims: (&'a D, (usize, usize))) -> Self {
+        let data = Buffer::new(device_dims.0, device_dims.1.0*device_dims.1.1);
+        Matrix {
+            data,
+            dims: device_dims.1
+        }
+    }
+}
+
+// no tuple for dims
+impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, usize, usize, [T; N])) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.3));
+        Matrix {
+            data,
+            dims: (dims_slice.1, dims_slice.2),
+        }
+    }
+}
+
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, (usize, usize), Vec<T>)) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.2));
+        Matrix {
+            data,
             dims: dims_slice.1,
         }
     }
 }
 
 // no tuple for dims
-impl<T: Copy, D: Alloc<T>, const N: usize> From<(&D, usize, usize, [T; N])> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, usize, usize, [T; N])) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.3));
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, Vec<T>)> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, usize, usize, Vec<T>)) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
-            data: buffer,
+            data,
             dims: (dims_slice.1, dims_slice.2),
         }
     }
 }
 
-impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), Vec<T>)> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, (usize, usize), Vec<T>)) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.2));
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), &[T])> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, (usize, usize), &[T])) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
-            data: buffer,
+            data,
             dims: dims_slice.1,
         }
     }
 }
 
 // no tuple for dims
-impl<T: Copy, D: Alloc<T>> From<(&D, usize, usize, Vec<T>)> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, usize, usize, Vec<T>)) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.3));
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, &[T])> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, usize, usize, &[T])) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
-            data: buffer,
+            data,
             dims: (dims_slice.1, dims_slice.2),
         }
     }
 }
 
-impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), &[T])> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, (usize, usize), &[T])) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.2));
+impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)> for Matrix<'a, T> {
+    fn from(dims_slice: (&'a D, (usize, usize), &Vec<T>)) -> Self {
+        let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
-            data: buffer,
-            dims: dims_slice.1,
-        }
-    }
-}
-
-// no tuple for dims
-impl<T: Copy, D: Alloc<T>> From<(&D, usize, usize, &[T])> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, usize, usize, &[T])) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.3));
-        Matrix {
-            data: buffer,
-            dims: (dims_slice.1, dims_slice.2),
-        }
-    }
-}
-
-impl<T: Copy, D: Alloc<T>> From<(&D, (usize, usize), &Vec<T>)> for Matrix<'_, T> {
-    fn from(dims_slice: (&D, (usize, usize), &Vec<T>)) -> Self {
-        let buffer = Buffer::from((dims_slice.0, dims_slice.2));
-        Matrix {
-            data: buffer,
+            data,
             dims: dims_slice.1,
         }
     }

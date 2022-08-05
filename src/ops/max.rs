@@ -11,16 +11,16 @@ use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
-impl<T: CDatatype> Matrix<'_, T> {
+impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn max(&self) -> T {
         get_device!(self.device(), MaxOps<T>).max(self)
     }
 
-    pub fn max_rows(&self) -> Matrix<T> {
+    pub fn max_rows(&self) -> Matrix<'a, T> {
         get_device!(self.device(), MaxOps<T>).max_rows(self)
     }
 
-    pub fn max_cols(&self) -> Matrix<T> {
+    pub fn max_cols(&self) -> Matrix<'a, T> {
         get_device!(self.device(), MaxOps<T>).max_cols(self)
     }
 }
