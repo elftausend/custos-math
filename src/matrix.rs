@@ -518,7 +518,7 @@ impl<'a, T: CDatatype> Add<Matrix<'a, T>> for &Matrix<'a, T> {
     }
 }
 
-impl<'a, T: CDatatype> Add<T> for &'a Matrix<'a, T> {
+impl<'a, T: CDatatype> Add<T> for &Matrix<'a, T> {
     type Output = Matrix<'a, T>;
 
     fn add(self, rhs: T) -> Self::Output {
@@ -635,7 +635,7 @@ impl<'a, T: CDatatype> Mul<&T> for Matrix<'a, T> {
     }
 }
 
-impl<'a, T: CDatatype> Mul<T> for &'a Matrix<'a, T> {
+impl<'a, T: CDatatype> Mul<T> for &Matrix<'a, T> {
     type Output = Matrix<'a, T>;
 
     fn mul(self, rhs: T) -> Self::Output {
@@ -646,6 +646,14 @@ impl<'a, T: CDatatype> Mul<T> for &'a Matrix<'a, T> {
 // div
 
 impl<'a, T: CDatatype> Div<T> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        self.divs(rhs)
+    }
+}
+
+impl<'a, T: CDatatype> Div<T> for &Matrix<'a, T> {
     type Output = Matrix<'a, T>;
 
     fn div(self, rhs: T) -> Self::Output {

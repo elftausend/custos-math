@@ -1,8 +1,9 @@
-use std::{fmt::Debug};
-
-use custos::{opencl::construct_buffer, CLDevice, VecRead, WriteBuf, CPU};
-
+use std::fmt::Debug;
+use custos::{CLDevice, VecRead, WriteBuf, CPU};
 use crate::Matrix;
+
+#[cfg(not(feature="realloc"))]
+use custos::opencl::construct_buffer;
 
 /// Compute operations on the CPU even though the matrix was created with an OpenCL device.
 /// There were some optimizations implemented regarding unified memory architectures.
@@ -29,6 +30,7 @@ where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
+    #[cfg(not(feature="realloc"))]
     if device.unified_mem() {
         // Using the global cpu in order to get a (correct) cache entry.
         // Due to the (new) caching architecture, using a local cache isn't possible, 
@@ -42,8 +44,14 @@ where
             unsafe { construct_buffer(device, no_drop.to_buf())}.map(|buf| (buf, dims).into())
         });
     }
-    
+
     let cpu = CPU::new();
+
+    #[cfg(feature="realloc")]
+    if device.unified_mem() {
+        return Ok(Matrix::from((device, f(&cpu, matrix))))
+    }
+    
 
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
@@ -85,6 +93,7 @@ where
 {
     let cpu = CPU::new();
 
+    #[cfg(not(feature="realloc"))]
     if device.unified_mem() {
         return custos::GLOBAL_CPU.with(|cpu| {
             let no_drop = f(cpu, lhs, rhs);
@@ -93,6 +102,11 @@ where
             // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
             unsafe { construct_buffer(device, no_drop.to_buf()) }.map(|buf| (buf, no_drop_dims).into())
         }); 
+    }
+
+    #[cfg(feature="realloc")]
+    if device.unified_mem() {
+        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))))
     }
     
     // convert an OpenCL buffer to a cpu buffer

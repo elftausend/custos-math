@@ -13,10 +13,6 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_s};
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-pub trait Softmax<T> {
-    fn softmax(&self) -> Matrix<T>;
-    fn softmax_grad(&self, activated: &Matrix<T>) -> Matrix<T>;
-}
 
 impl<'a, T: GenericBlas> Matrix<'a, T> {
     pub fn softmax(&self) -> Matrix<'a, T> {

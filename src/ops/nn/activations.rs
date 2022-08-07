@@ -10,34 +10,27 @@ use crate::cu_str_op;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-pub trait Activations<T> {
-    fn tanh(&self) -> Matrix<T>;
-    fn tanh_grad(&self) -> Matrix<T>;
-    fn relu(&self) -> Matrix<T>;
-    fn relu_grad(&self) -> Matrix<T>;
-}
-
-impl<T: CDatatype + Float> Activations<T> for Matrix<'_, T> {
+impl<'a, T: CDatatype + Float> Matrix<'a, T> {
     #[inline]
-    fn tanh(&self) -> Matrix<T> {
+    pub fn tanh(&self) -> Matrix<'a, T> {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.tanh(self)
     }
 
     #[inline]
-    fn tanh_grad(&self) -> Matrix<T> {
+    pub fn tanh_grad(&self) -> Matrix<'a, T> {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.tanh_grad(self)
     }
 
     #[inline]
-    fn relu(&self) -> Matrix<T> {
+    pub fn relu(&self) -> Matrix<'a, T> {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.relu(self)
     }
 
     #[inline]
-    fn relu_grad(&self) -> Matrix<T> {
+    pub fn relu_grad(&self) -> Matrix<'a, T> {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.relu_grad(self)
     }
