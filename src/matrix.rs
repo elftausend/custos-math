@@ -40,7 +40,6 @@ use custos::cache::Cache;
 /// assert_eq!(m.size(), 5*8);
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
-#[derive(Clone)]
 pub struct Matrix<'a, T> {
     data: Buffer<'a, T>,
     dims: (usize, usize),
@@ -187,7 +186,7 @@ impl<'a, T> Matrix<'a, T> {
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
     #[inline]
-    pub fn gemm(&self, rhs: &Matrix<'a, T>) -> Matrix<'a, T>
+    pub fn gemm<'b>(&self, rhs: &Matrix<'b, T>) -> Matrix<'a, T>
     where
         T: CDatatype + GenericBlas,
     {
@@ -234,7 +233,14 @@ impl<'a, T> Matrix<'a, T> {
         let device = get_device!(self.device(), VecRead<T>);
         device.read(self.as_buf())
     }
+
+    pub fn shallow(&self) -> Matrix<'a, T> { 
+        unsafe {
+            Self { data: self.data.shallow(), dims: self.dims }
+        }
+    }
 }
+
 
 impl<T> Default for Matrix<'_, T> {
     fn default() -> Self {

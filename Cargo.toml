@@ -15,8 +15,8 @@ repository = "https://github.com/elftausend/custos-math"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-#custos = { path = "../custos", default-features = false }
-custos = { version = "0.4.3", default-features = false }
+custos = { path = "../custos", default-features = false }
+#custos = { version = "0.4.3", default-features = false }
 fastrand = "1.7.0"
 
 [features] 

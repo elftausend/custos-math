@@ -29,7 +29,7 @@ fn test_gemm_trans_perf() {
     let mat = Matrix::<f32>::from((&device, 100, 300, vec![1.; 100*300]));
     let start = Instant::now();
 
-    for _ in range(0..10000) {
+    for _ in range(0..10) {
         let trans_mat = mat.T(); 
         let _out_t = mat.gemm(&trans_mat);
     }
@@ -37,7 +37,7 @@ fn test_gemm_trans_perf() {
 
     let start = Instant::now();
     
-    for _ in range(0..10000) {
+    for _ in range(0..10) {
         let mut out = Cache::get(&device, mat.rows()*mat.rows());
         GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
     }
