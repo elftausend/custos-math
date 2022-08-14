@@ -1,6 +1,6 @@
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op;
-use crate::{each_op, Matrix};
+use crate::{each_op, Matrix, each_op_threaded};
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 use custos::{get_device, libs::cpu::CPU, number::Float, CDatatype};
@@ -24,7 +24,7 @@ impl<'a, T: CDatatype + Float> Matrix<'a, T> {
     }
 
     #[inline]
-    pub fn relu(&self) -> Matrix<'a, T> {
+    pub fn relu(&self) -> Matrix<'a, T> where T: Send + Sync + 'static {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.relu(self)
     }
@@ -40,7 +40,7 @@ pub trait ActivationOps<T> {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T>;
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T>;
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn relu(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T> where T: Send + Sync + 'static;
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T>;
 }
 
@@ -89,8 +89,9 @@ impl<T: Float> ActivationOps<T> for CPU {
     }
 
     #[inline]
-    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
+    fn relu(&self, x: &Matrix<T>) -> Matrix<T> where T: Send + Sync + 'static {
+        each_op_threaded(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
+        //each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
     #[inline]

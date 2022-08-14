@@ -1,19 +1,19 @@
-#[cfg(feature = "safe")]
-use custos::{libs::cpu::CPU, range, AsDev, VecRead};
+#[cfg(feature = "realloc")]
+use custos::{libs::cpu::CPU, range, VecRead};
 
-#[cfg(feature = "safe")]
+#[cfg(feature = "realloc")]
 #[cfg(feature = "opencl")]
 use custos::libs::opencl::CLDevice;
 
-#[cfg(feature = "safe")]
+#[cfg(feature = "realloc")]
 #[test]
 fn test_threading_cpu() {
     use custos_math::Matrix;
 
-    let device = CPU::new().select();
+    let device = CPU::new();
 
     let th1_cl = std::thread::spawn(|| {
-        let device = CPU::new().select();
+        let device = CPU::new();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -40,7 +40,7 @@ fn test_threading_cpu() {
     });
 
     let th1_cpu = std::thread::spawn(|| {
-        let device = CPU::new().select();
+        let device = CPU::new();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -68,7 +68,7 @@ fn test_threading_cpu() {
 
     let th2 = std::thread::spawn(|| {
         {
-            let device = CPU::new().select();
+            let device = CPU::new();
 
             let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
             let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -103,16 +103,16 @@ fn test_threading_cpu() {
     th2.join().unwrap();
 }
 
-#[cfg(feature = "safe")]
+#[cfg(feature = "realloc")]
 #[cfg(feature = "opencl")]
 #[test]
 fn test_threading_cl_a() {
     use custos_math::Matrix;
 
-    let device = CLDevice::new(0).unwrap().select();
+    let device = CLDevice::new(0).unwrap();
 
     let th1_cl = std::thread::spawn(|| {
-        let device = CLDevice::new(0).unwrap().select();
+        let device = CLDevice::new(0).unwrap();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -139,7 +139,7 @@ fn test_threading_cl_a() {
     });
 
     let th1_cpu = std::thread::spawn(|| {
-        let device = CPU::new().select();
+        let device = CPU::new();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -167,7 +167,7 @@ fn test_threading_cl_a() {
 
     let th2 = std::thread::spawn(|| {
         {
-            let device = CPU::new().select();
+            let device = CPU::new();
 
             let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
             let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));

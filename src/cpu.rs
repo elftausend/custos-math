@@ -10,6 +10,7 @@ use custos::{
     CPU,
     number::Number, cache::Cache,
 };
+use threadback::run_single;
 
 use crate::Matrix;
 
@@ -42,7 +43,7 @@ pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(
     for i in 0..lhs_rows {
         let index = i * lhs_cols;
         let x = &lhs[index..index + lhs_cols];
-
+    
         for (idx, value) in rhs.iter().enumerate() {
             f(&mut out[index + idx], x[idx], *value);
         }
@@ -110,5 +111,18 @@ pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(
     for (idx, value) in out.iter_mut().enumerate() {
         *value = f(x[idx]);
     }
+    (out, x.dims()).into()
+}
+
+
+pub fn each_op_threaded<'a, T: Copy + Default + Send + Sync + 'static, F: Fn(T) -> T+ Send + Sync + Copy + 'static>(
+    device: &'a CPU,
+    x: &Matrix<T>,
+    f: F,
+) -> Matrix<'a, T> {
+    let mut out = Cache::get(device, x.size());
+
+    run_single(&mut out, x, f);
+
     (out, x.dims()).into()
 }

@@ -36,6 +36,7 @@ impl<T: Number> RowOp<T> for CPU {
     fn add_row_mut(&self, lhs: &mut Matrix<T>, rhs: &Matrix<T>) {
         let (lhs_rows, lhs_cols) = lhs.dims();
         row_op_slice_lhs(lhs, lhs_rows, lhs_cols, rhs, |c, a| *c += a)
+        
     }
 }
 

@@ -1,4 +1,4 @@
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
@@ -72,7 +72,7 @@ fn test_use_range_for_ew_add() {
     }
 }
 
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[test]
 fn test_nested_for() {
     use custos::{get_count, range, CPU};

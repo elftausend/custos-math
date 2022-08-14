@@ -1,11 +1,11 @@
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 use custos::{libs::cpu::CPU, range, VecRead};
 
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
 use custos::libs::opencl::CLDevice;
 
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[test]
 fn test_threading_cpu() {
     let device = CPU::new();
@@ -105,7 +105,7 @@ fn test_threading_cpu() {
     th2.join().unwrap();
 }
 
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
 #[test]
 fn test_threading_cl_a() {
@@ -199,7 +199,7 @@ fn test_threading_cl_a() {
     th2.join().unwrap();
 }
 
-#[cfg(not(feature = "safe"))]
+#[cfg(not(feature = "realloc"))]
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {

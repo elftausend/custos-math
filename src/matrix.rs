@@ -653,6 +653,30 @@ impl<'a, T: CDatatype> Div<T> for Matrix<'a, T> {
     }
 }
 
+impl<'a, T: CDatatype> Div<Matrix<'a, T>> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
+
+    fn div(self, rhs: Matrix<'a, T>) -> Self::Output {
+        get_device!(self.device(), BaseOps<T>).div(&self, &rhs)
+    }
+}
+
+impl<'a, T: CDatatype> Div<Matrix<'a, T>> for &Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
+
+    fn div(self, rhs: Matrix<'a, T>) -> Self::Output {
+        get_device!(self.device(), BaseOps<T>).div(self, &rhs)
+    }
+}
+
+impl<'a, T: CDatatype> Div<&Matrix<'a, T>> for Matrix<'a, T> {
+    type Output = Matrix<'a, T>;
+
+    fn div(self, rhs: &Matrix<'a, T>) -> Self::Output {
+        get_device!(self.device(), BaseOps<T>).div(&self, rhs)
+    }
+}
+
 impl<'a, T: CDatatype> Div<T> for &Matrix<'a, T> {
     type Output = Matrix<'a, T>;
 
