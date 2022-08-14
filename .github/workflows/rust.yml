@@ -26,3 +26,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Run tests
       run: cargo test --verbose --no-default-features
+      
+  test-realloc:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run 'realloc' tests
+      run: cargo test --verbose --no-default-features --features realloc
