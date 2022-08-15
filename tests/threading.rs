@@ -1,9 +1,9 @@
 #[cfg(not(feature = "realloc"))]
-use custos::{libs::cpu::CPU, range, VecRead};
+use custos::{devices::cpu::CPU, range, VecRead};
 
 #[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
-use custos::libs::opencl::CLDevice;
+use custos::devices::opencl::CLDevice;
 
 #[cfg(not(feature = "realloc"))]
 #[test]
