@@ -7,7 +7,7 @@ pub use switching::*;
 pub use tew::*;
 
 use custos::{
-    libs::opencl::cl_device::CLDevice,
+    devices::opencl::cl_device::CLDevice,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
         enqueue_kernel, AsClCvoidPtr,

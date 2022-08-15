@@ -1,5 +1,5 @@
 use custos::{
-    libs::{cpu::CPU, opencl::CLDevice},
+    devices::{cpu::CPU, opencl::CLDevice},
     VecRead,
 };
 use custos_math::{BaseOps, Matrix};

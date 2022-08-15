@@ -3,7 +3,7 @@ use crate::opencl::cl_str_op;
 use crate::{each_op, Matrix};
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
-use custos::{get_device, libs::cpu::CPU, number::Float, CDatatype};
+use custos::{get_device, devices::cpu::CPU, number::Float, CDatatype};
 
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
