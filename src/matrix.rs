@@ -234,17 +234,20 @@ impl<'a, T> Matrix<'a, T> {
         device.read(self.as_buf())
     }
 
-    #[cfg(feature="realloc")]
-    pub fn shallow(&self) -> Matrix<'a, T> where T: Clone { 
+    /// Creates a shallow copy of &self. 
+    pub fn shallow(&self) -> Matrix<'a, T> { 
         unsafe {
             Self { data: self.data.shallow(), dims: self.dims }
         }
     }
 
-    #[cfg(not(feature="realloc"))]
-    pub fn shallow(&self) -> Matrix<'a, T> { 
+    /// Creates a shallow copy or a deep copy of &self, depening on whether the `realloc` feature is activated.
+    pub fn shallow_or_clone(&self) -> Matrix<'a, T> 
+    where
+        T: Clone
+    { 
         unsafe {
-            Self { data: self.data.shallow(), dims: self.dims }
+            Self { data: self.data.shallow_or_clone(), dims: self.dims }
         }
     }
 }
