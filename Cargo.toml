@@ -1,6 +1,6 @@
 [package]
 name = "custos-math"
-version = "0.4.4"
+version = "0.4.6"
 edition = "2021"
 license = "MIT"
 categories = ["mathematics", "science"]
@@ -15,12 +15,12 @@ repository = "https://github.com/elftausend/custos-math"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-custos = { path = "../custos", default-features = false }
-#custos = { version = "0.4.4", default-features = false }
+#custos = { path = "../custos", default-features = false }
+custos = { version = "0.4.6", default-features = false }
 fastrand = "1.7.0"
 
 [features] 
-default = ["opencl", "cuda", "realloc"]
+default = ["opencl", "cuda"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]
 realloc = ["custos/realloc"]
