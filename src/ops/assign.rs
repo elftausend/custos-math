@@ -55,7 +55,7 @@ pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
     rhs: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = Cache::get(device, lhs.size());
+    let mut out = Cache::get(device, lhs.size(), [lhs.node.idx, rhs.node.idx]);
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()
 }

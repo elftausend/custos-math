@@ -34,7 +34,7 @@ impl<T: Default + Copy> DiagflatOp<T> for CPU {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
 
-        let mut y = Cache::get(self, size * size);
+        let mut y = Cache::get(self, size * size, x.node.idx);
         diagflat(x.as_slice(), y.as_mut_slice());
         (y, (size, size)).into()
     }

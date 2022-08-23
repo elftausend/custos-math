@@ -45,7 +45,7 @@ impl<T: Number> MaxOps<T> for CPU {
     }
 
     fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = Cache::get(self, x.cols());
+        let mut y = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
         let max_rows = y.as_mut_slice();
@@ -67,7 +67,7 @@ impl<T: Number> MaxOps<T> for CPU {
 
     fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
         let data = x.as_slice();
-        let mut y = Cache::get(self, x.rows());
+        let mut y = Cache::get(self, x.rows(), x.node.idx);
 
         let max_cols = y.as_mut_slice();
 
