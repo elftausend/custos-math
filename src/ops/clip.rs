@@ -27,7 +27,7 @@ pub trait ClipOp<T> {
 
 impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, CPU>(self, x.size());
+        let mut y = Cache::get::<T, CPU, _>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
         
         for (idx, value) in x.as_slice().iter().enumerate() {

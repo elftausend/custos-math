@@ -38,13 +38,13 @@ fn test_gemm_trans_perf() {
     let start = Instant::now();
     
     for _ in range(0..10) {
-        let mut out = Cache::get(&device, mat.rows()*mat.rows());
+        let mut out = Cache::get(&device, mat.rows()*mat.rows(), ());
         GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
     }
     
     println!("trans blas elapsed: {:?}", start.elapsed());
 
-    let mut out: custos::Buffer<f32> = Cache::get(&device, mat.rows()*mat.rows());
+    let mut out: custos::Buffer<f32> = Cache::get(&device, mat.rows()*mat.rows(), ());
     GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
 
     let trans_mat = mat.T(); 

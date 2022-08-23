@@ -1,8 +1,8 @@
 #[cfg(feature = "cuda")]
 use std::ptr::null_mut;
 
-use crate::{cached, Matrix};
-use custos::{cpu::CPU, get_device, CDatatype};
+use crate::Matrix;
+use custos::{cpu::CPU, get_device, CDatatype, Cache};
 
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
@@ -80,9 +80,9 @@ pub trait TransposeOp<T> {
 
 impl<T: Default + Copy> TransposeOp<T> for CPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut out = cached(self, (x.cols(), x.rows()));
+        let mut out = Cache::get(self, x.len, x.node.idx);
         slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
-        out
+        (out, x.cols(), x.rows()).into()
     }
 }
 

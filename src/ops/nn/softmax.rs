@@ -1,4 +1,4 @@
-use crate::{cached, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
+use crate::{ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
 #[cfg(feature = "opencl")]
 use crate::{
     cl_diagflat,
@@ -38,9 +38,11 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU {
 
     #[cfg(not(feature = "safe"))]
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
+        use custos::Cache;
+
         use crate::{BaseOps, Gemm};
 
-        let mut data = cached(self, grads.dims());
+        let mut data: Matrix<T> = (Cache::get(self, grads.len, ()), grads.dims()).into();
 
         let rows = grads.rows();
         let cols = grads.cols();

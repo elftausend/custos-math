@@ -1,5 +1,5 @@
-use crate::{cached, Matrix};
-use custos::{get_device, number::Number, CDatatype, CPU};
+use crate::Matrix;
+use custos::{get_device, number::Number, CDatatype, CPU, Cache};
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
@@ -52,10 +52,10 @@ impl<T: Number> SumOps<T> for CPU {
     }
 
     fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = cached(self, (1, x.cols()));
+        let mut out = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
-        let sum_slice = y.as_mut_slice();
+        let sum_slice = out.as_mut_slice();
 
         for value in sum_slice.iter_mut() {
             *value = T::default();
@@ -69,14 +69,14 @@ impl<T: Number> SumOps<T> for CPU {
                 sum_slice[i] += *value;
             }
         }
-        y
+        (out, 1, x.cols()).into()
     }
 
     fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = cached(self, (x.rows(), 1));
+        let mut out = Cache::get(self, x.rows(), x.node.idx);
 
         let data = x.as_slice();
-        let sum_slice = y.as_mut_slice();
+        let sum_slice = out.as_mut_slice();
 
         for (idx, col_vec_value) in sum_slice.iter_mut().enumerate().take(x.rows()) {
             let index = idx * x.cols();
@@ -88,7 +88,7 @@ impl<T: Number> SumOps<T> for CPU {
             }
             *col_vec_value = sum;
         }
-        y
+        (out, x.rows(), 1).into()
     }
 }
 
