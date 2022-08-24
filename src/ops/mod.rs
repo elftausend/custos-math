@@ -13,6 +13,7 @@ mod row_op;
 mod scalar;
 mod sum;
 mod transpose;
+mod scalar_assign;
 
 pub use arithmetic::*;
 pub use assign::*;
@@ -27,6 +28,7 @@ pub use row_op::*;
 pub use scalar::*;
 pub use sum::*;
 pub use transpose::*;
+pub use scalar_assign::*;
 
 #[cfg(feature = "opencl")]
 use crate::Matrix;
