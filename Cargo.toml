@@ -20,7 +20,7 @@ custos = { path = "../custos", default-features = false }
 fastrand = "1.7.0"
 
 [features] 
-default = []
+default = ["opencl"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]
 realloc = ["custos/realloc"]

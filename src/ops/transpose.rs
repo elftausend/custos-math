@@ -13,9 +13,6 @@ use custos::{
     CUdeviceptr
 };
 
-#[cfg(any(feature="cuda", feature="opencl"))]
-use custos::cache::Cache;
-
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
         let index = i * cols;
@@ -62,7 +59,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
     );
 
     let gws = [x.size(), 0, 0];
-    let out = Cache::get::<T, _>(device, x.size());
+    let out = Cache::get::<T, _, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, gws, None, &[x, &out])?;
     Ok((out, x.cols(), x.rows()).into())
 }

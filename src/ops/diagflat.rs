@@ -72,7 +72,7 @@ pub fn cl_diagflat<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.cols() * x.cols() * x.rows());
+    let out = Cache::get::<T, _, _>(device, x.cols() * x.cols() * x.rows(), x.node.idx);
     enqueue_kernel(
         device,
         &src,

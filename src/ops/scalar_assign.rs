@@ -1,8 +1,9 @@
 use std::ops::{AddAssign, DivAssign, MulAssign};
-
 use custos::{CPU, number::Number, get_device};
-
 use crate::{Matrix, assign_to_lhs_scalar};
+
+#[cfg(feature="opencl")]
+use custos::CLDevice;
 
 pub trait ScalarAssign<T> {
     fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T);
@@ -29,7 +30,17 @@ where
 
 #[cfg(feature="opencl")]
 impl<T> ScalarAssign<T> for CLDevice {
+    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
 
+    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
+
+    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
 }
 
 impl<T: Number> AddAssign<T> for Matrix<'_, T> {

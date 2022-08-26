@@ -33,7 +33,7 @@ pub fn cl_str_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.size());
+    let out = Cache::get::<T, _, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }
@@ -52,7 +52,7 @@ pub fn cl_scalar_op<'a, T: CDatatype>(
         }}
     ", datatype=T::as_c_type_str());
 
-    let out = Cache::get::<T, _>(device, x.size());
+    let out = Cache::get::<T, _, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &scalar, &out])?;
 
     Ok((out, x.dims()).into())

@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use custos::{CLDevice, VecRead, WriteBuf, CPU};
+use custos::{CLDevice, VecRead, WriteBuf, CPU, GraphReturn};
 use crate::Matrix;
 
 #[cfg(not(feature="realloc"))]
@@ -41,7 +41,7 @@ where
 
             let dims = no_drop.dims();
             // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-            unsafe { construct_buffer(device, no_drop.to_buf())}.map(|buf| (buf, dims).into())
+            unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx)}.map(|buf| (buf, dims).into())
         });
     }
 
@@ -52,12 +52,11 @@ where
         return Ok(Matrix::from((device, f(&cpu, matrix))))
     }
     
-
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
-    let convert = Matrix::from((device, mat));
-    
+    let mut convert = Matrix::from((device, mat));
+    convert.node = device.graph().add(convert.len, matrix.node.idx);
     Ok(convert)
 }
 
@@ -100,7 +99,7 @@ where
 
             let no_drop_dims = no_drop.dims();
             // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-            unsafe { construct_buffer(device, no_drop.to_buf()) }.map(|buf| (buf, no_drop_dims).into())
+            unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }.map(|buf| (buf, no_drop_dims).into())
         }); 
     }
 
@@ -113,7 +112,10 @@ where
     let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
     let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
 
-    Ok(Matrix::from((device, f(&cpu, &lhs, &rhs))))
+    let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
+    convert.node = device.graph().add(convert.len, (lhs.node.idx, rhs.node.idx));
+
+    Ok(convert)
 }
 
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
