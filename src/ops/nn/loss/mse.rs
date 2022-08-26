@@ -1,8 +1,8 @@
-use custos::{number::Number, CDatatype};
+use custos::CDatatype;
 
-use crate::{AdditionalOps, BaseOps, Matrix, SumOps};
+use crate::Matrix;
 
-pub fn mse<T: CDatatype, D: BaseOps<T> + SumOps<T>>(
+pub fn mse<T: CDatatype>(
     preds: &Matrix<T>,
     targets: &Matrix<T>,
 ) -> T {
@@ -10,10 +10,10 @@ pub fn mse<T: CDatatype, D: BaseOps<T> + SumOps<T>>(
     (&x * &x).mean()
 }
 
-pub fn mse_grad<T: CDatatype, D: BaseOps<T> + AdditionalOps<T>>(
-    preds: &Matrix<T>,
-    targets: &Matrix<T>,
-) -> Matrix<T> {
+pub fn mse_grad<'a, T: CDatatype>(
+    preds: &Matrix<'a, T>,
+    targets: &Matrix<'a, T>,
+) -> Matrix<'a, T> {
     let x = preds - targets;
     (&x * T::two() / T::from_usize(preds.cols())) / T::from_usize(preds.rows())
     
