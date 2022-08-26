@@ -15,7 +15,7 @@ fn test_correlate_slice() {
     let lhs = vec![4f32; 128 * 128];
     let kernel = vec![3f32; 3 * 3];
     let mut out = vec![0.; (128 - 3 + 1) * (128 - 3 + 1)];
-    for _ in 0..100 {
+    for _ in 0..5 {
         correlate_valid_mut(&lhs, (128, 128), &kernel, (3, 3), &mut out);
     }
 }
