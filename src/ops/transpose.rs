@@ -59,7 +59,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
     );
 
     let gws = [x.size(), 0, 0];
-    let out = Cache::get::<T, _, _>(device, x.size(), x.node.idx);
+    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, gws, None, &[x, &out])?;
     Ok((out, x.cols(), x.rows()).into())
 }

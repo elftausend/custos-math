@@ -115,7 +115,7 @@ pub fn cl_gemm<'a, T: CDatatype>(
 
     let gws = [f, s, 0];
 
-    let out = Cache::get::<T, _, _>(device, n * m, (lhs.node.idx, rhs.node.idx));
+    let out = Cache::get::<T, _>(device, n * m, (lhs.node.idx, rhs.node.idx));
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }
