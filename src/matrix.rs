@@ -386,7 +386,7 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CLDevice, Matrix<'b, T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
-        let out = Cache::get::<T, _, _>(device_matrix.0, device_matrix.1.size(), ());
+        let out = Cache::get::<T, _>(device_matrix.0, device_matrix.1.size(), ());
         let event = unsafe {
             enqueue_write_buffer(&device_matrix.0.queue(), out.ptr.1, &device_matrix.1, true).unwrap()
         };

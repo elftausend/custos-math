@@ -27,7 +27,7 @@ pub trait ClipOp<T> {
 
 impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, CPU, _>(self, x.size(), x.node.idx);
+        let mut y = Cache::get::<T, CPU>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
         
         for (idx, value) in x.as_slice().iter().enumerate() {
@@ -71,7 +71,7 @@ fn ocl_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _, _>(device, x.size(), x.node.idx);
+    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }

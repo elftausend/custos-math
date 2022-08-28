@@ -56,7 +56,7 @@ pub fn cl_tew<'a, T: CDatatype>(
     ", datatype=T::as_c_type_str());
 
     let gws = [lhs.len, 0, 0];
-    let out = Cache::get::<T, _, _>(device, lhs.len, (lhs.node.idx, rhs.node.idx));
+    let out = Cache::get::<T, _>(device, lhs.len, (lhs.node.idx, rhs.node.idx));
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }
