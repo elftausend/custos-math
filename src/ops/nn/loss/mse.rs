@@ -33,7 +33,7 @@ pub fn mse_grad_cl<'a, T: CDatatype>(device: &'a CLDevice, preds: &Matrix<'a, T>
         }}
     ", datatype=T::as_c_type_str());
 
-    let out = Cache::get::<T, _>(device, preds.len);
+    let out = Cache::get::<T, _>(device, preds.len, (preds.node.idx, targets.node.idx));
     enqueue_kernel(device, &src, [preds.len, 0, 0], None, &[
         preds, targets, &out, &T::from_usize(preds.cols()), &T::from_usize(preds.rows())
     ]).unwrap();

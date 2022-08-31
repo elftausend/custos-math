@@ -32,17 +32,16 @@ where
 {
     #[cfg(not(feature="realloc"))]
     if device.unified_mem() {
-        // Using the global cpu in order to get a (correct) cache entry.
-        // Due to the (new) caching architecture, using a local cache isn't possible, 
-        // as the cache is newly created every iteration.
-        return custos::GLOBAL_CPU.with(|cpu| {
-            // host ptr matrix
-            let no_drop = f(cpu, matrix);
+        // Using a CPU stored in a CLDevice in order to get a (correct) cache entry.
+        // Due to the (new) caching architecture, using a new CPU isn't possible, 
+        // as the cache would be newly created every iteration.
+        // host ptr matrix
+        let no_drop = f(&device.cpu, matrix);
 
-            let dims = no_drop.dims();
-            // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-            unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx)}.map(|buf| (buf, dims).into())
-        });
+        let dims = no_drop.dims();
+        // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
+        return unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx)}.map(|buf| (buf, dims).into())
+        
     }
 
     let cpu = CPU::new();
@@ -94,13 +93,12 @@ where
 
     #[cfg(not(feature="realloc"))]
     if device.unified_mem() {
-        return custos::GLOBAL_CPU.with(|cpu| {
-            let no_drop = f(cpu, lhs, rhs);
+        let no_drop = f(&device.cpu, lhs, rhs);
 
-            let no_drop_dims = no_drop.dims();
-            // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-            unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }.map(|buf| (buf, no_drop_dims).into())
-        }); 
+        let no_drop_dims = no_drop.dims();
+        // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
+        return unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }.map(|buf| (buf, no_drop_dims).into())
+
     }
 
     #[cfg(feature="realloc")]

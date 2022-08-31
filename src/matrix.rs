@@ -8,7 +8,7 @@ use crate::{AssignOps, BaseOps, Gemm};
 
 use custos::{
     get_device, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
-    GenericBlas, VecRead, GraphReturn, GNode
+    GenericBlas, VecRead, GraphReturn, Node
 };
 #[cfg(feature = "opencl")]
 use custos::{
@@ -316,7 +316,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<'_, T> {
                 // Mind default device, this will not work
                 device: Default::default(),
                 flag: BufFlag::Wrapper,
-                node: GNode::default(),
+                node: Node::default(),
                 p: PhantomData,
             },
             dims,
@@ -338,7 +338,7 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<'_, T> {
                 len: ptr_dims.1 * ptr_dims.2,
                 device: Device::default(),
                 flag: BufFlag::Wrapper,
-                node: GNode::default(),
+                node: Node::default(),
                 p: PhantomData,
             },
             dims: (ptr_dims.1, ptr_dims.2),

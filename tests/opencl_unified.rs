@@ -76,7 +76,7 @@ fn test_unified_opencl() -> custos::Result<()> {
 fn test_unified_calc() -> custos::Result<()> {
     use std::{marker::PhantomData, ptr::null_mut};
 
-    use custos::{AsDev, BufFlag, Buffer, CLDevice, CPU, GNode};
+    use custos::{AsDev, BufFlag, Buffer, CLDevice, CPU, Node};
     use custos_math::cl_tew;
 
     let len = 100;
@@ -92,7 +92,7 @@ fn test_unified_calc() -> custos::Result<()> {
         len,
         device: device.dev(),
         flag: BufFlag::Wrapper,
-        node: GNode::default(),
+        node: Node::default(),
         p: PhantomData,
     };
     let b = Buffer {
@@ -100,7 +100,7 @@ fn test_unified_calc() -> custos::Result<()> {
         len,
         device: device.dev(),
         flag: BufFlag::Wrapper,
-        node: GNode::default(),
+        node: Node::default(),
         p: PhantomData,
     };
 
