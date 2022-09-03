@@ -1,9 +1,9 @@
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_str_op;
+use crate::opencl::cl_str_op_mat;
 use crate::{each_op, Matrix};
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
-use custos::{get_device, devices::cpu::CPU, number::Float, CDatatype};
+use custos::{devices::cpu::CPU, get_device, number::Float, CDatatype};
 
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
@@ -48,27 +48,27 @@ pub trait ActivationOps<T> {
 impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
+        cl_str_op_mat(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
     }
 
     #[inline]
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "tanh(x)").unwrap()
+        cl_str_op_mat(self, x, "tanh(x)").unwrap()
     }
 
     #[inline]
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap()
+        cl_str_op_mat(self, x, "1.0 - pow(tanh(x), 2)").unwrap()
     }
 
     #[inline]
     fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "x * (x >= 0)").unwrap()
+        cl_str_op_mat(self, x, "x * (x >= 0)").unwrap()
     }
 
     #[inline]
     fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "(x >= 0)").unwrap()
+        cl_str_op_mat(self, x, "(x >= 0)").unwrap()
     }
 }
 

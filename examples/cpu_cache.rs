@@ -1,4 +1,4 @@
-use custos::{CPU, Ident};
+use custos::{Ident, CPU};
 use custos_math::Matrix;
 
 fn main() {
@@ -14,6 +14,6 @@ fn main() {
         node.idx = 0;
         cache.nodes.get(&node).unwrap().ptr
     };
-    
+
     assert!(ptr == out.as_buf().ptr.0 as *mut u8);
 }

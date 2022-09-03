@@ -1,8 +1,8 @@
-use std::fmt::Debug;
-use custos::{CLDevice, VecRead, WriteBuf, CPU, GraphReturn};
 use crate::Matrix;
+use custos::{CLDevice, GraphReturn, VecRead, WriteBuf, CPU};
+use std::fmt::Debug;
 
-#[cfg(not(feature="realloc"))]
+#[cfg(not(feature = "realloc"))]
 use custos::opencl::construct_buffer;
 
 /// Compute operations on the CPU even though the matrix was created with an OpenCL device.
@@ -30,27 +30,27 @@ where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
-    #[cfg(not(feature="realloc"))]
+    #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
         // Using a CPU stored in a CLDevice in order to get a (correct) cache entry.
-        // Due to the (new) caching architecture, using a new CPU isn't possible, 
+        // Due to the (new) caching architecture, using a new CPU isn't possible,
         // as the cache would be newly created every iteration.
         // host ptr matrix
         let no_drop = f(&device.cpu, matrix);
 
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx)}.map(|buf| (buf, dims).into())
-        
+        return unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx) }
+            .map(|buf| (buf, dims).into());
     }
 
     let cpu = CPU::new();
 
-    #[cfg(feature="realloc")]
+    #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, matrix))))
+        return Ok(Matrix::from((device, f(&cpu, matrix))));
     }
-    
+
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
@@ -91,27 +91,29 @@ where
 {
     let cpu = CPU::new();
 
-    #[cfg(not(feature="realloc"))]
+    #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
         let no_drop = f(&device.cpu, lhs, rhs);
 
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }.map(|buf| (buf, no_drop_dims).into())
-
+        return unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }
+            .map(|buf| (buf, no_drop_dims).into());
     }
 
-    #[cfg(feature="realloc")]
+    #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))))
+        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
     }
-    
+
     // convert an OpenCL buffer to a cpu buffer
     let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
     let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
 
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
-    convert.node = device.graph().add(convert.len, (lhs.node.idx, rhs.node.idx));
+    convert.node = device
+        .graph()
+        .add(convert.len, (lhs.node.idx, rhs.node.idx));
 
     Ok(convert)
 }

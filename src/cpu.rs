@@ -6,10 +6,7 @@ pub use assign_to_lhs::*;
 pub use correlate::*;
 pub use ew::*;
 
-use custos::{
-    CPU,
-    number::Number, cache::Cache,
-};
+use custos::{cache::Cache, number::Number, CPU};
 
 use crate::Matrix;
 

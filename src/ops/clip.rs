@@ -1,19 +1,11 @@
-use custos::{
-    CPU,
-    get_device,
-    number::Number,
-    CDatatype, cache::Cache,
-};
+use custos::{cache::Cache, get_device, number::Number, CDatatype, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
-use custos::{
-    cuda::launch_kernel1d,
-    Buffer, CudaDevice,
-};
+use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
@@ -29,7 +21,7 @@ impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let mut y = Cache::get::<T, CPU>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
-        
+
         for (idx, value) in x.as_slice().iter().enumerate() {
             if *value < min {
                 y_slice[idx] = min;

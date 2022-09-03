@@ -8,7 +8,7 @@ use crate::cu_str_op;
 use custos::CudaDevice;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_str_op;
+use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
@@ -67,23 +67,23 @@ impl<T: Float> FnsOps<T> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> FnsOps<T> for CLDevice {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "exp(x)").unwrap()
+        cl_str_op_mat(self, x, "exp(x)").unwrap()
     }
 
     fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "log(x)").unwrap()
+        cl_str_op_mat(self, x, "log(x)").unwrap()
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_str_op(self, x, "-x").unwrap()
+        cl_str_op_mat(self, x, "-x").unwrap()
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
-        cl_str_op(self, x, &format!("pow(x, {rhs})")).unwrap()
+        cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 
     fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
-        cl_str_op(self, x, &format!("pow(x, {rhs})")).unwrap()
+        cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 }
 

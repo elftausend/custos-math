@@ -1,6 +1,6 @@
-use custos::{get_device, devices::cpu::CPU, AsDev, Error, VecRead};
 #[cfg(feature = "opencl")]
-use custos::{devices::opencl::CLDevice};
+use custos::devices::opencl::CLDevice;
+use custos::{devices::cpu::CPU, get_device, AsDev, Error, VecRead};
 use custos_math::{BaseOps, Matrix};
 
 #[test]

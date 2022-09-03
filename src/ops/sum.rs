@@ -1,5 +1,5 @@
 use crate::Matrix;
-use custos::{get_device, number::Number, CDatatype, CPU, Cache};
+use custos::{get_device, number::Number, CDatatype, Cache, CPU};
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};

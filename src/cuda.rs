@@ -4,10 +4,7 @@ mod switching;
 pub use ew::*;
 pub use switching::*;
 
-use custos::{
-    cuda::launch_kernel1d,
-    Buffer, CDatatype, CudaDevice, cache::Cache,
-};
+use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice};
 
 pub fn cu_scalar_op<'a, T: CDatatype>(
     device: &'a CudaDevice,

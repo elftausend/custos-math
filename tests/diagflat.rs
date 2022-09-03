@@ -54,7 +54,7 @@ fn test_diagflat_kernel_cl() {
     let device = CLDevice::new(0).unwrap();
 
     let x = Matrix::from((&device, (2, 4), [1.5, 2., 6., 4., 5., 7., 3., 1.]));
-    let out = cl_diagflat(&device, &x).unwrap();
+    let out = cl_diagflat(&device, &x, x.rows(), x.cols()).unwrap();
     let out = Matrix::from((out, x.rows(), x.cols() * x.cols()));
     println!("out: {out:?}");
 

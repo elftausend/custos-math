@@ -3,10 +3,7 @@ use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
-use custos::{
-    cpu::CPU,
-    get_device, CDatatype, cache::Cache,
-};
+use custos::{cache::Cache, cpu::CPU, get_device, CDatatype};
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
@@ -57,7 +54,9 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
 #[cfg(feature = "opencl")]
 pub fn cl_diagflat<'a, T: CDatatype>(
     device: &'a CLDevice,
-    x: &Matrix<T>,
+    x: &Buffer<T>,
+    batch_size: usize,
+    len: usize,
 ) -> custos::Result<Buffer<'a, T>> {
     use custos::opencl::enqueue_kernel;
 
@@ -72,13 +71,13 @@ pub fn cl_diagflat<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.cols() * x.cols() * x.rows(), x.node.idx);
+    let out = Cache::get::<T, _>(device, len * len * batch_size, x.node.idx);
     enqueue_kernel(
         device,
         &src,
-        [x.cols(), x.rows(), 0],
+        [len, batch_size, 0],
         None,
-        &[x, &(x.cols() as i32), &out],
+        &[x, &(len as i32), &out],
     )?;
     Ok(out)
 }

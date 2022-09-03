@@ -11,9 +11,9 @@ mod max;
 mod random;
 mod row_op;
 mod scalar;
+mod scalar_assign;
 mod sum;
 mod transpose;
-mod scalar_assign;
 
 pub use arithmetic::*;
 pub use assign::*;
@@ -26,9 +26,9 @@ pub use max::*;
 pub use random::*;
 pub use row_op::*;
 pub use scalar::*;
+pub use scalar_assign::*;
 pub use sum::*;
 pub use transpose::*;
-pub use scalar_assign::*;
 
 #[cfg(feature = "opencl")]
 use crate::Matrix;

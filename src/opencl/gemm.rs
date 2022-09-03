@@ -1,7 +1,4 @@
-use custos::{
-    opencl::enqueue_kernel,
-    Buffer, CDatatype, CLDevice, Error, cache::Cache,
-};
+use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, CLDevice, Error};
 use std::fmt::Write;
 
 /// OpenCL matrix multiplication of two buffers / matrices.

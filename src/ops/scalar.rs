@@ -2,7 +2,7 @@ use crate::{cpu::scalar_apply, Matrix};
 use custos::{cpu::CPU, get_device, number::Number, CDatatype};
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_scalar_op;
+use crate::opencl::cl_scalar_op_mat;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
@@ -49,15 +49,15 @@ impl<T: CDatatype> AdditionalOps<T> for CudaDevice {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AdditionalOps<T> for CLDevice {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        cl_scalar_op(self, lhs, rhs, "+").unwrap()
+        cl_scalar_op_mat(self, lhs, rhs, "+").unwrap()
     }
 
     fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        cl_scalar_op(self, lhs, rhs, "*").unwrap()
+        cl_scalar_op_mat(self, lhs, rhs, "*").unwrap()
     }
 
     fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
-        cl_scalar_op(self, lhs, rhs, "/").unwrap()
+        cl_scalar_op_mat(self, lhs, rhs, "/").unwrap()
     }
 }
 

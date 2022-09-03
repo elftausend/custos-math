@@ -1,4 +1,4 @@
-use custos::{number::Number, Buffer, CPU, cache::Cache};
+use custos::{cache::Cache, number::Number, Buffer, CPU};
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;

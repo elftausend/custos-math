@@ -5,12 +5,12 @@ use crate::Matrix;
 use custos::{cpu::CPU, get_device, CDatatype, Cache};
 
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::{Buffer, CLDevice};
 
 #[cfg(feature = "cuda")]
 use custos::{
     cuda::api::cublas::{cublasDgeam, cublasOperation_t, cublasSgeam, CublasHandle},
-    CUdeviceptr
+    CUdeviceptr,
 };
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
@@ -28,8 +28,10 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
 #[cfg(feature = "opencl")]
 pub fn cl_transpose<'a, T: CDatatype>(
     device: &'a CLDevice,
-    x: &Matrix<T>,
-) -> custos::Result<Matrix<'a, T>> {
+    x: &Buffer<T>,
+    rows: usize,
+    cols: usize,
+) -> custos::Result<Buffer<'a, T>> {
     use custos::opencl::enqueue_kernel;
 
     let src = format!(
@@ -53,15 +55,13 @@ pub fn cl_transpose<'a, T: CDatatype>(
         }}
     
    ",
-        rows = x.rows(),
-        cols = x.cols(),
         datatype = T::as_c_type_str()
     );
 
-    let gws = [x.size(), 0, 0];
-    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
+    let gws = [x.len, 0, 0];
+    let out = Cache::get::<T, _>(device, x.len, x.node.idx);
     enqueue_kernel(device, &src, gws, None, &[x, &out])?;
-    Ok((out, x.cols(), x.rows()).into())
+    Ok(out)
 }
 
 impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
@@ -86,7 +86,10 @@ impl<T: Default + Copy> TransposeOp<T> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> TransposeOp<T> for CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_transpose(self, x).unwrap()
+        Matrix {
+            data: cl_transpose(self, x, x.rows(), x.cols()).unwrap(),
+            dims: (x.cols(), x.rows()),
+        }
     }
 }
 

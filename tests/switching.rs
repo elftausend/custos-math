@@ -131,7 +131,7 @@ fn test_lr_switch_cuda() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 #[test]
 fn test_graph_opt_switchting_cl() -> custos::Result<()> {
     use custos::Buffer;
@@ -139,9 +139,6 @@ fn test_graph_opt_switchting_cl() -> custos::Result<()> {
     let device = CLDevice::new(0)?;
 
     let buf = Buffer::from((&device, [1, 2, 3, 4, 5, 6]));
-    
-
-
 
     Ok(())
 }

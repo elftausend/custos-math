@@ -76,7 +76,7 @@ fn test_unified_opencl() -> custos::Result<()> {
 fn test_unified_calc() -> custos::Result<()> {
     use std::{marker::PhantomData, ptr::null_mut};
 
-    use custos::{AsDev, BufFlag, Buffer, CLDevice, CPU, Node};
+    use custos::{AsDev, BufFlag, Buffer, CLDevice, Node, CPU};
     use custos_math::cl_tew;
 
     let len = 100;
