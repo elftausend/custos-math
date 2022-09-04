@@ -1,11 +1,3 @@
-mod assign_to_lhs;
-mod correlate;
-mod ew;
-
-pub use assign_to_lhs::*;
-pub use correlate::*;
-pub use ew::*;
-
 use custos::{cache::Cache, number::Number, CPU};
 
 use crate::Matrix;
@@ -18,10 +10,16 @@ pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
 ) -> Matrix<'a, T> {
     let mut out = Cache::get(device, lhs.len, lhs.node.idx);
 
+    scalar_apply_slice(&mut out, lhs, scalar, f);
+
+    (out, lhs.dims()).into()
+}
+
+#[inline]
+pub fn scalar_apply_slice<T: Copy, F: Fn(&mut T, T, T)>(out: &mut [T], lhs: &[T], scalar: T, f: F) {
     for (idx, value) in out.iter_mut().enumerate() {
         f(value, lhs[idx], scalar)
     }
-    (out, lhs.dims()).into()
 }
 
 pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(

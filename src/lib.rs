@@ -8,7 +8,10 @@ mod ops;
 mod syntax;
 pub use matrix::Matrix;
 
-pub mod ext_prelude;
+pub mod raw_ops;
+pub mod raw_prelude;
+
+pub use raw_ops::*;
 
 pub use cpu::*;
 #[cfg(feature = "cuda")]
