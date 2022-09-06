@@ -4,7 +4,7 @@ use custos::{cache::Cache, GenericBlas, CPU};
 use custos::CDatatype;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_gemm;
+use crate::cl_gemm;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 

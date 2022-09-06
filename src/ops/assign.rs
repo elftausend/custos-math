@@ -4,7 +4,7 @@ use custos::{cache::Cache, number::Number, Buffer, CPU};
 use custos::CDatatype;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_tew_self;
+use crate::cl_tew_self;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
