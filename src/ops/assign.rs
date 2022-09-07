@@ -64,11 +64,11 @@ impl<T: Number> AssignOps<T> for CPU {
     fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
-
+    
     fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
     }
-}
+}                           
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AssignOps<T> for CLDevice {

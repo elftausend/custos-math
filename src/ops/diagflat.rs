@@ -8,7 +8,7 @@ use custos::{cache::Cache, cpu::CPU, get_device, CDatatype};
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
-use custos::{Buffer, CLDevice};
+use custos::CLDevice;
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn diagflat(&self) -> Matrix<'a, T> {
@@ -49,35 +49,4 @@ impl<T: CDatatype> DiagflatOp<T> for CLDevice {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(x))
     }
-}
-
-#[cfg(feature = "opencl")]
-pub fn cl_diagflat<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Buffer<T>,
-    batch_size: usize,
-    len: usize,
-) -> custos::Result<Buffer<'a, T>> {
-    use custos::opencl::enqueue_kernel;
-
-    let src = format!(
-        r#"__kernel void diagflat(__global const {datatype}* input, const int cols, __global {datatype}* output) {{
-            size_t x = get_global_id(0);
-            size_t y = get_global_id(1);
-        
-            output[x * cols + x + y * cols * cols] = input[x + y*cols];
-            
-        }}"#,
-        datatype = T::as_c_type_str()
-    );
-
-    let out = Cache::get::<T, _>(device, len * len * batch_size, x.node.idx);
-    enqueue_kernel(
-        device,
-        &src,
-        [len, batch_size, 0],
-        None,
-        &[x, &(len as i32), &out],
-    )?;
-    Ok(out)
 }
