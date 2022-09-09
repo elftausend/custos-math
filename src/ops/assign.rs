@@ -1,10 +1,10 @@
-use custos::{number::Number, Buffer, CPU, cache::Cache};
+use custos::{cache::Cache, number::Number, Buffer, CPU};
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_tew_self;
+use crate::cl_tew_self;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
@@ -55,7 +55,7 @@ pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
     rhs: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = Cache::get(device, lhs.size());
+    let mut out = Cache::get(device, lhs.size(), [lhs.node.idx, rhs.node.idx]);
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()
 }
@@ -64,11 +64,11 @@ impl<T: Number> AssignOps<T> for CPU {
     fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
-
+    
     fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
     }
-}
+}                           
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AssignOps<T> for CLDevice {

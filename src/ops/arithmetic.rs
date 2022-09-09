@@ -6,7 +6,7 @@ use crate::{ew_op, Matrix};
 use custos::CDatatype;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_tew;
+use crate::cl_tew;
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 

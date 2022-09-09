@@ -1,20 +1,17 @@
 #[cfg(feature = "cuda")]
 use std::ptr::null_mut;
 
-use crate::{cached, Matrix};
-use custos::{cpu::CPU, get_device, CDatatype};
-
-#[cfg(feature = "opencl")]
-use custos::CLDevice;
+use crate::Matrix;
+use custos::{cpu::CPU, get_device, CDatatype, Cache};
 
 #[cfg(feature = "cuda")]
 use custos::{
     cuda::api::cublas::{cublasDgeam, cublasOperation_t, cublasSgeam, CublasHandle},
-    CUdeviceptr
+    CUdeviceptr,
 };
 
-#[cfg(any(feature="cuda", feature="opencl"))]
-use custos::cache::Cache;
+#[cfg(feature="opencl")]
+use crate::cl_transpose;
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
     for i in 0..rows {
@@ -26,45 +23,6 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
             b[idx] = *row;
         }
     }
-}
-
-#[cfg(feature = "opencl")]
-pub fn cl_transpose<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Matrix<T>,
-) -> custos::Result<Matrix<'a, T>> {
-    use custos::opencl::enqueue_kernel;
-
-    let src = format!(
-        "
-        #define MODULO(x,N) (x % N)
-        #define I0 {rows}
-        #define I1 {cols}
-        #define I_idx(i0,i1) ((size_t)(i0))*I1+(i1)
-        #define I_idx_mod(i0,i1) MODULO( ((size_t)(i0)) ,I0)*I1+MODULO( (i1),I1)
-
-        #define MODULO(x,N) (x % N)
-        #define O0 {cols}
-        #define O1 {rows}
-        #define O_idx(o0,o1) ((size_t)(o0))*O1+(o1)
-        #define O_idx_mod(o0,o1) MODULO( ((size_t)(o0)) ,O0)*O1+MODULO( (o1),O1)
-        __kernel void transpose(__global const {datatype}* I, __global {datatype}* O) {{
-            size_t gid = get_global_id(0);
-            size_t gid_original = gid;size_t i1 = gid % I1;size_t i0 = gid / I1;gid = gid_original;
-        
-            O[O_idx(i1,i0)] = I[gid];
-        }}
-    
-   ",
-        rows = x.rows(),
-        cols = x.cols(),
-        datatype = T::as_c_type_str()
-    );
-
-    let gws = [x.size(), 0, 0];
-    let out = Cache::get::<T, _>(device, x.size());
-    enqueue_kernel(device, &src, gws, None, &[x, &out])?;
-    Ok((out, x.cols(), x.rows()).into())
 }
 
 impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
@@ -80,23 +38,26 @@ pub trait TransposeOp<T> {
 
 impl<T: Default + Copy> TransposeOp<T> for CPU {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut out = cached(self, (x.cols(), x.rows()));
+        let mut out = Cache::get(self, x.len, x.node.idx);
         slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
-        out
+        (out, x.cols(), x.rows()).into()
     }
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> TransposeOp<T> for CLDevice {
+impl<T: CDatatype> TransposeOp<T> for custos::CLDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        cl_transpose(self, x).unwrap()
+        Matrix {
+            data: cl_transpose(self, x, x.rows(), x.cols()).unwrap(),
+            dims: (x.cols(), x.rows()),
+        }
     }
 }
 
 #[cfg(feature = "cuda")]
 impl<T: CudaTranspose> TransposeOp<T> for custos::CudaDevice {
     fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let out = Cache::get(self, x.len());
+        let out = Cache::get(self, x.len(), x.node.idx);
         T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.2, out.ptr.2).unwrap();
         (out, x.cols(), x.rows()).into()
     }

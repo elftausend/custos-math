@@ -1,21 +1,6 @@
-mod assign_to_lhs;
-mod correlate;
-mod ew;
-
-pub use assign_to_lhs::*;
-pub use correlate::*;
-pub use ew::*;
-
-use custos::{
-    CPU,
-    number::Number, cache::Cache,
-};
+use custos::{cache::Cache, number::Number, CPU};
 
 use crate::Matrix;
-
-pub fn cached<T: Default + Copy>(device: &CPU, dims: (usize, usize)) -> Matrix<T> {
-    (Cache::get(device, dims.0 * dims.1), dims).into()
-}
 
 pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
     device: &'a CPU,
@@ -23,12 +8,18 @@ pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
     scalar: T,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut y = cached(device, lhs.dims());
+    let mut out = Cache::get(device, lhs.len, lhs.node.idx);
 
-    for (idx, value) in y.iter_mut().enumerate() {
+    scalar_apply_slice(&mut out, lhs, scalar, f);
+
+    (out, lhs.dims()).into()
+}
+
+#[inline]
+pub fn scalar_apply_slice<T: Copy, F: Fn(&mut T, T, T)>(out: &mut [T], lhs: &[T], scalar: T, f: F) {
+    for (idx, value) in out.iter_mut().enumerate() {
         f(value, lhs[idx], scalar)
     }
-    y
 }
 
 pub fn row_op_slice_mut<T: Copy, F: Fn(&mut T, T, T)>(
@@ -73,9 +64,9 @@ pub fn row_op<'a, T: Number, F: Fn(&mut T, T, T)>(
 ) -> Matrix<'a, T> {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
-    let mut out = cached(device, lhs.dims());
+    let mut out = Cache::get(device, lhs.len, [lhs.node.idx, rhs.node.idx]);
     row_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
-    out
+    (out, lhs.dims()).into()
 }
 
 pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
@@ -84,7 +75,7 @@ pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
     rhs: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = cached(device, lhs.dims());
+    let mut out = Cache::get(device, lhs.len, [lhs.node.idx, rhs.node.idx]);
 
     // TODO: refactor to function
     //rows
@@ -97,7 +88,7 @@ pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
             i += 1;
         }
     }
-    out
+    (out, lhs.dims()).into()
 }
 
 pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(
@@ -105,7 +96,7 @@ pub fn each_op<'a, T: Copy + Default, F: Fn(T) -> T>(
     x: &Matrix<T>,
     f: F,
 ) -> Matrix<'a, T> {
-    let mut out = Cache::get(device, x.size());
+    let mut out = Cache::get(device, x.size(), x.node.idx);
 
     for (idx, value) in out.iter_mut().enumerate() {
         *value = f(x[idx]);

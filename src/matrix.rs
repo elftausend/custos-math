@@ -7,22 +7,19 @@ use std::{
 use crate::{AssignOps, BaseOps, Gemm};
 
 use custos::{
-    get_device, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device,
-    GenericBlas, VecRead
+    get_device, Alloc, BufFlag, Buffer, CDatatype, CUdeviceptr, Device, GenericBlas, GraphReturn,
+    Node, VecRead,
 };
 #[cfg(feature = "opencl")]
 use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
-    CLDevice
+    CLDevice,
 };
 
 #[cfg(feature = "cuda")]
-use custos::{
-    cuda::api::cu_write,
-    CudaDevice,
-};
+use custos::{cuda::api::cu_write, CudaDevice};
 
-#[cfg(any(feature="cuda", feature="opencl"))]
+#[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::cache::Cache;
 
 /// A matrix using [Buffer] described with rows and columns
@@ -41,8 +38,8 @@ use custos::cache::Cache;
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
 pub struct Matrix<'a, T> {
-    data: Buffer<'a, T>,
-    dims: (usize, usize),
+    pub data: Buffer<'a, T>,
+    pub dims: (usize, usize),
 }
 
 impl<'a, T> Matrix<'a, T> {
@@ -58,7 +55,7 @@ impl<'a, T> Matrix<'a, T> {
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
-    pub fn new<D: Alloc<T>>(device: &D, dims: (usize, usize)) -> Matrix<T> {
+    pub fn new<D: Alloc<T> + GraphReturn>(device: &D, dims: (usize, usize)) -> Matrix<T> {
         Matrix {
             data: Buffer::new(device, dims.0 * dims.1),
             dims,
@@ -234,24 +231,29 @@ impl<'a, T> Matrix<'a, T> {
         device.read(self.as_buf())
     }
 
-    /// Creates a shallow copy of &self. 
-    pub fn shallow(&self) -> Matrix<'a, T> { 
+    /// Creates a shallow copy of &self.
+    pub fn shallow(&self) -> Matrix<'a, T> {
         unsafe {
-            Self { data: self.data.shallow(), dims: self.dims }
+            Self {
+                data: self.data.shallow(),
+                dims: self.dims,
+            }
         }
     }
 
     /// Creates a shallow copy or a deep copy of &self, depening on whether the `realloc` feature is activated.
-    pub fn shallow_or_clone(&self) -> Matrix<'a, T> 
+    pub fn shallow_or_clone(&self) -> Matrix<'a, T>
     where
-        T: Clone
-    { 
+        T: Clone,
+    {
         unsafe {
-            Self { data: self.data.shallow_or_clone(), dims: self.dims }
+            Self {
+                data: self.data.shallow_or_clone(),
+                dims: self.dims,
+            }
         }
     }
 }
-
 
 impl<T> Default for Matrix<'_, T> {
     fn default() -> Self {
@@ -273,6 +275,12 @@ impl<'a, T> std::ops::Deref for Matrix<'a, T> {
 impl<'a, T> std::ops::DerefMut for Matrix<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut_buf()
+    }
+}
+
+impl<'a, T: Clone> Clone for Matrix<'a, T> {
+    fn clone(&self) -> Self {
+        Self { data: self.data.clone(), dims: self.dims.clone() }
     }
 }
 
@@ -315,6 +323,7 @@ impl<T> From<(*mut T, (usize, usize))> for Matrix<'_, T> {
                 // Mind default device, this will not work
                 device: Default::default(),
                 flag: BufFlag::Wrapper,
+                node: Node::default(),
                 p: PhantomData,
             },
             dims,
@@ -334,6 +343,7 @@ impl<T> From<(*mut T, usize, usize)> for Matrix<'_, T> {
                 len: ptr_dims.1 * ptr_dims.2,
                 device: Device::default(),
                 flag: BufFlag::Wrapper,
+                node: Node::default(),
                 p: PhantomData,
             },
             dims: (ptr_dims.1, ptr_dims.2),
@@ -380,25 +390,28 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CLDevice, Matrix<'b, T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
-        let y = Cache::get::<T, _>(device_matrix.0, device_matrix.1.size());
+        let out = Cache::get::<T, _>(device_matrix.0, device_matrix.1.size(), ());
         let event = unsafe {
-            enqueue_write_buffer(&device_matrix.0.queue(), y.ptr.1, &device_matrix.1, true).unwrap()
+            enqueue_write_buffer(&device_matrix.0.queue(), out.ptr.1, &device_matrix.1, true)
+                .unwrap()
         };
         wait_for_event(event).unwrap();
-        Matrix::from((y, device_matrix.1.dims()))
+        Matrix::from((out, device_matrix.1.dims()))
     }
 }
 
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CudaDevice, Matrix<'b, T>)) -> Self {
-        let dst = Cache::get(device_matrix.0, device_matrix.1.size());
+        let dst = Cache::get(device_matrix.0, device_matrix.1.size(), ());
         cu_write(dst.ptr.2, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized, const N: usize>
+    From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, (usize, usize), [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -408,9 +421,11 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, (usize, usi
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize)> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, usize, usize)>
+    for Matrix<'a, T>
+{
     fn from(device_dims: (&'a D, usize, usize)) -> Self {
-        let data = Buffer::new(device_dims.0, device_dims.1*device_dims.2);
+        let data = Buffer::new(device_dims.0, device_dims.1 * device_dims.2);
         Matrix {
             data,
             dims: (device_dims.1, device_dims.2),
@@ -418,18 +433,22 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize)> for Matrix<'
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize))> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize))>
+    for Matrix<'a, T>
+{
     fn from(device_dims: (&'a D, (usize, usize))) -> Self {
-        let data = Buffer::new(device_dims.0, device_dims.1.0*device_dims.1.1);
+        let data = Buffer::new(device_dims.0, device_dims.1 .0 * device_dims.1 .1);
         Matrix {
             data,
-            dims: device_dims.1
+            dims: device_dims.1,
         }
     }
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized, const N: usize>
+    From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, usize, usize, [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -439,7 +458,9 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized, const N: usize> From<(&'a D, usize, usiz
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
+    for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, (usize, usize), Vec<T>)) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -450,7 +471,9 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)> fo
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, Vec<T>)> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
+    for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, usize, usize, Vec<T>)) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -460,7 +483,9 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, Vec<T>)> for 
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), &[T])> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &[T])>
+    for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, (usize, usize), &[T])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {
@@ -471,7 +496,9 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), &[T])> for 
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, &[T])> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, &[T])>
+    for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, usize, usize, &[T])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -481,7 +508,9 @@ impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, usize, usize, &[T])> for Ma
     }
 }
 
-impl<'a, T: Copy, D: Alloc<T> + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)> for Matrix<'a, T> {
+impl<'a, T: Copy, D: Alloc<T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
+    for Matrix<'a, T>
+{
     fn from(dims_slice: (&'a D, (usize, usize), &Vec<T>)) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
         Matrix {

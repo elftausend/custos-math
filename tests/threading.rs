@@ -20,7 +20,7 @@ fn test_threading_cpu() {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        
+
         assert_eq!(device.cache.borrow().nodes.len(), 1);
 
         for _ in range(500) {
@@ -84,7 +84,7 @@ fn test_threading_cpu() {
             }
         } //'device' is dropped
 
-       // assert_eq!(device.cache.borrow().nodes.len(), 0);
+        // assert_eq!(device.cache.borrow().nodes.len(), 0);
     });
 
     let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
@@ -97,7 +97,6 @@ fn test_threading_cpu() {
 
     assert_eq!(device.cache.borrow().nodes.len(), 1);
 
-    
     use custos_math::Matrix;
 
     th1_cl.join().unwrap();

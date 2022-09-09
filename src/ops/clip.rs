@@ -1,19 +1,11 @@
-use custos::{
-    CPU,
-    get_device,
-    number::Number,
-    CDatatype, cache::Cache,
-};
+use custos::{cache::Cache, get_device, number::Number, CDatatype, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::CLDevice;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
-use custos::{
-    cuda::launch_kernel1d,
-    Buffer, CudaDevice,
-};
+use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
@@ -27,9 +19,9 @@ pub trait ClipOp<T> {
 
 impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, CPU>(self, x.size());
+        let mut y = Cache::get::<T, CPU>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
-        
+
         for (idx, value) in x.as_slice().iter().enumerate() {
             if *value < min {
                 y_slice[idx] = min;
@@ -44,7 +36,7 @@ impl<T: Number> ClipOp<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-fn ocl_clip<'a, T: CDatatype>(
+fn cl_clip<'a, T: CDatatype>(
     device: &'a CLDevice,
     x: &Matrix<T>,
     min: T,
@@ -71,7 +63,7 @@ fn ocl_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.size());
+    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }
@@ -79,7 +71,7 @@ fn ocl_clip<'a, T: CDatatype>(
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        ocl_clip(self, x, min, max).unwrap()
+        cl_clip(self, x, min, max).unwrap()
     }
 }
 
@@ -110,13 +102,13 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.len());
+    let out = Cache::get::<T, _>(device, x.len(), x.node.idx);
     launch_kernel1d(
         x.len(),
         device,
         &src,
         "clip",
-        vec![x, &min, &max, &out, &x.len],
+        &[x, &min, &max, &out, &x.len],
     )?;
     Ok(out)
 }

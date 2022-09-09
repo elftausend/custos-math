@@ -11,3 +11,12 @@ where
         f(&mut lhs_slice[idx], rhs[idx])
     }
 }
+
+pub fn assign_to_lhs_scalar<T: Copy, F>(lhs: &mut [T], rhs: T, f: F)
+where
+    F: Fn(&mut T, T),
+{
+    for value in lhs {
+        f(value, rhs)
+    }
+}
