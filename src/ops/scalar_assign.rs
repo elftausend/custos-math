@@ -43,6 +43,21 @@ impl<T> ScalarAssign<T> for CLDevice {
     }
 }
 
+#[cfg(feature = "cuda")]
+impl<T> ScalarAssign<T> for custos::CudaDevice {
+    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
+
+    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
+
+    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+        todo!()
+    }
+}
+
 impl<T: Number> AddAssign<T> for Matrix<'_, T> {
     fn add_assign(&mut self, rhs: T) {
         get_device!(self.device(), ScalarAssign<T>).adds_assign(self, rhs);

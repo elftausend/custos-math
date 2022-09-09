@@ -278,6 +278,12 @@ impl<'a, T> std::ops::DerefMut for Matrix<'a, T> {
     }
 }
 
+impl<'a, T: Clone> Clone for Matrix<'a, T> {
+    fn clone(&self) -> Self {
+        Self { data: self.data.clone(), dims: self.dims.clone() }
+    }
+}
+
 // From conversions
 
 impl<'a, T> From<(Buffer<'a, T>, (usize, usize))> for Matrix<'a, T> {
@@ -397,7 +403,7 @@ impl<'a, 'b, T> From<(&'a CLDevice, Matrix<'b, T>)> for Matrix<'a, T> {
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CudaDevice, Matrix<'b, T>)> for Matrix<'a, T> {
     fn from(device_matrix: (&'a CudaDevice, Matrix<'b, T>)) -> Self {
-        let dst = Cache::get(device_matrix.0, device_matrix.1.size());
+        let dst = Cache::get(device_matrix.0, device_matrix.1.size(), ());
         cu_write(dst.ptr.2, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))
     }

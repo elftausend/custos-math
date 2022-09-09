@@ -36,7 +36,7 @@ impl<T: Number> ClipOp<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-fn ocl_clip<'a, T: CDatatype>(
+fn cl_clip<'a, T: CDatatype>(
     device: &'a CLDevice,
     x: &Matrix<T>,
     min: T,
@@ -71,7 +71,7 @@ fn ocl_clip<'a, T: CDatatype>(
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ClipOp<T> for CLDevice {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        ocl_clip(self, x, min, max).unwrap()
+        cl_clip(self, x, min, max).unwrap()
     }
 }
 
@@ -102,13 +102,13 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.len());
+    let out = Cache::get::<T, _>(device, x.len(), x.node.idx);
     launch_kernel1d(
         x.len(),
         device,
         &src,
         "clip",
-        vec![x, &min, &max, &out, &x.len],
+        &[x, &min, &max, &out, &x.len],
     )?;
     Ok(out)
 }

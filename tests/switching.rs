@@ -138,7 +138,7 @@ fn test_graph_opt_switchting_cl() -> custos::Result<()> {
 
     let device = CLDevice::new(0)?;
 
-    let buf = Buffer::from((&device, [1, 2, 3, 4, 5, 6]));
+    let _buf = Buffer::from((&device, [1, 2, 3, 4, 5, 6]));
 
     Ok(())
 }
