@@ -34,10 +34,22 @@ impl<'a, T: CDatatype + Float> Matrix<'a, T> {
         let device = get_device!(self.device(), ActivationOps<T>);
         device.relu_grad(self)
     }
+
+    #[inline]
+    pub fn sigmoid(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), ActivationOps<T>).sigmoid(self)
+    }
+
+    #[inline]
+    /// uses pre-computed sigmoid activation
+    pub fn sigmoid_grad(&self) -> Matrix<'a, T> {
+        get_device!(self.device(), ActivationOps<T>).sigmoid_grad(self)
+    }
 }
 
 pub trait ActivationOps<T> {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T>;
+    fn sigmoid_grad(&self, x: &Matrix<T>) -> Matrix<T>;
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T>;
     fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T>;
     fn relu(&self, x: &Matrix<T>) -> Matrix<T>;
@@ -49,6 +61,10 @@ impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op_mat(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
+    }
+
+    fn sigmoid_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+        cl_str_op_mat(self, x, "x * (1.0 - x)").unwrap()
     }
 
     #[inline]
@@ -77,6 +93,10 @@ impl<T: Float> ActivationOps<T> for CPU {
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
     }
+    #[inline]
+    fn sigmoid_grad(&self, activated: &Matrix<T>) -> Matrix<T> {
+        each_op(self, activated, |x| x * (T::one() - x))
+    }
 
     #[inline]
     fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
@@ -104,6 +124,11 @@ impl<T: CDatatype> ActivationOps<T> for CudaDevice {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();
+        (out, x.dims()).into()
+    }
+
+    fn sigmoid_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+        let out = cu_str_op(self, x, "x * (1.0 - x)").unwrap();
         (out, x.dims()).into()
     }
 

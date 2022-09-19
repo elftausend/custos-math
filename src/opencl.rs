@@ -6,7 +6,7 @@ use custos::{
     devices::opencl::cl_device::CLDevice,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
-        AsClCvoidPtr, construct_buffer,
+        AsClCvoidPtr,
     },
     Buffer, CDatatype, Error, CPU, GraphReturn, VecRead, WriteBuf,
 };
@@ -86,7 +86,7 @@ where
 
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { construct_buffer(device, no_drop.to_buf(), matrix.node.idx) }
+        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx) }
             .map(|buf| (buf, dims).into());
     }
 
@@ -143,7 +143,7 @@ where
 
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }
+        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }
             .map(|buf| (buf, no_drop_dims).into());
     }
 
