@@ -52,7 +52,7 @@ impl<T: Float> FnsOps<T> for CPU {
     }
 
     fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
-        each_op(self, x, |x| x.negate())
+        each_op(self, x, |x| -x)
     }
 
     fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {

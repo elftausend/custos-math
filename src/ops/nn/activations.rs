@@ -91,7 +91,7 @@ impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
 impl<T: Float> ActivationOps<T> for CPU {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
-        each_op(self, x, |x| T::one() / (T::one() + x.negate().exp()))
+        each_op(self, x, |x| T::one() / (T::one() + -x.exp()))
     }
     #[inline]
     fn sigmoid_grad(&self, activated: &Matrix<T>) -> Matrix<T> {
