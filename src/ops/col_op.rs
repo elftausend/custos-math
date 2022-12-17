@@ -1,27 +1,27 @@
 use crate::{cpu::col_op, Matrix};
-use custos::{number::Number, CPU};
+use custos::{number::Number, CPU, Device, MainMemory};
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_lr;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-pub trait ColOp<T> {
-    fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
-    fn sub_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
-    fn div_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+pub trait ColOp<T, D: Device>: Device {
+    fn add_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn sub_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn div_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Number> ColOp<T> for CPU {
-    fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+impl<T: Number, D: MainMemory> ColOp<T, D> for CPU {
+    fn add_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a + b)
     }
 
-    fn sub_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn sub_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a - b)
     }
 
-    fn div_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn div_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a / b)
     }
 }

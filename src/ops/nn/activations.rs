@@ -12,33 +12,33 @@ use custos::CudaDevice;
 
 impl<'a, T: CDatatype + Float> Matrix<'a, T> {
     #[inline]
-    pub fn tanh(&'a self) -> Matrix<'a, T> {
+    pub fn tanh(&self) -> Matrix<'a, T> {
         self.device().tanh(self)
     }
 
     #[inline]
-    pub fn tanh_grad(&'a self) -> Matrix<'a, T> {
+    pub fn tanh_grad(&self) -> Matrix<'a, T> {
         self.device().tanh_grad(self)
     }
 
     #[inline]
-    pub fn relu(&'a self) -> Matrix<'a, T> {
+    pub fn relu(&self) -> Matrix<'a, T> {
         self.device().relu(self)
     }
 
     #[inline]
-    pub fn relu_grad(&'a self) -> Matrix<'a, T> {
+    pub fn relu_grad(&self) -> Matrix<'a, T> {
         self.device().relu_grad(self)
     }
 
     #[inline]
-    pub fn sigmoid(&'a self) -> Matrix<'a, T> {
+    pub fn sigmoid(&self) -> Matrix<'a, T> {
         self.device().sigmoid(self)
     }
 
     #[inline]
     /// uses pre-computed sigmoid activation
-    pub fn sigmoid_grad(&'a self) -> Matrix<'a, T> {
+    pub fn sigmoid_grad(&self) -> Matrix<'a, T> {
         self.device().sigmoid_grad(self)
     }
 }

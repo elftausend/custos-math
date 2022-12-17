@@ -1,5 +1,5 @@
 use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps};
-use custos::{get_device, number::Float, CDatatype, CPU};
+use custos::{number::Float, CDatatype, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -7,6 +7,9 @@ use custos::OpenCL;
 pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);
 }
+
+
+/* 
 
 impl<T: Float + CDatatype> CCE<T> for Matrix<'_, T>
 where
@@ -41,3 +44,4 @@ pub fn cce_grad<'a, T: Float>(
     let grad = device.neg(&device.div(targets, preds));
     device.divs(&grad, T::from_usize(preds.rows()))
 }
+*/

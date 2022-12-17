@@ -1,4 +1,4 @@
-use custos::{cache::Cache, number::Number, CDatatype, CPU};
+use custos::{cache::Cache, number::Number, CDatatype, CPU, Device, MainMemory};
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -13,12 +13,12 @@ impl<'a, T: CDatatype> Matrix<'a, T> {
     }
 }
 
-pub trait ClipOp<T> {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T>;
+pub trait ClipOp<T, D: Device>: Device {
+    fn clip(&self, x: &Matrix<T, D>, min: T, max: T) -> Matrix<T, Self>;
 }
 
-impl<T: Number> ClipOp<T> for CPU {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+impl<T: Number, D: MainMemory> ClipOp<T, D> for CPU {
+    fn clip(&self, x: &Matrix<T, D>, min: T, max: T) -> Matrix<T> {
         let mut y = Cache::get::<T, 0>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
 

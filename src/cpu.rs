@@ -69,10 +69,10 @@ pub fn row_op<'a, T: Number, F: Fn(&mut T, T, T)>(
     (out, lhs.dims()).into()
 }
 
-pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T)>(
+pub fn col_op<'a, T: Number, F: Fn(&mut T, T, T), D: MainMemory>(
     device: &'a CPU,
-    lhs: &Matrix<T>,
-    rhs: &Matrix<T>,
+    lhs: &Matrix<T, D>,
+    rhs: &Matrix<T, D>,
     f: F,
 ) -> Matrix<'a, T> {
     let mut out = Cache::get(device, lhs.len, [lhs.node.idx, rhs.node.idx]);

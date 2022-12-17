@@ -1,5 +1,5 @@
 use custos::CPU;
-use custos_math::{nn::cce, Matrix};
+use custos_math::{Matrix};
 
 #[test]
 fn test_cce() {
@@ -9,5 +9,6 @@ fn test_cce() {
 
     let y = Matrix::from((&device, (2, 3), [0., 0., 1., 0., 1., 0.]));
     let res = cce(&device, &x, &y);
+
     println!("res: {:?}", res);
 }
