@@ -1,14 +1,14 @@
-use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, CLDevice, Error};
+use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, OpenCL, Error};
 use std::fmt::Write;
 
 /// OpenCL matrix multiplication of two buffers / matrices.
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, VecRead};
 /// use custos_math::cl_gemm;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CLDevice::new(0)?;
+///     let device = OpenCL::new(0)?;
 ///     let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8, 5]));
 ///     let rhs = Buffer::<i16>::from((&device, [3, 2, 7, 1, 9, 20]));
 ///     
@@ -18,7 +18,7 @@ use std::fmt::Write;
 /// }
 /// ```
 pub fn cl_gemm<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     m: usize,
     k: usize,
     n: usize,

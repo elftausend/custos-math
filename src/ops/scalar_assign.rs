@@ -1,9 +1,9 @@
 use crate::{assign_to_lhs_scalar, Matrix};
-use custos::{get_device, CPU, CDatatype};
+use custos::{CPU, CDatatype};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 #[cfg(feature = "opencl")]
 use crate::cl_assign_scalar;
 
@@ -41,7 +41,7 @@ where
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> ScalarAssign<T> for CLDevice {
+impl<T: CDatatype> ScalarAssign<T> for OpenCL {
     fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "+").unwrap();
     }
@@ -78,20 +78,23 @@ impl<T: CDatatype> ScalarAssign<T> for CudaDevice {
     }
 }
 
-impl<T: CDatatype> AddAssign<T> for Matrix<'_, T> {
+impl<'a, T: CDatatype> AddAssign<T> for Matrix<'a, T> {
     fn add_assign(&mut self, rhs: T) {
-        get_device!(self.device(), ScalarAssign<T>).adds_assign(self, rhs);
+        todo!()
+        //self.device().adds_assign(self, rhs);
     }
 }
 
 impl<T: CDatatype> MulAssign<T> for Matrix<'_, T> {
     fn mul_assign(&mut self, rhs: T) {
-        get_device!(self.device(), ScalarAssign<T>).muls_assign(self, rhs);
+        todo!()
+        //self.device().muls_assign(self, rhs);
     }
 }
 
 impl<T: CDatatype> DivAssign<T> for Matrix<'_, T> {
     fn div_assign(&mut self, rhs: T) {
-        get_device!(self.device(), ScalarAssign<T>).divs_assign(self, rhs);
+        todo!()
+        //self.device().divs_assign(self, rhs);
     }
 }

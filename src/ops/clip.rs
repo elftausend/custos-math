@@ -1,7 +1,7 @@
-use custos::{cache::Cache, get_device, number::Number, CDatatype, CPU};
+use custos::{cache::Cache, number::Number, CDatatype, CPU};
 
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
@@ -9,7 +9,7 @@ use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T> {
-        get_device!(self.device(), ClipOp<T>).clip(self, min, max)
+        self.device().clip(self, min, max)
     }
 }
 
@@ -19,7 +19,7 @@ pub trait ClipOp<T> {
 
 impl<T: Number> ClipOp<T> for CPU {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, CPU>(self, x.size(), x.node.idx);
+        let mut y = Cache::get::<T, 0>(self, x.size(), x.node.idx);
         let y_slice = y.as_mut_slice();
 
         for (idx, value) in x.as_slice().iter().enumerate() {
@@ -37,7 +37,7 @@ impl<T: Number> ClipOp<T> for CPU {
 
 #[cfg(feature = "opencl")]
 fn cl_clip<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Matrix<T>,
     min: T,
     max: T,
@@ -63,13 +63,13 @@ fn cl_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
+    let out = Cache::get::<T, 0>(device, x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> ClipOp<T> for CLDevice {
+impl<T: CDatatype> ClipOp<T> for OpenCL {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         cl_clip(self, x, min, max).unwrap()
     }

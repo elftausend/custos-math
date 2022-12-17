@@ -1,7 +1,7 @@
 use crate::Matrix;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
-use custos::{get_device, number::Float, Alloc, Buffer, CPU};
+use custos::OpenCL;
+use custos::{number::Float, Alloc, Buffer, CPU};
 //use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
 #[cfg(feature = "opencl")]
@@ -12,8 +12,7 @@ pub trait RandBuf<T> {
 }
 impl<T: Float> RandBuf<T> for Buffer<'_, T> {
     fn rand(&mut self, lo: T, hi: T) {
-        let device = get_device!(self.device, RandOp<T>);
-        device.rand(self, lo, hi)
+        self.device().rand(self, lo, hi)
     }
 }
 
@@ -23,7 +22,7 @@ impl<'a, T: Float> Matrix<'a, T> {
     }
 }
 
-pub trait RandOp<T>: Alloc<T> {
+pub trait RandOp<T> {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T);
 }
 
@@ -41,7 +40,7 @@ impl<T: Float> RandOp<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: Float> RandOp<T> for CLDevice {
+impl<T: Float> RandOp<T> for OpenCL {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         if self.unified_mem() {
             return rand_slice(x, lo, hi);

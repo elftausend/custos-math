@@ -1,10 +1,10 @@
-use custos::{cache::Cache, number::Number, CPU};
+use custos::{cache::Cache, number::Number, CPU, MainMemory};
 
 use crate::Matrix;
 
-pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T)>(
+pub fn scalar_apply<'a, T: Number, F: Fn(&mut T, T, T), D: MainMemory>(
     device: &'a CPU,
-    lhs: &Matrix<T>,
+    lhs: &Matrix<T, D>,
     scalar: T,
     f: F,
 ) -> Matrix<'a, T> {

@@ -22,7 +22,7 @@ fn test_softmax_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_softmax_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
     let activated = Matrix::from((&device, (2, 3), [0.1, 0.1, 0.8, 0.9, 0.05, 0.05]));
@@ -38,7 +38,7 @@ fn test_softmax_cl() -> custos::Result<()> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_softmax_kernel_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
     let activated = Matrix::from((&device, (2, 3), [0.1, 0.1, 0.8, 0.9, 0.05, 0.05]));

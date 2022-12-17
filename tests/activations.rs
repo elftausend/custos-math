@@ -12,7 +12,7 @@ fn test_relu() {
     let res = device.relu_grad(&x);
     assert_eq!(res.read(), [0., 1., 0., 1., 1.]);
 
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let x = Matrix::from((&device, (1, 5), [-1.31f32, 2.12, -0.68, 5., 4.]));
     let res = device.relu(&x);

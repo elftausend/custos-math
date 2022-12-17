@@ -1,7 +1,7 @@
-use custos::{CLDevice, Buffer, CDatatype, opencl::enqueue_kernel};
+use custos::{OpenCL, Buffer, CDatatype, opencl::enqueue_kernel};
 
 pub fn cl_assign_scalar<'a, T>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Buffer<T>,
     scalar: T,
     op: &str,

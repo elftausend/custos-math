@@ -1,4 +1,4 @@
-use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, CLDevice};
+use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, OpenCL};
 
 trait Both {
     fn as_str<'a>() -> &'a str;
@@ -26,11 +26,11 @@ impl <T: !GenericOCL>Both for T {
 ///
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, VecRead};
 /// use custos_math::cl_tew;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CLDevice::new(0)?;
+///     let device = OpenCL::new(0)?;
 ///     let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8]));
 ///     let rhs = Buffer::<i16>::from((&device, [10, 9, 8, 6, 3]));
 ///
@@ -40,7 +40,7 @@ impl <T: !GenericOCL>Both for T {
 /// }
 /// ```
 pub fn cl_tew<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     lhs: &Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,
@@ -62,11 +62,11 @@ pub fn cl_tew<'a, T: CDatatype>(
 ///
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, VecRead};
 /// use custos_math::cl_tew_self;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CLDevice::new(0)?;
+///     let device = OpenCL::new(0)?;
 ///     let mut lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8]));
 ///     let rhs = Buffer::<i16>::from((&device, [10, 9, 8, 6, 3]));
 ///
@@ -76,7 +76,7 @@ pub fn cl_tew<'a, T: CDatatype>(
 /// }
 /// ```
 pub fn cl_tew_self<T: CDatatype>(
-    device: &CLDevice,
+    device: &OpenCL,
     lhs: &mut Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,

@@ -15,7 +15,7 @@ fn test_col_op() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_col_op_cl() {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (3, 3), [1., 2., 3., 4., 5., 6., 7., 8., 9.]));
     let b = Matrix::from((&device, (3, 1), [1., 2., 3.]));

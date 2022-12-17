@@ -3,19 +3,19 @@
 
 use std::fmt::Debug;
 use custos::{
-    devices::opencl::cl_device::CLDevice,
+    devices::opencl::cl_device::OpenCL,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error, CPU, GraphReturn, VecRead, WriteBuf,
+    Buffer, CDatatype, Error, CPU, GraphReturn, WriteBuf,
 };
 
 use crate::{cl_scalar_op, cl_str_op, Matrix};
 
 #[inline]
 pub fn cl_str_op_mat<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Matrix<T>,
     op: &str,
 ) -> Result<Matrix<'a, T>, Error> {
@@ -24,7 +24,7 @@ pub fn cl_str_op_mat<'a, T: CDatatype>(
 }
 
 pub fn cl_scalar_op_mat<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Matrix<T>,
     scalar: T,
     op: &str,
@@ -33,7 +33,7 @@ pub fn cl_scalar_op_mat<'a, T: CDatatype>(
     Ok((out, x.dims()).into())
 }
 
-pub fn cl_write<T>(device: &CLDevice, x: &mut Buffer<T>, data: &[T]) {
+pub fn cl_write<T>(device: &OpenCL, x: &mut Buffer<T>, data: &[T]) {
     let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.1, data, true).unwrap() };
     wait_for_event(event).unwrap();
 }
@@ -56,11 +56,11 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
 ///
 /// # Example
 /// ```
-/// use custos::{CLDevice, VecRead};
+/// use custos::{OpenCL, VecRead};
 /// use custos_math::{Matrix, opencl::cpu_exec, FnsOps};
 ///
 /// fn main() -> custos::Result<()> {
-///     let device = CLDevice::new(0)?;
+///     let device = OpenCL::new(0)?;
 ///     let a = Matrix::<f32>::from((&device, 2, 2, [1., 2., 3., 4.]));
 ///     let res = cpu_exec(&device, &a, |cpu, x| cpu.neg(x))?;
 ///     assert_eq!(device.read(&res), vec![-1., -2., -3., -4.]);
@@ -68,7 +68,7 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
 /// }
 /// ```
 pub fn cpu_exec<'c, 'a, 'o, T, F>(
-    device: &'o CLDevice,
+    device: &'o OpenCL,
     matrix: &Matrix<'a, T>,
     f: F,
 ) -> custos::Result<Matrix<'o, T>>
@@ -78,7 +78,7 @@ where
 {
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
-        // Using a CPU stored in a CLDevice in order to get a (correct) cache entry.
+        // Using a CPU stored in a OpenCL in order to get a (correct) cache entry.
         // Due to the (new) caching architecture, using a new CPU isn't possible,
         // as the cache would be newly created every iteration.
         // host ptr matrix
@@ -105,7 +105,7 @@ where
     Ok(convert)
 }
 
-pub fn cpu_exec_mut<T, F>(device: &CLDevice, matrix: &mut Matrix<T>, f: F) -> custos::Result<()>
+pub fn cpu_exec_mut<T, F>(device: &OpenCL, matrix: &mut Matrix<T>, f: F) -> custos::Result<()>
 where
     F: Fn(&CPU, &mut Matrix<T>),
     T: Copy + Default,
@@ -126,7 +126,7 @@ where
 }
 
 pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
-    device: &'o CLDevice,
+    device: &'o OpenCL,
     lhs: &Matrix<'a, T>,
     rhs: &Matrix<'a, T>,
     f: F,
@@ -165,7 +165,7 @@ where
 }
 
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
-    device: &CLDevice,
+    device: &OpenCL,
     lhs: &mut Matrix<T>,
     rhs: &Matrix<T>,
     f: F,
@@ -191,7 +191,7 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_scalar<T, F>(device: &CLDevice, matrix: &Matrix<T>, f: F) -> T
+pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,

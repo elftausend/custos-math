@@ -1,6 +1,6 @@
 
 #[cfg(feature="opencl")]
-use custos::{opencl::enqueue_kernel, CLDevice, Cache};
+use custos::{opencl::enqueue_kernel, OpenCL, Cache};
 use custos::CDatatype;
 use crate::Matrix;
 
@@ -16,7 +16,7 @@ pub fn mse_grad<'a, T: CDatatype>(preds: &Matrix<'a, T>, targets: &Matrix<'a, T>
 
 #[cfg(feature="opencl")]
 pub fn mse_grad_cl<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     preds: &Matrix<'a, T>,
     targets: &Matrix<'a, T>,
 ) -> Matrix<'a, T> {

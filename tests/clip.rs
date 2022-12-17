@@ -2,7 +2,7 @@ use custos::cpu::CPU;
 use custos_math::{ClipOp, Matrix};
 
 #[cfg(feature = "opencl")]
-use custos::opencl::CLDevice;
+use custos::opencl::OpenCL;
 
 #[test]
 fn test_clip_cpu() {
@@ -17,7 +17,7 @@ fn test_clip_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_clip_cl() {
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 

@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, get_device, number::Float, CDatatype};
+use custos::{cpu::CPU, number::Float, CDatatype};
 
 use crate::{each_op, Matrix};
 
@@ -10,27 +10,27 @@ use custos::CudaDevice;
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 impl<'a, T: CDatatype + Float> Matrix<'a, T> {
     pub fn exp(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).exp(self)
+        self.device().exp(self)
     }
 
     pub fn ln(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).ln(self)
+        self.device().ln(self)
     }
 
     pub fn neg(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).neg(self)
+        self.device().neg(self)
     }
 
     pub fn powf(&self, rhs: T) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).powf(self, rhs)
+        self.device().powf(self, rhs)
     }
 
     pub fn powi(&self, rhs: i32) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).powi(self, rhs)
+        self.device().powi(self, rhs)
     }
 }
 
@@ -65,7 +65,7 @@ impl<T: Float> FnsOps<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> FnsOps<T> for CLDevice {
+impl<T: CDatatype> FnsOps<T> for OpenCL {
     fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op_mat(self, x, "exp(x)").unwrap()
     }

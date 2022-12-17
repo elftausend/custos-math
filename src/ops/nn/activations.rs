@@ -2,8 +2,8 @@
 use crate::opencl::cl_str_op_mat;
 use crate::{each_op, Matrix};
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
-use custos::{devices::cpu::CPU, get_device, number::Float, CDatatype};
+use custos::OpenCL;
+use custos::{devices::cpu::CPU, number::Float, CDatatype};
 
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
@@ -12,38 +12,34 @@ use custos::CudaDevice;
 
 impl<'a, T: CDatatype + Float> Matrix<'a, T> {
     #[inline]
-    pub fn tanh(&self) -> Matrix<'a, T> {
-        let device = get_device!(self.device(), ActivationOps<T>);
-        device.tanh(self)
+    pub fn tanh(&'a self) -> Matrix<'a, T> {
+        self.device().tanh(self)
     }
 
     #[inline]
-    pub fn tanh_grad(&self) -> Matrix<'a, T> {
-        let device = get_device!(self.device(), ActivationOps<T>);
-        device.tanh_grad(self)
+    pub fn tanh_grad(&'a self) -> Matrix<'a, T> {
+        self.device().tanh_grad(self)
     }
 
     #[inline]
-    pub fn relu(&self) -> Matrix<'a, T> {
-        let device = get_device!(self.device(), ActivationOps<T>);
-        device.relu(self)
+    pub fn relu(&'a self) -> Matrix<'a, T> {
+        self.device().relu(self)
     }
 
     #[inline]
-    pub fn relu_grad(&self) -> Matrix<'a, T> {
-        let device = get_device!(self.device(), ActivationOps<T>);
-        device.relu_grad(self)
+    pub fn relu_grad(&'a self) -> Matrix<'a, T> {
+        self.device().relu_grad(self)
     }
 
     #[inline]
-    pub fn sigmoid(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), ActivationOps<T>).sigmoid(self)
+    pub fn sigmoid(&'a self) -> Matrix<'a, T> {
+        self.device().sigmoid(self)
     }
 
     #[inline]
     /// uses pre-computed sigmoid activation
-    pub fn sigmoid_grad(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), ActivationOps<T>).sigmoid_grad(self)
+    pub fn sigmoid_grad(&'a self) -> Matrix<'a, T> {
+        self.device().sigmoid_grad(self)
     }
 }
 
@@ -57,7 +53,7 @@ pub trait ActivationOps<T> {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype + Float> ActivationOps<T> for CLDevice {
+impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_str_op_mat(self, x, "1.0 / (1.0 + exp(-x))").unwrap()

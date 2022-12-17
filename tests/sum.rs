@@ -26,7 +26,7 @@ fn test_sum_ops() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_sum_ops_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let a = Matrix::from((
         &device,

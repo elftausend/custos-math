@@ -23,7 +23,7 @@ fn test_max_ops() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_max_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((
         &device,

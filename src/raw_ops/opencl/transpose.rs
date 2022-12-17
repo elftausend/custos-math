@@ -1,7 +1,7 @@
-use custos::{CLDevice, CDatatype, Buffer, Cache};
+use custos::{OpenCL, CDatatype, Buffer, Cache};
 
 pub fn cl_transpose<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Buffer<T>,
     rows: usize,
     cols: usize,

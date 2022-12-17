@@ -4,14 +4,14 @@ use std::ffi::c_void;
 #[cfg(feature = "opencl")]
 use custos::opencl::api::{enqueue_write_buffer, wait_for_event};
 #[cfg(feature = "opencl")]
-use custos::{cpu::CPU, opencl::CLDevice, range};
+use custos::{cpu::CPU, opencl::OpenCL, range};
 
 #[cfg(feature = "opencl")]
 #[test]
 fn test_device_switching() -> Result<(), custos::Error> {
     use custos_math::{BaseOps, Matrix};
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
     let a = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
     let b = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
 
@@ -34,7 +34,7 @@ fn test_device_switching_s() -> Result<(), custos::Error> {
     use custos::cache::Cache;
     use custos_math::{BaseOps, Matrix};
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
     let a = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
     let b = Matrix::from((&device, (2, 3), [1.51f32, 6.123, 7., 5.21, 8.62, 4.765]));
 

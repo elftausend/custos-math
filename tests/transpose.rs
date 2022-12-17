@@ -17,7 +17,7 @@ fn test_transpose_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_transpose_cl() {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
 
@@ -29,7 +29,7 @@ fn test_transpose_cl() {
 #[cfg(not(target_os = "macos"))]
 #[test]
 fn test_transpose_cl_f64() {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (2, 3), [6f64, 5., 4., 3., 2., 1.]));
     let res = a.T();

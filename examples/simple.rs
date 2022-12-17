@@ -1,5 +1,5 @@
 use custos::{
-    devices::{cpu::CPU, opencl::CLDevice},
+    devices::{cpu::CPU, opencl::OpenCL},
     VecRead,
 };
 use custos_math::{BaseOps, Matrix};
@@ -34,7 +34,7 @@ fn specify_device(cpu: &CPU) {
 
 fn using_opencl() -> custos::Result<()> {
     //OpenCL device (GPU)
-    let cl = CLDevice::new(0)?;
+    let cl = OpenCL::new(0)?;
 
     let a = Matrix::from((&cl, (2, 2), [0.25f32, 0.5, 0.75, 1.]));
     let b = Matrix::from((&cl, (2, 2), [1., 2., 3., 4.]));

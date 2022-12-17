@@ -1,7 +1,7 @@
-use custos::{opencl::enqueue_kernel, Buffer, CDatatype, CLDevice, Cache};
+use custos::{opencl::enqueue_kernel, Buffer, CDatatype, OpenCL, Cache};
 
 pub fn cl_scalar_op<'a, T>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     x: &Buffer<T>,
     scalar: T,
     op: &str,

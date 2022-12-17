@@ -4,7 +4,7 @@ use custos::{number::Number, CPU};
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_lr;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 pub trait ColOp<T> {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
@@ -27,7 +27,7 @@ impl<T: Number> ColOp<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: custos::CDatatype> ColOp<T> for CLDevice {
+impl<T: custos::CDatatype> ColOp<T> for OpenCL {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }

@@ -1,4 +1,4 @@
-use custos::{cache::Cache, number::Number, Buffer, CPU};
+use custos::{cache::Cache, number::Number, Buffer, CPU, MainMemory, Device};
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -6,7 +6,7 @@ use custos::CDatatype;
 #[cfg(feature = "opencl")]
 use crate::cl_tew_self;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 #[cfg(feature = "cuda")]
 use crate::cu_ew_self;
@@ -28,7 +28,7 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 /// device.sub_assign(&mut lhs, &rhs);
 /// assert_eq!(vec![3, 5, 4, 1], device.read(lhs.as_buf()));
 /// ```
-pub trait AssignOps<T> {
+pub trait AssignOps<T, D: Device>: Device {
     /// Add assign
     /// # Examples
     /// ```
@@ -45,14 +45,14 @@ pub trait AssignOps<T> {
     /// device.sub_assign(&mut lhs, &rhs);
     /// assert_eq!(vec![3, 5, 4, 1], device.read(lhs.as_buf()));
     /// ```
-    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>);
-    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>);
+    fn add_assign(&self, lhs: &mut Buffer<T, Self>, rhs: &Buffer<T, D>);
+    fn sub_assign(&self, lhs: &mut Buffer<T, Self>, rhs: &Buffer<T, D>);
 }
 
-pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
+pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T, D: MainMemory>(
     device: &'a CPU,
-    lhs: &Matrix<T>,
-    rhs: &Matrix<T>,
+    lhs: &Matrix<T, D>,
+    rhs: &Matrix<T, D>,
     f: F,
 ) -> Matrix<'a, T> {
     let mut out = Cache::get(device, lhs.size(), [lhs.node.idx, rhs.node.idx]);
@@ -60,18 +60,18 @@ pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T>(
     (out, lhs.dims()).into()
 }
 
-impl<T: Number> AssignOps<T> for CPU {
-    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+impl<T: Number, D: MainMemory> AssignOps<T, D> for CPU {
+    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
     
-    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
     }
 }                           
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> AssignOps<T> for CLDevice {
+impl<T: CDatatype> AssignOps<T> for OpenCL {
     fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
         cl_tew_self(self, lhs, rhs, "+").unwrap()
     }

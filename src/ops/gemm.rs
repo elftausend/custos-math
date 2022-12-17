@@ -1,4 +1,4 @@
-use custos::{cache::Cache, GenericBlas, CPU};
+use custos::{cache::Cache, GenericBlas, CPU, Device, MainMemory};
 
 #[cfg(feature = "opencl")]
 use custos::CDatatype;
@@ -6,7 +6,7 @@ use custos::CDatatype;
 #[cfg(feature = "opencl")]
 use crate::cl_gemm;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 use crate::Matrix;
 
@@ -25,13 +25,13 @@ use crate::Matrix;
 ///
 /// assert_eq!(device.read(c.as_buf()), vec![20., 14., 56., 41.,]);
 /// ```
-pub trait Gemm<T> {
-    fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+pub trait Gemm<T, D: Device>: Device {
+    fn gemm(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
+impl<T: GenericBlas + Default + Copy, D: MainMemory> Gemm<T, D> for CPU {
     #[inline]
-    fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn gemm(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         assert!(lhs.dims().1 == rhs.dims().0);
         let m = lhs.dims().0;
         let k = lhs.dims().1;
@@ -44,7 +44,7 @@ impl<T: GenericBlas + Default + Copy> Gemm<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> Gemm<T> for CLDevice {
+impl<T: CDatatype> Gemm<T> for OpenCL {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         assert!(lhs.dims().1 == rhs.dims().0);
         //crate::opencl::ops::ocl_gemm1(self.clone(), rhs, lhs).unwrap()

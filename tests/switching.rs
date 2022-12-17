@@ -1,4 +1,4 @@
-use custos::{range, CLDevice};
+use custos::{range, OpenCL};
 use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 use custos_math::{cpu_exec_lhs_rhs_mut, FnsOps, Matrix, RowOp};
 
@@ -9,7 +9,7 @@ use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
 #[test]
 fn test_swtich_mut_cl() -> custos::Result<()> {
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
     let unified = device.unified_mem();
     device.set_unified_mem(false);
 
@@ -35,7 +35,7 @@ fn test_swtich_mut_cl() -> custos::Result<()> {
 fn test_unified_mem_device_switch_exact() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
@@ -55,7 +55,7 @@ fn test_unified_mem_device_switch_exact() -> custos::Result<()> {
 fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
     use custos_math::{cpu_exec, Matrix};
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
 
@@ -136,7 +136,7 @@ fn test_lr_switch_cuda() -> custos::Result<()> {
 fn test_graph_opt_switchting_cl() -> custos::Result<()> {
     use custos::Buffer;
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let _buf = Buffer::from((&device, [1, 2, 3, 4, 5, 6]));
 

@@ -16,7 +16,7 @@ fn test_row_op() {
 #[test]
 fn test_row_op_cl() -> custos::Result<()> {
     use custos_math::RowOp;
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let a = Matrix::from((&device, (3, 3), [1., 2., 3., 4., 5., 6., 7., 8., 9.]));
     let b = Matrix::from((&device, (1, 3), [1., 2., 3.]));
@@ -54,7 +54,7 @@ fn test_row_op_mut() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_row_op_mut_cl() -> custos::Result<()> {
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let mut a = Matrix::from((&device, (3, 3), [1., 2., 3., 4., 5., 6., 7., 8., 9.]));
     let b = Matrix::from((&device, (1, 3), [1., 2., 3.]));

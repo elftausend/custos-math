@@ -3,16 +3,16 @@ use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
-use custos::{cache::Cache, cpu::CPU, get_device, CDatatype};
+use custos::{cache::Cache, cpu::CPU, CDatatype};
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn diagflat(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), DiagflatOp<T>).diagflat(self)
+        self.device().diagflat(self)
     }
 }
 
@@ -45,7 +45,7 @@ impl<T: Copy + Default> DiagflatOp<T> for CudaDevice {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> DiagflatOp<T> for CLDevice {
+impl<T: CDatatype> DiagflatOp<T> for OpenCL {
     fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(x))
     }

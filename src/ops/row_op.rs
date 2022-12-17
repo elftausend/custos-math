@@ -1,10 +1,10 @@
 use crate::{cpu::row_op, row_op_slice_lhs, Matrix};
-use custos::{cpu::CPU, get_device, number::Number, CDatatype};
+use custos::{cpu::CPU, number::Number, CDatatype};
 
 #[cfg(feature = "opencl")]
 use crate::{cl_to_cpu_lr, opencl};
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_lr, cu_to_cpu_lr_mut};
@@ -13,13 +13,11 @@ use custos::CudaDevice;
 
 impl<'a, T: CDatatype> Matrix<'a, T> {
     pub fn add_row(&self, rhs: &Matrix<T>) -> Matrix<'a, T> {
-        let device = get_device!(self.device(), RowOp<T>);
-        device.add_row(self, rhs)
+        self.device().add_row(self, rhs)
     }
 
     pub fn add_row_mut(&mut self, rhs: &Matrix<'a, T>) {
-        let device = get_device!(self.device(), RowOp<T>);
-        device.add_row_mut(self, rhs)
+        rhs.device().add_row_mut(self, rhs)
     }
 }
 
@@ -41,7 +39,7 @@ impl<T: Number> RowOp<T> for CPU {
 
 // TODO: Implement add_ro_mut (for cuda as well)
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> RowOp<T> for CLDevice {
+impl<T: CDatatype> RowOp<T> for OpenCL {
     fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }

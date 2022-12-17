@@ -35,7 +35,7 @@ fn test_fns_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_fns_cl() -> Result<(), custos::Error> {
-    let device = custos::CLDevice::new(0)?;
+    let device = custos::OpenCL::new(0)?;
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 

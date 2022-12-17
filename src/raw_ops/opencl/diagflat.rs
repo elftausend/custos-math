@@ -1,12 +1,11 @@
-use custos::{CDatatype, CLDevice, Buffer, Cache};
+use custos::prelude::*;
 
 pub fn cl_diagflat<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Buffer<T>,
+    device: &'a OpenCL,
+    x: &CLBuffer<T>,
     batch_size: usize,
     len: usize,
-) -> custos::Result<Buffer<'a, T>> {
-    use custos::opencl::enqueue_kernel;
+) -> custos::Result<CLBuffer<'a, T>> {
 
     let src = format!(
         r#"__kernel void diagflat(__global const {datatype}* input, const int cols, __global {datatype}* output) {{
@@ -19,7 +18,8 @@ pub fn cl_diagflat<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, len * len * batch_size, x.node.idx);
+    
+    let out: CLBuffer<T> = device.retrieve(len * len * batch_size, x.node.idx);
     enqueue_kernel(
         device,
         &src,

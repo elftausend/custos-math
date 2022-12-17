@@ -14,9 +14,9 @@ fn test_scalar_assign() {
 #[cfg(feature="opencl")]
 #[test]
 fn test_scalar_assign_cl() -> custos::Result<()> {
-    use custos::CLDevice;
+    use custos::OpenCL;
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let mut buf = Matrix::from((&device, 2, 2, [1., 2., 3., 4.,]));
     buf += 1.;
