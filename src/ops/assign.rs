@@ -28,7 +28,7 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 /// device.sub_assign(&mut lhs, &rhs);
 /// assert_eq!(vec![3, 5, 4, 1], device.read(lhs.as_buf()));
 /// ```
-pub trait AssignOps<T, D: Device>: Device {
+pub trait AssignOps<T, D: Device = Self>: Device {
     /// Add assign
     /// # Examples
     /// ```

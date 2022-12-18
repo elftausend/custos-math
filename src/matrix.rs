@@ -756,16 +756,24 @@ impl<'a, T: CDatatype> Mul<T> for &Matrix<'a, T> {
 
 // div
 
-impl<'a, T: CDatatype> Div<T> for Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T: CDatatype, D: BaseOps<T, D>> Div<Self> for &Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.device().div(self, rhs)
+    }
+}
+
+impl<'a, T: CDatatype, D: AdditionalOps<T, D>> Div<T> for Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
 
     fn div(self, rhs: T) -> Self::Output {
         self.divs(rhs)
     }
 }
 
-impl<'a, T: CDatatype> Div<T> for &Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T: CDatatype, D: AdditionalOps<T, D>> Div<T> for &Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
 
     fn div(self, rhs: T) -> Self::Output {
         self.divs(rhs)

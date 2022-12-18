@@ -12,7 +12,7 @@ use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype + Float, D: FnsOps<T, D>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype + Float, D: FnsOps<T>> Matrix<'a, T, D> {
     pub fn exp(&self) -> Self {
         self.device().exp(self)
     }
@@ -34,7 +34,7 @@ impl<'a, T: CDatatype + Float, D: FnsOps<T, D>> Matrix<'a, T, D> {
     }
 }
 
-pub trait FnsOps<T, D: Device>: Device {
+pub trait FnsOps<T, D: Device = Self>: Device {
     fn exp(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
     fn ln(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
     fn neg(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;

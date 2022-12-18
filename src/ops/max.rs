@@ -1,5 +1,5 @@
 use crate::Matrix;
-use custos::{cache::Cache, number::Number, CDatatype, CPU, Device, MainMemory};
+use custos::{cache::Cache, number::Number, CDatatype, Device, MainMemory, CPU};
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
@@ -11,21 +11,21 @@ use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
+impl<'a, T: CDatatype, D: MaxOps<T>> Matrix<'a, T, D> {
     pub fn max(&self) -> T {
         self.device().max(self)
     }
 
-    pub fn max_rows(&self) -> Matrix<'a, T> {
+    pub fn max_rows(&self) -> Matrix<'a, T, D> {
         self.device().max_rows(self)
     }
 
-    pub fn max_cols(&self) -> Matrix<'a, T> {
+    pub fn max_cols(&self) -> Matrix<'a, T, D> {
         self.device().max_cols(self)
     }
 }
 
-pub trait MaxOps<T, D: Device>: Device {
+pub trait MaxOps<T, D: Device = Self>: Device {
     fn max(&self, x: &Matrix<T, D>) -> T;
     fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
     fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
@@ -33,10 +33,10 @@ pub trait MaxOps<T, D: Device>: Device {
 
 impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
     fn max(&self, x: &Matrix<T, D>) -> T {
-        let slice = x.as_slice();
-        let mut max = slice[0];
 
-        for value in slice {
+        let mut max = x[0];
+
+        for value in x.iter() {
             if *value > max {
                 max = *value;
             }

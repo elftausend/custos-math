@@ -10,7 +10,7 @@ use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype, D: DiagflatOp<T, D>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype, D: DiagflatOp<T>> Matrix<'a, T, D> {
     pub fn diagflat(&self) -> Matrix<'a, T, D> {
         self.device().diagflat(self)
     }
@@ -22,7 +22,7 @@ pub fn diagflat<T: Copy>(a: &[T], b: &mut [T]) {
     }
 }
 
-pub trait DiagflatOp<T, D: Device>: Device {
+pub trait DiagflatOp<T, D: Device = Self>: Device {
     fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 

@@ -1,5 +1,5 @@
 use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps};
-use custos::{number::Float, CDatatype, Device, CPU};
+use custos::{number::Float, CDatatype, Device};
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -9,6 +9,47 @@ pub trait CCE<T> {
 }
 
 impl<'a, T, D> Matrix<'a, T, D> where D: Device {}
+
+pub trait CCEOp<T, D: Device = Self>: Device {
+    fn cce<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, Self>);
+    fn cce_loss(&self, preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T;
+    fn cce_grad<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, Self>;
+}
+
+impl<'a, T, D: CCEOp<T>> Matrix<'a, T, D> {
+    pub fn cce(&self, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, D>) {
+        self.device().cce(self, targets)
+    }
+
+} 
+
+impl<
+        T: Float + CDatatype,
+        D: FnsOps<T>
+            + ClipOp<T>
+            + BaseOps<T>
+            + SumOps<T>
+            + AdditionalOps<T>,
+    > CCEOp<T, D> for D
+{
+    fn cce<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, Self>) {
+        let loss = self.cce_loss(preds, targets);
+        let grad = self.cce_grad(preds, targets);
+
+        (loss, grad)
+    }
+
+    fn cce_loss(&self, preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T {
+        let preds = preds.clip(T::as_generic(1E-7), T::as_generic(1. - 1E-7));
+        let confidences = (&preds * targets).sum_cols();
+        confidences.ln().neg().mean()
+    }
+
+    fn cce_grad<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, Self> {
+        let grad = (targets / preds).neg();
+        grad / T::from_usize(preds.rows())
+    }
+}
 
 /*
 

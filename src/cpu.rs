@@ -1,5 +1,5 @@
-use custos::{number::Number, Device, MainMemory, CPU};
 use crate::Matrix;
+use custos::{number::Number, Device, MainMemory, CPU};
 
 pub fn scalar_apply<'a, T, F, D>(
     device: &'a CPU,
@@ -57,11 +57,16 @@ where
     }
 }
 
-pub fn row_op<'a, T, F, D>(device: &'a CPU, lhs: &Matrix<T,D>, rhs: &Matrix<T,D>, f: F) -> Matrix<'a, T>
+pub fn row_op<'a, T, F, D>(
+    device: &'a CPU,
+    lhs: &Matrix<T, D>,
+    rhs: &Matrix<T, D>,
+    f: F,
+) -> Matrix<'a, T>
 where
     T: Number,
     F: Fn(&mut T, T, T),
-    D: MainMemory
+    D: MainMemory,
 {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 

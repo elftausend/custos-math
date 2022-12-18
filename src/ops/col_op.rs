@@ -6,7 +6,7 @@ use super::cl_to_cpu_lr;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-pub trait ColOp<T, D: Device>: Device {
+pub trait ColOp<T, D: Device = Self>: Device {
     fn add_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
     fn sub_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
     fn div_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;

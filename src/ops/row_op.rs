@@ -11,7 +11,7 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_lr_mut};
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-impl<'a, T: CDatatype, D: RowOp<T, D>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype, D: RowOp<T>> Matrix<'a, T, D> {
     pub fn add_row(&self, rhs: &Matrix<T, D>) -> Matrix<'a, T, D> {
         self.device().add_row(self, rhs)
     }
@@ -21,7 +21,7 @@ impl<'a, T: CDatatype, D: RowOp<T, D>> Matrix<'a, T, D> {
     }
 }
 
-pub trait RowOp<T, D: Device>: Device {
+pub trait RowOp<T, D: Device = Self>: Device {
     fn add_row(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
     fn add_row_mut(&self, lhs: &mut Matrix<T, D>, rhs: &Matrix<T, D>);
 }

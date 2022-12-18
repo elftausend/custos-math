@@ -32,7 +32,7 @@ use crate::cu_ew;
 /// let sub = device.sub(&a, &b);
 /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
 /// ```
-pub trait BaseOps<T, D: Device>: Device {
+pub trait BaseOps<T, D: Device = Self>: Device {
     /// Element-wise addition
     /// # Example
     /// ```

@@ -25,7 +25,7 @@ use crate::Matrix;
 ///
 /// assert_eq!(device.read(c.as_buf()), vec![20., 14., 56., 41.,]);
 /// ```
-pub trait Gemm<T, D: Device>: Device {
+pub trait Gemm<T, D: Device = Self>: Device {
     fn gemm(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
