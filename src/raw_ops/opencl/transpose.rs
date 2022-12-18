@@ -1,11 +1,11 @@
-use custos::{Buffer, CDatatype, Cache, OpenCL};
+use custos::{Buffer, CDatatype, Cache, OpenCL, prelude::CLBuffer};
 
 pub fn cl_transpose<'a, T: CDatatype>(
     device: &'a OpenCL,
-    x: &Buffer<T>,
+    x: &CLBuffer<T>,
     rows: usize,
     cols: usize,
-) -> custos::Result<Buffer<'a, T>> {
+) -> custos::Result<CLBuffer<'a, T>> {
     use custos::opencl::enqueue_kernel;
 
     let src = format!(
@@ -33,7 +33,7 @@ pub fn cl_transpose<'a, T: CDatatype>(
     );
 
     let gws = [x.len, 0, 0];
-    let out = Cache::get::<T, _>(device, x.len, x.node.idx);
+    let out = Cache::get::<T, 0>(device, x.len, x.node.idx);
     enqueue_kernel(device, &src, gws, None, &[x, &out])?;
     Ok(out)
 }

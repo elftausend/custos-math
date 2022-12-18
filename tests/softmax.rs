@@ -1,9 +1,7 @@
-fn test() {}
-/*
 
 use custos::{range, CPU};
 use custos_math::{
-    nn::{cce_grad, SoftmaxOps},
+    nn::{/*cce_grad,*/ SoftmaxOps},
     Matrix,
 };
 
@@ -14,7 +12,7 @@ fn test_softmax_cpu() {
     let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
     let activated = Matrix::from((&device, (2, 3), [0.1, 0.1, 0.8, 0.9, 0.05, 0.05]));
 
-    let grads = cce_grad(&device, &activated, &targets);
+    let grads = activated.cce_grad(&targets);
 
     println!("hi");
     for _ in range(1000) {
@@ -56,4 +54,3 @@ fn test_softmax_kernel_cl() -> custos::Result<()> {
     //println!("out: {out:?}");
     Ok(())
 }
-*/

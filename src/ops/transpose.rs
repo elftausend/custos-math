@@ -2,7 +2,7 @@
 use std::ptr::null_mut;
 
 use crate::Matrix;
-use custos::{cpu::CPU, CDatatype, Cache, Device, MainMemory};
+use custos::{cpu::CPU, CDatatype, Cache, Device, MainMemory, OpenCL};
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -32,7 +32,7 @@ impl<'a, T: CDatatype + CudaTranspose, D: TransposeOp<T, D>> Matrix<'a, T, D> {
     }
 }
 
-pub trait TransposeOp<T, D: Device>: Device {
+pub trait TransposeOp<T, D: Device = Self>: Device {
     fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
@@ -46,7 +46,7 @@ impl<T: Default + Copy, D: MainMemory> TransposeOp<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> TransposeOp<T> for custos::OpenCL {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn transpose(&self, x: &Matrix<T, OpenCL>) -> Matrix<T, OpenCL> {
         Matrix {
             data: cl_transpose(self, x, x.rows(), x.cols()).unwrap(),
             dims: (x.cols(), x.rows()),

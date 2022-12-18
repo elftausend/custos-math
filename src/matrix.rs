@@ -353,28 +353,23 @@ impl<'a, T, D: Device> From<(Buffer<'a, T, D>, usize, usize)> for Matrix<'a, T, 
     }
 }
 
-/*
 // TODO: unsafe from raw parts?
-// is wrapper flag ok?
-#[cfg(not(feature = "safe"))]
-impl<T, D: Device> From<(*mut T, (usize, usize))> for Matrix<'_, T, D> {
+// is wrapper flag ok? I think so
+impl<'a, T> From<(*mut T, (usize, usize))> for Matrix<'a, T> {
     #[inline]
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
-        Matrix {
-            data: Buffer {
-                ptr: (ptr_dims.0, std::ptr::null_mut(), 0),
-                len: dims.0 * dims.1,
-                // Mind default device, this will not work
-                device: Default::default(),
-                flag: BufFlag::Wrapper,
-                node: Node::default(),
-            },
-            dims,
+        
+        unsafe {
+            Matrix {
+                data: Buffer::from_raw_host(ptr_dims.0, dims.0 * dims.1),
+                dims,
+            }
         }
     }
 }
 
+/* 
 // TODO: unsafe from raw parts?
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]

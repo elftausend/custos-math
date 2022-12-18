@@ -1,7 +1,7 @@
 mod activations;
 mod loss;
-//mod softmax;
+mod softmax;
 
 pub use activations::*;
 pub use loss::*;
-//pub use softmax::*;
+pub use softmax::*;

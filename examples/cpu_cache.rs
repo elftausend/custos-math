@@ -15,5 +15,5 @@ fn main() {
         cache.nodes.get(&node).unwrap().ptr
     };
 
-    assert!(ptr == out.as_buf().ptr.0 as *mut u8);
+    assert!(ptr == out.as_buf().ptr.ptr as *mut u8);
 }

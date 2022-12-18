@@ -21,6 +21,14 @@ impl<'a, T, D: CCEOp<T>> Matrix<'a, T, D> {
         self.device().cce(self, targets)
     }
 
+    pub fn cce_loss(&self, targets: &Matrix<T, D>) -> T {
+        self.device().cce_loss(self, targets)
+    }
+
+    pub fn cce_grad(&self, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, D> {
+        self.device().cce_grad(self, targets)
+    }
+
 } 
 
 impl<

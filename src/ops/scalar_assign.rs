@@ -14,22 +14,19 @@ use custos::CudaDevice;
 
 impl<'a, T: CDatatype> AddAssign<T> for Matrix<'a, T> {
     fn add_assign(&mut self, rhs: T) {
-        todo!()
-        //self.device().adds_assign(self, rhs);
+        self.device().adds_assign(self, rhs)
     }
 }
 
 impl<T: CDatatype> MulAssign<T> for Matrix<'_, T> {
     fn mul_assign(&mut self, rhs: T) {
-        todo!()
-        //self.device().muls_assign(self, rhs);
+        self.device().muls_assign(self, rhs);
     }
 }
 
 impl<T: CDatatype> DivAssign<T> for Matrix<'_, T> {
     fn div_assign(&mut self, rhs: T) {
-        todo!()
-        //self.device().divs_assign(self, rhs);
+        self.device().divs_assign(self, rhs);
     }
 }
 
