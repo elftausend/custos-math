@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, number::Float, CDatatype};
+use custos::{cpu::CPU, number::Float, CDatatype, Device, MainMemory};
 
 use crate::{each_op, Matrix};
 
@@ -12,54 +12,54 @@ use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype + Float> Matrix<'a, T> {
-    pub fn exp(&self) -> Matrix<'a, T> {
+impl<'a, T: CDatatype + Float, D: FnsOps<T, D>> Matrix<'a, T, D> {
+    pub fn exp(&self) -> Self {
         self.device().exp(self)
     }
 
-    pub fn ln(&self) -> Matrix<'a, T> {
+    pub fn ln(&self) -> Self {
         self.device().ln(self)
     }
 
-    pub fn neg(&self) -> Matrix<'a, T> {
+    pub fn neg(&self) -> Self {
         self.device().neg(self)
     }
 
-    pub fn powf(&self, rhs: T) -> Matrix<'a, T> {
+    pub fn powf(&self, rhs: T) -> Self {
         self.device().powf(self, rhs)
     }
 
-    pub fn powi(&self, rhs: i32) -> Matrix<'a, T> {
+    pub fn powi(&self, rhs: i32) -> Self {
         self.device().powi(self, rhs)
     }
 }
 
-pub trait FnsOps<T> {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>;
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T>;
+pub trait FnsOps<T, D: Device>: Device {
+    fn exp(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn ln(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn neg(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn powf(&self, x: &Matrix<T, D>, rhs: T) -> Matrix<T, Self>;
+    fn powi(&self, x: &Matrix<T, D>, rhs: i32) -> Matrix<T, Self>;
 }
 
-impl<T: Float> FnsOps<T> for CPU {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: Float, D: MainMemory> FnsOps<T, D> for CPU {
+    fn exp(&self, x: &Matrix<T, D>) -> Matrix<T> {
         each_op(self, x, |x| x.exp())
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn ln(&self, x: &Matrix<T, D>) -> Matrix<T> {
         each_op(self, x, |x| x.ln())
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn neg(&self, x: &Matrix<T, D>) -> Matrix<T> {
         each_op(self, x, |x| -x)
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn powf(&self, x: &Matrix<T, D>, rhs: T) -> Matrix<T> {
         each_op(self, x, |x| x.powf(rhs))
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    fn powi(&self, x: &Matrix<T, D>, rhs: i32) -> Matrix<T> {
         each_op(self, x, |x| x.powi(rhs))
     }
 }

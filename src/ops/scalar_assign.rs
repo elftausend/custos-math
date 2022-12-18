@@ -1,41 +1,41 @@
 use crate::{assign_to_lhs_scalar, Matrix};
-use custos::{CPU, CDatatype};
+use custos::{CDatatype, CPU, Device, MainMemory};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
 #[cfg(feature = "opencl")]
-use custos::OpenCL;
-#[cfg(feature = "opencl")]
 use crate::cl_assign_scalar;
+#[cfg(feature = "opencl")]
+use custos::OpenCL;
 
-#[cfg(feature = "cuda")]
-use custos::CudaDevice;
 #[cfg(feature = "cuda")]
 use crate::cu_assign_scalar;
+#[cfg(feature = "cuda")]
+use custos::CudaDevice;
 
-pub trait ScalarAssign<T> {
-    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T);
-    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T);
-    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T);
-    fn subs_assign(&self, lhs: &mut Matrix<T>, rhs: T);
+pub trait ScalarAssign<T, D: Device>: Device {
+    fn adds_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
+    fn muls_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
+    fn divs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
+    fn subs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
 }
 
-impl<T> ScalarAssign<T> for CPU
+impl<T, D: MainMemory> ScalarAssign<T, D> for CPU
 where
     T: Copy + AddAssign + MulAssign + DivAssign + SubAssign,
 {
-    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn adds_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x += y);
     }
 
-    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn muls_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x *= y);
     }
 
-    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn divs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x /= y);
     }
 
-    fn subs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn subs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x -= y);
     }
 }

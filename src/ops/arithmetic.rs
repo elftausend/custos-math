@@ -1,4 +1,4 @@
-use custos::{number::Number, CPU, Device, MainMemory};
+use custos::{number::Number, Device, MainMemory, CPU};
 
 use crate::{ew_op, Matrix};
 

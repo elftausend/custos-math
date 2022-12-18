@@ -1,5 +1,5 @@
 use crate::Matrix;
-use custos::{number::Number, CDatatype, Cache, CPU};
+use custos::{number::Number, CDatatype, Cache, CPU, Device, MainMemory};
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
@@ -11,7 +11,7 @@ use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
+impl<'a, T: CDatatype, D: SumOps<T, D>> Matrix<'a, T, D> {
     pub fn sum(&self) -> T {
         self.device().sum(self)
     }
@@ -20,24 +20,24 @@ impl<'a, T: CDatatype> Matrix<'a, T> {
         self.device().mean(self)
     }
 
-    pub fn sum_rows(&self) -> Matrix<'a, T> {
+    pub fn sum_rows(&self) -> Matrix<'a, T, D> {
         self.device().sum_rows(self)
     }
 
-    pub fn sum_cols(&self) -> Matrix<'a, T> {
+    pub fn sum_cols(&self) -> Matrix<'a, T, D> {
         self.device().sum_cols(self)
     }
 }
 
-pub trait SumOps<T> {
-    fn sum(&self, x: &Matrix<T>) -> T;
-    fn mean(&self, x: &Matrix<T>) -> T;
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait SumOps<T, D: Device>: Device {
+    fn sum(&self, x: &Matrix<T, D>) -> T;
+    fn mean(&self, x: &Matrix<T, D>) -> T;
+    fn sum_rows(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn sum_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Number> SumOps<T> for CPU {
-    fn sum(&self, x: &Matrix<T>) -> T {
+impl<T: Number, D: MainMemory> SumOps<T, D> for CPU {
+    fn sum(&self, x: &Matrix<T, D>) -> T {
         x.iter().copied().sum()
         /*let mut sum = T::default();
         for value in x.as_slice() {
@@ -46,12 +46,12 @@ impl<T: Number> SumOps<T> for CPU {
         sum*/
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
+    fn mean(&self, x: &Matrix<T, D>) -> T {
         let sum = self.sum(x);
         sum / T::from_usize(x.size())
     }
 
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_rows(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let mut out = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
@@ -72,7 +72,7 @@ impl<T: Number> SumOps<T> for CPU {
         (out, 1, x.cols()).into()
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_cols(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let mut out = Cache::get(self, x.rows(), x.node.idx);
 
         let data = x.as_slice();

@@ -1,5 +1,5 @@
 use crate::Matrix;
-use custos::{cache::Cache, number::Number, CDatatype, CPU};
+use custos::{cache::Cache, number::Number, CDatatype, CPU, Device, MainMemory};
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
@@ -25,14 +25,14 @@ impl<'a, T: CDatatype> Matrix<'a, T> {
     }
 }
 
-pub trait MaxOps<T> {
-    fn max(&self, x: &Matrix<T>) -> T;
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait MaxOps<T, D: Device>: Device {
+    fn max(&self, x: &Matrix<T, D>) -> T;
+    fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Number> MaxOps<T> for CPU {
-    fn max(&self, x: &Matrix<T>) -> T {
+impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
+    fn max(&self, x: &Matrix<T, D>) -> T {
         let slice = x.as_slice();
         let mut max = slice[0];
 
@@ -44,7 +44,7 @@ impl<T: Number> MaxOps<T> for CPU {
         max
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let mut y = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
@@ -65,7 +65,7 @@ impl<T: Number> MaxOps<T> for CPU {
         (y, 1, x.cols()).into()
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let data = x.as_slice();
         let mut y = Cache::get(self, x.rows(), x.node.idx);
 

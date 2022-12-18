@@ -2,7 +2,7 @@
 use std::ptr::null_mut;
 
 use crate::Matrix;
-use custos::{cpu::CPU, CDatatype, Cache};
+use custos::{cpu::CPU, CDatatype, Cache, Device, MainMemory};
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -10,7 +10,7 @@ use custos::{
     CUdeviceptr,
 };
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::cl_transpose;
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
@@ -25,19 +25,19 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
     }
 }
 
-impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
+impl<'a, T: CDatatype + CudaTranspose, D: TransposeOp<T, D>> Matrix<'a, T, D> {
     #[allow(non_snake_case)]
-    pub fn T(&self) -> Matrix<'a, T> {
+    pub fn T(&self) -> Matrix<'a, T, D> {
         self.device().transpose(self)
     }
 }
 
-pub trait TransposeOp<T> {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait TransposeOp<T, D: Device>: Device {
+    fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Default + Copy> TransposeOp<T> for CPU {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: Default + Copy, D: MainMemory> TransposeOp<T, D> for CPU {
+    fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let mut out = Cache::get(self, x.len, x.node.idx);
         slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
         (out, x.cols(), x.rows()).into()

@@ -28,7 +28,7 @@ fn add() -> Result<(), OCLError> {
 pub fn read<'a, T, D>(device: D, buf: Buffer<T, D>) -> Vec<T>
 where
     D: Read<T, D>,
-    T: Clone + Default
+    T: Clone + Default,
 {
     device.read_to_vec(&buf)
 }

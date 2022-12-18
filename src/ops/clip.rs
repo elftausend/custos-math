@@ -1,4 +1,4 @@
-use custos::{cache::Cache, number::Number, CDatatype, CPU, Device, MainMemory};
+use custos::{cache::Cache, number::Number, CDatatype, Device, MainMemory, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -7,8 +7,8 @@ use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
-    pub fn clip(&self, min: T, max: T) -> Matrix<T> {
+impl<'a, T: CDatatype, D: ClipOp<T, D>> Matrix<'a, T, D> {
+    pub fn clip(&self, min: T, max: T) -> Matrix<T, D> {
         self.device().clip(self, min, max)
     }
 }

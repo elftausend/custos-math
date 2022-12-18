@@ -1,4 +1,4 @@
-use custos::{opencl::enqueue_kernel, Buffer, CDatatype, OpenCL, Cache};
+use custos::{opencl::enqueue_kernel, Buffer, CDatatype, Cache, OpenCL};
 
 pub fn cl_scalar_op<'a, T>(
     device: &'a OpenCL,

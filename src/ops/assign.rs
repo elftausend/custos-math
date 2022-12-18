@@ -1,4 +1,4 @@
-use custos::{cache::Cache, number::Number, Buffer, CPU, MainMemory, Device};
+use custos::{cache::Cache, number::Number, Buffer, Device, MainMemory, CPU};
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -64,11 +64,11 @@ impl<T: Number, D: MainMemory> AssignOps<T, D> for CPU {
     fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
-    
+
     fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
     }
-}                           
+}
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AssignOps<T> for OpenCL {

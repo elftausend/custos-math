@@ -4,7 +4,7 @@ use std::ffi::c_void;
 #[cfg(feature = "opencl")]
 use custos::{
     opencl::api::{clCreateBuffer, MemFlags, OCLErrorKind},
-    OpenCL, Error,
+    Error, OpenCL,
 };
 
 #[cfg(feature = "opencl")]
@@ -76,7 +76,7 @@ fn test_unified_opencl() -> custos::Result<()> {
 fn test_unified_calc() -> custos::Result<()> {
     use std::{marker::PhantomData, ptr::null_mut};
 
-    use custos::{AsDev, BufFlag, Buffer, OpenCL, Node, CPU};
+    use custos::{AsDev, BufFlag, Buffer, Node, OpenCL, CPU};
     use custos_math::cl_tew;
 
     let len = 100;
@@ -100,7 +100,6 @@ fn test_unified_calc() -> custos::Result<()> {
         device: device.dev(),
         flag: BufFlag::Wrapper,
         node: Node::default(),
-
     };
 
     cl_tew(&cl, &a, &b, "+")?;

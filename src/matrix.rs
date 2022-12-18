@@ -4,16 +4,16 @@ use std::{
     ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
 };
 
-use crate::{AssignOps, BaseOps, Gemm, AdditionalOps};
+use crate::{AdditionalOps, AssignOps, BaseOps, Gemm};
 
-use custos::{
-    Alloc, BufFlag, Buffer, CDatatype, Device, GenericBlas, GraphReturn,
-    Node, Read, CPU, CommonPtrs, MainMemory, CloneBuf, 
-};
 #[cfg(feature = "opencl")]
 use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
     OpenCL,
+};
+use custos::{
+    Alloc, BufFlag, Buffer, CDatatype, CloneBuf, CommonPtrs, Device, GenericBlas, GraphReturn,
+    MainMemory, Node, Read, CPU,
 };
 
 #[cfg(feature = "cuda")]
@@ -55,9 +55,9 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
-    pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D> 
+    pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D>
     where
-        D: Alloc<'a, T> + GraphReturn
+        D: Alloc<'a, T> + GraphReturn,
     {
         Matrix {
             data: Buffer::new(device, dims.0 * dims.1),
@@ -70,10 +70,9 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
         self.data.device()
     }
 
-
     // TODO: mind ptrs_Mut
     //#[inline]
-    //pub fn ptr(&self) -> (*mut T, *mut c_void, u64) 
+    //pub fn ptr(&self) -> (*mut T, *mut c_void, u64)
     //where D::Ptr<T, 0>: CommonPtrs<T>
     //{
     //    self.data.ptrs_mut()
@@ -164,15 +163,17 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     }
 
     #[inline]
-    pub fn as_slice(&self) -> &[T] 
-    where D: MainMemory
+    pub fn as_slice(&self) -> &[T]
+    where
+        D: MainMemory,
     {
         self.data.as_slice()
     }
 
     #[inline]
-    pub fn as_mut_slice(&mut self) -> &mut [T] 
-    where D: MainMemory
+    pub fn as_mut_slice(&mut self) -> &mut [T]
+    where
+        D: MainMemory,
     {
         self.as_mut_buf().as_mut_slice()
     }
@@ -197,7 +198,7 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     pub fn gemm<'b>(&'a self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
     where
         T: CDatatype + GenericBlas,
-        D: Gemm<T, D>
+        D: Gemm<T, D>,
     {
         //let device = get_device!(self.device(), Gemm<T>);
         self.device().gemm(self, rhs)
@@ -238,7 +239,7 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     pub fn read(&'a self) -> D::Read<'a>
     where
         T: Default + Copy,
-        D: Read<T, D>
+        D: Read<T, D>,
     {
         self.device().read(self.as_buf())
     }
@@ -258,14 +259,15 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     pub fn read_to_vec(&self) -> Vec<T>
     where
         T: Default + Copy,
-        D: Read<T, D>
+        D: Read<T, D>,
     {
         self.device().read_to_vec(self.as_buf())
     }
 
     /// Creates a shallow copy of &self.
-    pub fn shallow(&self) -> Matrix<'a, T, D> 
-    where D::Ptr<T, 0>: Copy,
+    pub fn shallow(&self) -> Matrix<'a, T, D>
+    where
+        D::Ptr<T, 0>: Copy,
     {
         unsafe {
             Self {
@@ -291,8 +293,9 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     }
 }
 
-impl<T, D: Device> Default for Matrix<'_, T, D> 
-where D::Ptr<T, 0>: Default,
+impl<T, D: Device> Default for Matrix<'_, T, D>
+where
+    D::Ptr<T, 0>: Default,
 {
     fn default() -> Self {
         Self {
@@ -318,7 +321,10 @@ impl<'a, T, D: Device> std::ops::DerefMut for Matrix<'a, T, D> {
 
 impl<'a, T: Clone, D: Device + CloneBuf<'a, T>> Clone for Matrix<'a, T, D> {
     fn clone(&self) -> Self {
-        Self { data: self.data.clone(), dims: self.dims.clone() }
+        Self {
+            data: self.data.clone(),
+            dims: self.dims.clone(),
+        }
     }
 }
 
@@ -347,7 +353,7 @@ impl<'a, T, D: Device> From<(Buffer<'a, T, D>, usize, usize)> for Matrix<'a, T, 
     }
 }
 
-/* 
+/*
 // TODO: unsafe from raw parts?
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
@@ -559,9 +565,9 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 
 //-------------Add-------------
 
-impl<'a, T: CDatatype, D> Add<Self> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<Self> for &Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -570,9 +576,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -581,9 +587,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<&Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<&Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -592,9 +598,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<Matrix<'a, T, D>> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<Matrix<'a, T, D>> for &Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -603,9 +609,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<T> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<T> for &Matrix<'a, T, D>
 where
-    D: Device + AdditionalOps<T, D>
+    D: Device + AdditionalOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -614,9 +620,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<T> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Add<T> for Matrix<'a, T, D>
 where
-    D: Device + AdditionalOps<T, D>
+    D: Device + AdditionalOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -627,9 +633,9 @@ where
 
 //-------------Sub-------------
 
-impl<'a, T: CDatatype, D> Sub<Self> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Sub<Self> for &Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -638,9 +644,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Sub<Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Sub<Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -649,9 +655,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Sub<&Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Sub<&Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -660,9 +666,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Sub<Matrix<'a, T, D>> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Sub<Matrix<'a, T, D>> for &Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -691,9 +697,9 @@ impl<'a, T: CDatatype> Sub<T> for Matrix<'a, T> {
 
 //-------------Mul-------------
 
-impl<'a, T: CDatatype, D> Mul<Self> for &Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Mul<Self> for &Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -702,9 +708,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Mul<Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Mul<Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -713,9 +719,9 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Mul<&Self> for Matrix<'a, T, D> 
+impl<'a, T: CDatatype, D> Mul<&Self> for Matrix<'a, T, D>
 where
-    D: Device + BaseOps<T, D>
+    D: Device + BaseOps<T, D>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -766,54 +772,54 @@ impl<'a, T: CDatatype> Div<T> for &Matrix<'a, T> {
     }
 }
 
-impl<T: CDatatype, D> AddAssign<&Matrix<'_, T, D>> for Matrix<'_, T, D> 
+impl<T: CDatatype, D> AddAssign<&Matrix<'_, T, D>> for Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn add_assign(&mut self, rhs: &Matrix<T, D>) {
         rhs.device().add_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype, D> AddAssign<Matrix<'_, T, D>> for Matrix<'_, T, D> 
+impl<T: CDatatype, D> AddAssign<Matrix<'_, T, D>> for Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn add_assign(&mut self, rhs: Matrix<T, D>) {
         rhs.device().add_assign(self, &rhs)
     }
 }
 
-impl<T: CDatatype, D> SubAssign<&Matrix<'_, T, D>> for &mut Matrix<'_, T, D> 
+impl<T: CDatatype, D> SubAssign<&Matrix<'_, T, D>> for &mut Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn sub_assign(&mut self, rhs: &Matrix<T, D>) {
         rhs.device().sub_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype, D> SubAssign<Matrix<'_, T, D>> for &mut Matrix<'_, T, D> 
+impl<T: CDatatype, D> SubAssign<Matrix<'_, T, D>> for &mut Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn sub_assign(&mut self, rhs: Matrix<T, D>) {
         rhs.device().sub_assign(self, &rhs)
     }
 }
 
-impl<T: CDatatype, D> SubAssign<&Matrix<'_, T, D>> for Matrix<'_, T, D> 
+impl<T: CDatatype, D> SubAssign<&Matrix<'_, T, D>> for Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn sub_assign(&mut self, rhs: &Matrix<T, D>) {
         rhs.device().sub_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype, D> SubAssign<Matrix<'_, T, D>> for Matrix<'_, T, D> 
+impl<T: CDatatype, D> SubAssign<Matrix<'_, T, D>> for Matrix<'_, T, D>
 where
-    D: Device + AssignOps<T, D>
+    D: Device + AssignOps<T, D>,
 {
     fn sub_assign(&mut self, rhs: Matrix<T, D>) {
         rhs.device().sub_assign(self, &rhs)

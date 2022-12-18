@@ -1,15 +1,15 @@
 //mod switching;
 //pub use switching::*;
 
-use std::fmt::Debug;
 use custos::{
     devices::opencl::cl_device::OpenCL,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error, CPU, GraphReturn, WriteBuf,
+    Buffer, CDatatype, Error, GraphReturn, WriteBuf, CPU,
 };
+use std::fmt::Debug;
 
 use crate::{cl_scalar_op, cl_str_op, Matrix};
 
@@ -50,7 +50,6 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
     }
 }
 
-
 /// Compute operations on the CPU even though the matrix was created with an OpenCL device.
 /// There were some optimizations implemented regarding unified memory architectures.
 ///
@@ -86,8 +85,10 @@ where
 
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx) }
-            .map(|buf| (buf, dims).into());
+        return unsafe {
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx)
+        }
+        .map(|buf| (buf, dims).into());
     }
 
     let cpu = CPU::new();
@@ -143,8 +144,10 @@ where
 
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }
-            .map(|buf| (buf, no_drop_dims).into());
+        return unsafe {
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx))
+        }
+        .map(|buf| (buf, no_drop_dims).into());
     }
 
     #[cfg(feature = "realloc")]

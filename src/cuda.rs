@@ -1,5 +1,7 @@
-use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice, CPU, VecRead, WriteBuf};
 use crate::Matrix;
+use custos::{
+    cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice, VecRead, WriteBuf, CPU,
+};
 
 pub fn cu_scalar_op<'a, T: CDatatype>(
     device: &'a CudaDevice,

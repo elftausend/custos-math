@@ -11,8 +11,9 @@ use crate::cuda::cu_scalar_op;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-impl<'a, T: CDatatype, D: Device> Matrix<'a, T, D> 
-where D: AdditionalOps<T, D>
+impl<'a, T: CDatatype, D: Device> Matrix<'a, T, D>
+where
+    D: AdditionalOps<T, D>,
 {
     pub fn adds(&self, rhs: T) -> Matrix<'a, T, D> {
         self.device().adds(self, rhs)

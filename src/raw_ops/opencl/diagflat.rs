@@ -6,7 +6,6 @@ pub fn cl_diagflat<'a, T: CDatatype>(
     batch_size: usize,
     len: usize,
 ) -> custos::Result<CLBuffer<'a, T>> {
-
     let src = format!(
         r#"__kernel void diagflat(__global const {datatype}* input, const int cols, __global {datatype}* output) {{
             size_t x = get_global_id(0);
@@ -18,7 +17,6 @@ pub fn cl_diagflat<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    
     let out: CLBuffer<T> = device.retrieve(len * len * batch_size, x.node.idx);
     enqueue_kernel(
         device,

@@ -1,7 +1,7 @@
 use crate::Matrix;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
-use custos::{number::Float, Alloc, Buffer, CPU};
+use custos::{number::Float, Alloc, Buffer, CPU, Device, MainMemory};
 //use rand::{thread_rng, Rng, distributions::uniform::SampleUniform};
 
 #[cfg(feature = "opencl")]
@@ -10,7 +10,7 @@ use crate::opencl::cl_write;
 pub trait RandBuf<T> {
     fn rand(&mut self, lo: T, hi: T);
 }
-impl<T: Float> RandBuf<T> for Buffer<'_, T> {
+impl<T: Float, D: RandOp<T, D>> RandBuf<T> for Buffer<'_, T, D> {
     fn rand(&mut self, lo: T, hi: T) {
         self.device().rand(self, lo, hi)
     }
@@ -22,8 +22,8 @@ impl<'a, T: Float> Matrix<'a, T> {
     }
 }
 
-pub trait RandOp<T> {
-    fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T);
+pub trait RandOp<T, D: Device>: Device {
+    fn rand(&self, x: &mut Buffer<T, D>, lo: T, hi: T);
 }
 
 pub fn rand_slice<T: PartialOrd + Copy + Float>(slice: &mut [T], lo: T, hi: T) {
@@ -33,8 +33,8 @@ pub fn rand_slice<T: PartialOrd + Copy + Float>(slice: &mut [T], lo: T, hi: T) {
     }
 }
 
-impl<T: Float> RandOp<T> for CPU {
-    fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
+impl<T: Float, D: MainMemory> RandOp<T, D> for CPU {
+    fn rand(&self, x: &mut Buffer<T, D>, lo: T, hi: T) {
         rand_slice(x, lo, hi)
     }
 }

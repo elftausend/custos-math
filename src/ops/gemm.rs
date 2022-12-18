@@ -1,4 +1,4 @@
-use custos::{cache::Cache, GenericBlas, CPU, Device, MainMemory};
+use custos::{cache::Cache, Device, GenericBlas, MainMemory, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::CDatatype;

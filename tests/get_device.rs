@@ -1,5 +1,4 @@
-
-/* 
+/*
 #[cfg(feature = "opencl")]
 use custos::devices::opencl::OpenCL;
 use custos::{devices::cpu::CPU, get_device, AsDev, Error, VecRead};

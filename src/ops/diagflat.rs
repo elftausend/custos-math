@@ -3,15 +3,15 @@ use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
-use custos::{cache::Cache, cpu::CPU, CDatatype};
+use custos::{cache::Cache, cpu::CPU, CDatatype, Device, MainMemory};
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
-    pub fn diagflat(&self) -> Matrix<'a, T> {
+impl<'a, T: CDatatype, D: DiagflatOp<T, D>> Matrix<'a, T, D> {
+    pub fn diagflat(&self) -> Matrix<'a, T, D> {
         self.device().diagflat(self)
     }
 }
@@ -22,12 +22,12 @@ pub fn diagflat<T: Copy>(a: &[T], b: &mut [T]) {
     }
 }
 
-pub trait DiagflatOp<T> {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait DiagflatOp<T, D: Device>: Device {
+    fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Default + Copy> DiagflatOp<T> for CPU {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: Default + Copy, D: MainMemory> DiagflatOp<T, D> for CPU {
+    fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T> {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
 
