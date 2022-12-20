@@ -46,7 +46,7 @@ impl<T: Copy + Default> DiagflatOp<T> for CudaDevice {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> DiagflatOp<T> for OpenCL {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn diagflat(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(x))
     }
 }

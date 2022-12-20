@@ -1,11 +1,11 @@
-use custos::{opencl::enqueue_kernel, Buffer, CDatatype, Cache, OpenCL};
+use custos::{opencl::enqueue_kernel, Buffer, CDatatype, Cache, OpenCL, prelude::CLBuffer, Device};
 
 pub fn cl_scalar_op<'a, T>(
     device: &'a OpenCL,
-    x: &Buffer<T>,
+    x: &CLBuffer<T>,
     scalar: T,
     op: &str,
-) -> custos::Result<Buffer<'a, T>>
+) -> custos::Result<CLBuffer<'a, T>>
 where
     T: CDatatype,
 {
@@ -17,7 +17,8 @@ where
     }}
     ", datatype=T::as_c_type_str());
 
-    let out = Cache::get::<T, _>(device, x.len, x.node.idx);
+    //let out = Cache::get::<T, _>(device, x.len, x.node.idx);
+    let out: CLBuffer<T> = device.retrieve(x.len, x.node.idx);
     enqueue_kernel(device, &src, [x.len, 0, 0], None, &[x, &scalar, &out])?;
     Ok(out)
 }

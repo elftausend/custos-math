@@ -66,30 +66,30 @@ impl<T: Float, D: MainMemory> FnsOps<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> FnsOps<T> for OpenCL {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "exp(x)").unwrap()
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn ln(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "log(x)").unwrap()
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn neg(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "-x").unwrap()
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn powf(&self, x: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    fn powi(&self, x: &Matrix<T, Self>, rhs: i32) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> FnsOps<T> for CudaDevice {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "exp(x)").unwrap();
         (out, x.dims()).into()
     }

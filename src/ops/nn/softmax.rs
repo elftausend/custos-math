@@ -121,11 +121,11 @@ impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CudaDevice {
 #[cfg(feature = "opencl")]
 // TODO: Softmax running on the opencl device
 impl<T: GenericBlas + Float> SoftmaxOps<T> for OpenCL {
-    fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
+    fn softmax(&self, inputs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(inputs))
     }
 
-    fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
+    fn softmax_grad(&self, activated: &Matrix<T, Self>, grads: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, activated, grads, |device, activated, grads| {
             device.softmax_grad(activated, grads)
         })

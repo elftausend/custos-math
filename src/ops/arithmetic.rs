@@ -114,22 +114,22 @@ impl<T: Number, D: MainMemory> BaseOps<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> BaseOps<T> for OpenCL {
-    fn add(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn add(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "+").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn sub(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn sub(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "-").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn mul(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn mul(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "*").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn div(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn div(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "/").unwrap();
         (buf, lhs.dims()).into()
     }

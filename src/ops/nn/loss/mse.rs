@@ -1,7 +1,7 @@
 use crate::Matrix;
 use custos::CDatatype;
 #[cfg(feature = "opencl")]
-use custos::{opencl::enqueue_kernel, Cache, OpenCL};
+use custos::{opencl::enqueue_kernel, OpenCL};
 
 pub fn mse<T: CDatatype>(preds: &Matrix<T>, targets: &Matrix<T>) -> T {
     let x = preds - targets;
@@ -16,9 +16,11 @@ pub fn mse_grad<'a, T: CDatatype>(preds: &Matrix<'a, T>, targets: &Matrix<'a, T>
 #[cfg(feature = "opencl")]
 pub fn mse_grad_cl<'a, T: CDatatype>(
     device: &'a OpenCL,
-    preds: &Matrix<'a, T>,
-    targets: &Matrix<'a, T>,
-) -> Matrix<'a, T> {
+    preds: &Matrix<'a, T, OpenCL>,
+    targets: &Matrix<'a, T, OpenCL>,
+) -> Matrix<'a, T, OpenCL> {
+    use custos::Device;
+
     let src = format!(
         "
         __kernel void mse_grad(__global const {datatype}* preds, 
@@ -36,7 +38,7 @@ pub fn mse_grad_cl<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, preds.len, (preds.node.idx, targets.node.idx));
+    let out: custos::Buffer<T, OpenCL> = device.retrieve(preds.len, (preds.node.idx, targets.node.idx));
     enqueue_kernel(
         device,
         &src,

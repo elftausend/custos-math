@@ -72,11 +72,11 @@ impl<T: Number, D: MainMemory> AssignOps<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AssignOps<T> for OpenCL {
-    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+    fn add_assign(&self, lhs: &mut Buffer<T, OpenCL>, rhs: &Buffer<T, OpenCL>) {
         cl_tew_self(self, lhs, rhs, "+").unwrap()
     }
 
-    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+    fn sub_assign(&self, lhs: &mut Buffer<T, OpenCL>, rhs: &Buffer<T, OpenCL>) {
         cl_tew_self(self, lhs, rhs, "-").unwrap()
     }
 }

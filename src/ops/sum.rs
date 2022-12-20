@@ -94,19 +94,19 @@ impl<T: Number, D: MainMemory> SumOps<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> SumOps<T> for OpenCL {
-    fn sum(&self, x: &Matrix<T>) -> T {
+    fn sum(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
+    fn mean(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
     }
 
-    fn sum_rows<'a>(&'a self, x: &Matrix<T>) -> Matrix<'a, T> {
+    fn sum_rows<'a>(&'a self, x: &Matrix<T, Self>) -> Matrix<'a, T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_rows(x))
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_cols(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_cols(x))
     }
 }

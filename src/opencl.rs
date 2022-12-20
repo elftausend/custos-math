@@ -7,7 +7,7 @@ use custos::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error, GraphReturn, WriteBuf, CPU,
+    Buffer, CDatatype, Error, GraphReturn, WriteBuf, CPU, prelude::CLBuffer,
 };
 use std::fmt::Debug;
 
@@ -16,37 +16,37 @@ use crate::{cl_scalar_op, cl_str_op, Matrix};
 #[inline]
 pub fn cl_str_op_mat<'a, T: CDatatype>(
     device: &'a OpenCL,
-    x: &Matrix<T>,
+    x: &Matrix<T, OpenCL>,
     op: &str,
-) -> Result<Matrix<'a, T>, Error> {
+) -> Result<Matrix<'a, T, OpenCL>, Error> {
     let out = cl_str_op(device, x, op)?;
     Ok((out, x.dims()).into())
 }
 
 pub fn cl_scalar_op_mat<'a, T: CDatatype>(
     device: &'a OpenCL,
-    x: &Matrix<T>,
+    x: &Matrix<T, OpenCL>,
     scalar: T,
     op: &str,
-) -> Result<Matrix<'a, T>, Error> {
+) -> Result<Matrix<'a, T, OpenCL>, Error> {
     let out = cl_scalar_op(device, x, scalar, op)?;
     Ok((out, x.dims()).into())
 }
 
-pub fn cl_write<T>(device: &OpenCL, x: &mut Buffer<T>, data: &[T]) {
-    let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.1, data, true).unwrap() };
+pub fn cl_write<T>(device: &OpenCL, x: &mut CLBuffer<T>, data: &[T]) {
+    let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.ptr, data, true).unwrap() };
     wait_for_event(event).unwrap();
 }
 
-impl<'a, T> AsClCvoidPtr for Matrix<'a, T> {
+impl<'a, T> AsClCvoidPtr for Matrix<'a, T, OpenCL> {
     fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
-        self.ptr.1
+        self.ptr.ptr
     }
 }
 
-impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
+impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
     fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
-        self.ptr.1
+        self.ptr.ptr
     }
 }
 
@@ -68,9 +68,9 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
 /// ```
 pub fn cpu_exec<'c, 'a, 'o, T, F>(
     device: &'o OpenCL,
-    matrix: &Matrix<'a, T>,
+    matrix: &Matrix<'a, T, OpenCL>,
     f: F,
-) -> custos::Result<Matrix<'o, T>>
+) -> custos::Result<Matrix<'o, T, OpenCL>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,

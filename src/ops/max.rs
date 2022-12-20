@@ -31,6 +31,8 @@ pub trait MaxOps<T, D: Device = Self>: Device {
     fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
+
+// TODO: refactor this into own methods 
 impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
     fn max(&self, x: &Matrix<T, D>) -> T {
 
@@ -90,15 +92,15 @@ impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> MaxOps<T> for OpenCL {
-    fn max(&self, x: &Matrix<T>) -> T {
+    fn max(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.max(x))
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.max_rows(x))
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.max_cols(x))
     }
 }

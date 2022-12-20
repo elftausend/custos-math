@@ -55,31 +55,31 @@ pub trait ActivationOps<T, D: Device = Self>: Device {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
     #[inline]
-    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sigmoid(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "1.0 / (1.0 + exp(-x))").unwrap()
     }
 
-    fn sigmoid_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sigmoid_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "x * (1.0 - x)").unwrap()
     }
 
     #[inline]
-    fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn tanh(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "tanh(x)").unwrap()
     }
 
     #[inline]
-    fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn tanh_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "1.0 - pow(tanh(x), 2)").unwrap()
     }
 
     #[inline]
-    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn relu(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "x * (x >= 0)").unwrap()
     }
 
     #[inline]
-    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn relu_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "(x >= 0)").unwrap()
     }
 }

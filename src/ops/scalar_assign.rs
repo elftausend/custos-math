@@ -61,19 +61,19 @@ where
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ScalarAssign<T> for OpenCL {
-    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn adds_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "+").unwrap();
     }
 
-    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn muls_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "*").unwrap();
     }
 
-    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn divs_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "/").unwrap();
     }
 
-    fn subs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn subs_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "-").unwrap();
     }
 }

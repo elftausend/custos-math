@@ -45,7 +45,7 @@ impl<T: GenericBlas + Default + Copy, D: MainMemory> Gemm<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> Gemm<T> for OpenCL {
-    fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn gemm(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         assert!(lhs.dims().1 == rhs.dims().0);
         //crate::opencl::ops::ocl_gemm1(self.clone(), rhs, lhs).unwrap()
         let buf = cl_gemm(self, rhs.cols(), rhs.rows(), lhs.rows(), rhs, lhs).unwrap();

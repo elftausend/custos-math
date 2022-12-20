@@ -38,10 +38,10 @@ impl<T: Number, D: MainMemory> ClipOp<T, D> for CPU {
 #[cfg(feature = "opencl")]
 fn cl_clip<'a, T: CDatatype>(
     device: &'a OpenCL,
-    x: &Matrix<T>,
+    x: &Matrix<T, OpenCL>,
     min: T,
     max: T,
-) -> custos::Result<Matrix<'a, T>> {
+) -> custos::Result<Matrix<'a, T, OpenCL>> {
     use custos::opencl::enqueue_kernel;
 
     let src = format!(
@@ -70,7 +70,7 @@ fn cl_clip<'a, T: CDatatype>(
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ClipOp<T> for OpenCL {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+    fn clip(&self, x: &Matrix<T, Self>, min: T, max: T) -> Matrix<T, Self> {
         cl_clip(self, x, min, max).unwrap()
     }
 }

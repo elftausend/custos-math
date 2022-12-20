@@ -40,11 +40,11 @@ impl<T: Number, D: MainMemory> RowOp<T, D> for CPU {
 // TODO: Implement add_ro_mut (for cuda as well)
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> RowOp<T> for OpenCL {
-    fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn add_row(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }
 
-    fn add_row_mut(&self, lhs: &mut Matrix<T>, rhs: &Matrix<T>) {
+    fn add_row_mut(&self, lhs: &mut Matrix<T, Self>, rhs: &Matrix<T, Self>) {
         opencl::cpu_exec_lhs_rhs_mut(self, lhs, rhs, |cpu, lhs, rhs| cpu.add_row_mut(lhs, rhs))
             .unwrap();
     }

@@ -1,4 +1,4 @@
-use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, OpenCL};
+use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, OpenCL, Device, prelude::CLBuffer};
 
 trait Both {
     fn as_str<'a>() -> &'a str;
@@ -41,10 +41,10 @@ impl <T: !GenericOCL>Both for T {
 /// ```
 pub fn cl_tew<'a, T: CDatatype>(
     device: &'a OpenCL,
-    lhs: &Buffer<T>,
-    rhs: &Buffer<T>,
+    lhs: &CLBuffer<T>,
+    rhs: &CLBuffer<T>,
     op: &str,
-) -> custos::Result<Buffer<'a, T>> {
+) -> custos::Result<CLBuffer<'a, T>> {
     let src = format!("
         __kernel void eop(__global {datatype}* self, __global const {datatype}* rhs, __global {datatype}* out) {{
             size_t id = get_global_id(0);
@@ -53,7 +53,7 @@ pub fn cl_tew<'a, T: CDatatype>(
     ", datatype=T::as_c_type_str());
 
     let gws = [lhs.len, 0, 0];
-    let out = Cache::get::<T, _>(device, lhs.len, (lhs.node.idx, rhs.node.idx));
+    let out: CLBuffer<T> = device.retrieve(lhs.len, (lhs.node.idx, rhs.node.idx));
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }
@@ -77,8 +77,8 @@ pub fn cl_tew<'a, T: CDatatype>(
 /// ```
 pub fn cl_tew_self<T: CDatatype>(
     device: &OpenCL,
-    lhs: &mut Buffer<T>,
-    rhs: &Buffer<T>,
+    lhs: &mut CLBuffer<T>,
+    rhs: &CLBuffer<T>,
     op: &str,
 ) -> custos::Result<()> {
     let src = format!(

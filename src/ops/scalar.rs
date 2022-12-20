@@ -51,15 +51,15 @@ impl<T: CDatatype> AdditionalOps<T> for CudaDevice {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AdditionalOps<T> for OpenCL {
-    fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn adds(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "+").unwrap()
     }
 
-    fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn muls(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "*").unwrap()
     }
 
-    fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn divs(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "/").unwrap()
     }
 }
