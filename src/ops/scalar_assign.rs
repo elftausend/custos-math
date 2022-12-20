@@ -12,7 +12,7 @@ use crate::cu_assign_scalar;
 #[cfg(feature = "cuda")]
 use custos::CudaDevice;
 
-impl<'a, T: CDatatype> AddAssign<T> for Matrix<'a, T> {
+impl<'a, T: CDatatype, D: ScalarAssign<T>> AddAssign<T> for Matrix<'a, T, D> {
     fn add_assign(&mut self, rhs: T) {
         self.device().adds_assign(self, rhs)
     }

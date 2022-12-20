@@ -44,11 +44,11 @@ fn test_device_switching_s() -> Result<(), custos::Error> {
     let c = Matrix::from((&cpu, c.dims(), c.read()));
     let d_cpu = cpu.add(&c, &c);
 
-    let out = Cache::get::<f32, _>(&device, d_cpu.size(), c.node.idx);
+    let out = Cache::get::<f32, 0>(&device, d_cpu.size(), c.node.idx);
     let event = unsafe {
         enqueue_write_buffer(
             &device.queue(),
-            out.ptr.1 as *mut c_void,
+            out.ptr.ptr as *mut c_void,
             d_cpu.as_slice(),
             true,
         )?

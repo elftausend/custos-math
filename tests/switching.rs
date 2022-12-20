@@ -19,7 +19,8 @@ fn test_swtich_mut_cl() -> custos::Result<()> {
         cpu_exec_lhs_rhs_mut(&device, &mut matrix, &rhs, |cpu, matrix, rhs| {
             cpu.add_row_mut(matrix, rhs)
         })?;
-        custos::Result::Ok(matrix.read())
+        //custos::Result::Ok(matrix.read())
+        custos::Result::Ok(matrix.read_to_vec())
     };
 
     assert_eq!(test()?, vec![2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);

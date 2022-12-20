@@ -1,6 +1,6 @@
 use custos::{
     devices::{cpu::CPU, opencl::OpenCL},
-    VecRead,
+    Read,
 };
 use custos_math::{BaseOps, Matrix};
 

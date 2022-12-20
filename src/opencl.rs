@@ -76,6 +76,8 @@ where
     T: Copy + Default + Debug,
 {
     #[cfg(not(feature = "realloc"))]
+    /*
+    // use compile time unified_cl flag -> get from custos?
     if device.unified_mem() {
         // Using a CPU stored in a OpenCL in order to get a (correct) cache entry.
         // Due to the (new) caching architecture, using a new CPU isn't possible,
@@ -90,6 +92,7 @@ where
         }
         .map(|buf| (buf, dims).into());
     }
+    */
 
     let cpu = CPU::new();
 
@@ -99,27 +102,29 @@ where
     }
 
     // convert an OpenCL buffer to a cpu buffer
-    let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
     let mut convert = Matrix::from((device, mat));
     convert.node = device.graph().add(convert.len, matrix.node.idx);
     Ok(convert)
 }
 
-pub fn cpu_exec_mut<T, F>(device: &OpenCL, matrix: &mut Matrix<T>, f: F) -> custos::Result<()>
+pub fn cpu_exec_mut<T, F>(device: &OpenCL, matrix: &mut Matrix<T, OpenCL>, f: F) -> custos::Result<()>
 where
     F: Fn(&CPU, &mut Matrix<T>),
     T: Copy + Default,
 {
     let cpu = CPU::new();
 
+    /*
     // uses same memory as CPU
     if device.unified_mem() {
         return Ok(f(&cpu, matrix));
     }
+    */
 
     //convert an OpenCL buffer to a cpu matrix
-    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     f(&cpu, &mut cpu_matrix);
     // write result as slice back to OpenCL Matrix
     device.write(matrix, &cpu_matrix);
@@ -128,16 +133,17 @@ where
 
 pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
     device: &'o OpenCL,
-    lhs: &Matrix<'a, T>,
-    rhs: &Matrix<'a, T>,
+    lhs: &Matrix<'a, T, OpenCL>,
+    rhs: &Matrix<'a, T, OpenCL>,
     f: F,
-) -> custos::Result<Matrix<'o, T>>
+) -> custos::Result<Matrix<'o, T, OpenCL>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<T>, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
     let cpu = CPU::new();
 
+    /*
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
         let no_drop = f(&device.cpu, lhs, rhs);
@@ -149,6 +155,7 @@ where
         }
         .map(|buf| (buf, no_drop_dims).into());
     }
+    */
 
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
@@ -156,8 +163,8 @@ where
     }
 
     // convert an OpenCL buffer to a cpu buffer
-    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
-    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
+    let lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
+    let rhs = Matrix::from((&cpu, rhs.dims(), rhs.read()));
 
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
     convert.node = device
@@ -169,8 +176,8 @@ where
 
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
     device: &OpenCL,
-    lhs: &mut Matrix<T>,
-    rhs: &Matrix<T>,
+    lhs: &mut Matrix<T, OpenCL>,
+    rhs: &Matrix<T, OpenCL>,
     f: F,
 ) -> custos::Result<()>
 where
@@ -179,14 +186,16 @@ where
 {
     let cpu = CPU::new();
 
+    /*
     // uses same memory as CPU
     if device.unified_mem() {
         return Ok(f(&cpu, lhs, rhs));
     }
+    */
 
     //convert OpenCL matrix to cpu matrix
-    let mut cpu_lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
-    let cpu_rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
+    let mut cpu_lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
+    let cpu_rhs = Matrix::from((&cpu, rhs.dims(), rhs.read()));
     f(&cpu, &mut cpu_lhs, &cpu_rhs);
 
     // write result as slice back to OpenCL Matrix
@@ -194,18 +203,21 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T>, f: F) -> T
+pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,
 {
     let cpu = CPU::new();
+
+    /*
     if device.unified_mem() {
         return f(&cpu, matrix);
     }
+    */
 
     // convert an OpenCL buffer to a cpu buffer
-    let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let cpu_buf = Matrix::from((&cpu, matrix.dims(), matrix.read()));
 
     f(&cpu, &cpu_buf)
 }

@@ -135,9 +135,9 @@ impl<T: GenericBlas + Float> SoftmaxOps<T> for OpenCL {
 #[cfg(feature = "opencl")]
 pub fn cl_softmax<'a, T: CDatatype>(
     device: &'a OpenCL,
-    mut activated: Matrix<T>,
-    grads: &Matrix<T>,
-) -> custos::Result<Matrix<'a, T>> {
+    mut activated: Matrix<T, OpenCL>,
+    grads: &Matrix<T, OpenCL>,
+) -> custos::Result<Matrix<'a, T, OpenCL>> {
     use crate::{cl_tew, Gemm};
 
     let rows = grads.rows();

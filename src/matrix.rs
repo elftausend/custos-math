@@ -830,9 +830,13 @@ where
     }
 }
 
-impl<T: Default + Copy + core::fmt::Debug> core::fmt::Debug for Matrix<'_, T> {
+impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T, D>> core::fmt::Debug for Matrix<'a, T, D> 
+where
+    D: Read<T, D> + Device + 'a,
+    //for<'b> <D as Read<T, D>>::Read<'b>: Iterator,
+{
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let data = self.read();
+        let data = self.read_to_vec();
 
         writeln!(f, "dims={:?}", self.dims)?;
         write!(f, "[")?;

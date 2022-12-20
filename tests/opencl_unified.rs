@@ -70,6 +70,8 @@ fn test_unified_opencl() -> custos::Result<()> {
     Ok(())
 }
 
+/*
+
 #[cfg(not(feature = "safe"))]
 #[cfg(feature = "opencl")]
 #[test]
@@ -109,3 +111,4 @@ fn test_unified_calc() -> custos::Result<()> {
 
     Ok(())
 }
+*/

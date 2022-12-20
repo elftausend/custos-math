@@ -25,10 +25,11 @@ fn test_softmax_cpu() {
 fn test_softmax_cl() -> custos::Result<()> {
     let device = custos::OpenCL::new(0)?;
 
-    let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
+    let targets = Matrix::<f32, custos::OpenCL>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
     let activated = Matrix::from((&device, (2, 3), [0.1, 0.1, 0.8, 0.9, 0.05, 0.05]));
 
-    let grads = cce_grad(&device, &activated, &targets);
+    let grads = activated.cce_grad(&targets);
+    //let grads = cce_grad(&device, &activated, &targets);
 
     for _ in range(1000) {
         device.softmax_grad(&activated, &grads);
@@ -41,11 +42,11 @@ fn test_softmax_cl() -> custos::Result<()> {
 fn test_softmax_kernel_cl() -> custos::Result<()> {
     let device = custos::OpenCL::new(0)?;
 
-    let targets = Matrix::<f32>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
+    let targets = Matrix::<f32, custos::OpenCL>::from((&device, (2, 3), [0., 0., 1., 1., 0., 0.]));
     let activated = Matrix::from((&device, (2, 3), [0.1, 0.1, 0.8, 0.9, 0.05, 0.05]));
 
-    let grads = cce_grad(&device, &activated, &targets);
-
+    let grads = activated.cce_grad(&targets);
+    
     let _out = device.softmax_grad(&activated, &grads);
     //println!("out: {out:?}");
 
