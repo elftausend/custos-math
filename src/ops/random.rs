@@ -41,13 +41,16 @@ impl<T: Float, D: MainMemory> RandOp<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: Float> RandOp<T> for OpenCL {
-    fn rand(&self, x: &mut Buffer<T, OpenCL>, lo: T, hi: T) {
-        if self.unified_mem() {
-            return rand_slice(x, lo, hi);
-        }
-        let mut data = vec![T::default(); x.len()];
-        rand_slice(&mut data, lo, hi);
-        cl_write(self, x, &data);
+    fn rand(&self, x: &mut Buffer<T, OpenCL>, lo: T, hi: T) {   
+        #[cfg(unified_cl)]
+        rand_slice(x, lo, hi);
+        
+        #[cfg(not(unified_cl))]
+        {
+            let mut data = vec![T::default(); x.len()];
+            rand_slice(&mut data, lo, hi);
+            cl_write(self, x, &data)
+        };
     }
 }
 

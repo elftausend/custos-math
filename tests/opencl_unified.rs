@@ -21,8 +21,6 @@ pub fn unified_mem<T>(device: &OpenCL, arr: &mut [T]) -> Result<*mut c_void, Err
         )
     };
 
-    device.inner.borrow_mut().ptrs.push(r);
-
     if err != 0 {
         return Err(Error::from(OCLErrorKind::from_value(err)));
     }
@@ -45,16 +43,13 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
 }
 
 #[cfg(feature = "opencl")]
+#[cfg(unified_cl)]
 #[test]
 fn test_unified_opencl() -> custos::Result<()> {
     use custos::OpenCL;
     use custos_math::Matrix;
 
     let device = OpenCL::new(0)?;
-
-    if !device.unified_mem() {
-        return Ok(());
-    }
 
     let mut a = Matrix::from((&device, 2, 3, [1, 2, 3, 4, 5, 6]));
 
