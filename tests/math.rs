@@ -75,9 +75,9 @@ fn test_ew_add_cpu() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_add_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -90,9 +90,9 @@ fn test_ew_add_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_add_large_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 1000), [1.; 1000]));
     let b = Matrix::from((&device, (1, 1000), [1.5; 1000]));
@@ -153,9 +153,9 @@ fn test_ew_sub_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_sub_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
     let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
@@ -192,9 +192,9 @@ fn test_ew_mul_cpu_a_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_mul_cuda() {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0).unwrap();
+    let device = CUDA::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -363,7 +363,7 @@ fn test_larger_gemm() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_larger_gemm_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
     //5x7
     let arr1 = [
@@ -387,7 +387,7 @@ fn test_larger_gemm_cuda() -> custos::Result<()> {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -407,7 +407,7 @@ fn test_cuda_gemm_speed() -> custos::Result<()> {
     const ROWS: usize = 4000;
     const COLS: usize = ROWS;
 
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let stream = create_stream()?;
     unsafe { cublasSetStream_v2(device.handle().0, stream.0) }.to_result()?;

@@ -4,7 +4,7 @@ use custos::{cache::Cache, number::Number, CDatatype, Device, MainMemory, CPU};
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
@@ -106,7 +106,7 @@ impl<T: CDatatype> MaxOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: Number> MaxOps<T> for CudaDevice {
+impl<T: Number> MaxOps<T> for CUDA {
     fn max(&self, x: &Matrix<T>) -> T {
         cu_to_cpu_scalar(self, x, |cpu, x| cpu.max(&x))
     }

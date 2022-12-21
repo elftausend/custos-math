@@ -3,7 +3,7 @@ use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 use custos_math::{cpu_exec_lhs_rhs_mut, FnsOps, Matrix, RowOp};
 
 #[cfg(feature = "cuda")]
-use custos::{CudaDevice, VecRead};
+use custos::{CUDA, VecRead};
 #[cfg(feature = "cuda")]
 use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
@@ -79,7 +79,7 @@ fn test_unified_mem_device_switch_softmax() -> custos::Result<()> {
 fn test_switch_mut_cu() -> custos::Result<()> {
     use custos_math::cu_to_cpu_lr_mut;
 
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let mut matrix = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
     let rhs = Matrix::from((&device, 1, 3, [1., 2., 3.]));
@@ -97,7 +97,7 @@ fn test_switch_mut_cu() -> custos::Result<()> {
 fn test_scalar_switch_cuda() -> custos::Result<()> {
     use custos_math::Matrix;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6]));
     let sum = cu_to_cpu_scalar(&device, &a, |cpu, x| cpu.sum(&x));
 
@@ -111,7 +111,7 @@ fn test_scalar_switch_cuda() -> custos::Result<()> {
 fn test_single_switch_cuda() -> custos::Result<()> {
     use custos_math::{FnsOps, Matrix};
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1., 2., 3., 4., 5., 6.]));
     let res = cu_to_cpu_s(&device, &a, |cpu, x| cpu.neg(&x));
     assert_eq!(device.read(&res), vec![-1., -2., -3., -4., -5., -6.]);
@@ -123,7 +123,7 @@ fn test_single_switch_cuda() -> custos::Result<()> {
 fn test_lr_switch_cuda() -> custos::Result<()> {
     use custos_math::{BaseOps, Matrix};
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
     let lhs = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6]));
     let rhs = Matrix::from((&device, 3, 2, [2, 2, 3, 4, 5, 7]));
 

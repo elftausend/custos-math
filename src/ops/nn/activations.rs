@@ -8,7 +8,7 @@ use custos::{devices::cpu::CPU, number::Float, CDatatype, Device, MainMemory};
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: CDatatype + Float, D: ActivationOps<T>> Matrix<'a, T, D> {
     #[inline]
@@ -116,7 +116,7 @@ impl<T: Float, D: MainMemory> ActivationOps<T, D> for CPU {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ActivationOps<T> for CudaDevice {
+impl<T: CDatatype> ActivationOps<T> for CUDA {
     #[inline]
     fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();

@@ -54,7 +54,7 @@ impl<T: CDatatype> Gemm<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: GenericBlas> Gemm<T> for custos::CudaDevice {
+impl<T: GenericBlas> Gemm<T> for custos::CUDA {
     fn gemm(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         use custos::CacheBuf;
         assert!(

@@ -5,7 +5,7 @@ use custos::OpenCL;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
-use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
+use custos::{cuda::launch_kernel1d, Buffer, CUDA};
 
 impl<'a, T: CDatatype, D: ClipOp<T>> Matrix<'a, T, D> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T, D> {
@@ -77,7 +77,7 @@ impl<T: CDatatype> ClipOp<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 pub fn cu_clip<'a, T: CDatatype>(
-    device: &'a CudaDevice,
+    device: &'a CUDA,
     x: &Buffer<T>,
     min: T,
     max: T,
@@ -114,7 +114,7 @@ pub fn cu_clip<'a, T: CDatatype>(
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ClipOp<T> for CudaDevice {
+impl<T: CDatatype> ClipOp<T> for CUDA {
     fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
         let buf = cu_clip(self, x, min, max).unwrap();
         (buf, x.dims()).into()

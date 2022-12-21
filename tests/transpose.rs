@@ -40,7 +40,7 @@ fn test_transpose_cl_f64() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_transpose_cuda() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1f32, 2., 3., 4., 5., 6.]));
     let out = device.transpose(&a);
@@ -52,7 +52,7 @@ fn test_transpose_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_transpose_selected_cuda() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
     let res = a.T();

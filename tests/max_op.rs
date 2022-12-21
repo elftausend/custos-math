@@ -45,7 +45,7 @@ fn test_max_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_max_cuda() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
     let a = Matrix::from((&device, (3, 3), [1f32, 2., -3., 4., 5., 6., 7., -8., 9.]));
     let max = device.max(&a);
     assert_eq!(max, 9.);

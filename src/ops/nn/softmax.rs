@@ -11,7 +11,7 @@ use custos::{CDatatype, OpenCL};
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_lr, cu_to_cpu_s};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: GenericBlas, D: SoftmaxOps<T>> Matrix<'a, T, D> {
     pub fn softmax(&self) -> Matrix<'a, T, D> {
@@ -106,7 +106,7 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU where CPU: ColOp<T>{
 }
 
 #[cfg(feature = "cuda")]
-impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CudaDevice {
+impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CUDA {
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
         cu_to_cpu_s(self, inputs, |cpu, x| cpu.softmax(&x))
     }

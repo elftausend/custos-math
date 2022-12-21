@@ -10,7 +10,7 @@ use custos::OpenCL;
 #[cfg(feature = "cuda")]
 use crate::cu_assign_scalar;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: CDatatype, D: ScalarAssign<T>> AddAssign<T> for Matrix<'a, T, D> {
     fn add_assign(&mut self, rhs: T) {
@@ -79,7 +79,7 @@ impl<T: CDatatype> ScalarAssign<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ScalarAssign<T> for CudaDevice {
+impl<T: CDatatype> ScalarAssign<T> for CUDA {
     fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "+").unwrap();
     }

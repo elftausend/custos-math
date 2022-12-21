@@ -9,7 +9,7 @@ use custos::OpenCL;
 #[cfg(feature = "cuda")]
 use crate::cuda::cu_scalar_op;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: CDatatype, D> Matrix<'a, T, D>
 where
@@ -35,7 +35,7 @@ pub trait AdditionalOps<T, D: Device = Self>: Device {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> AdditionalOps<T> for CudaDevice {
+impl<T: CDatatype> AdditionalOps<T> for CUDA {
     fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
         (cu_scalar_op(self, lhs, rhs, "+").unwrap(), lhs.dims()).into()
     }

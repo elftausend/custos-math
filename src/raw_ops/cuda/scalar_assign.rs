@@ -1,7 +1,7 @@
-use custos::{cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice};
+use custos::{cuda::launch_kernel1d, Buffer, CDatatype, CUDA};
 
 pub fn cu_assign_scalar<'a, T: CDatatype>(
-    device: &'a CudaDevice,
+    device: &'a CUDA,
     lhs: &Buffer<T>,
     rhs: T,
     op: &str,

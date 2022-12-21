@@ -78,7 +78,7 @@ impl<T: Float + CDatatype> CCEOp<T> for CPU {}
 #[cfg(feature = "opencl")]
 impl<T: Float + CDatatype> CCEOp<T> for OpenCL {}
 #[cfg(feature = "cuda")]
-impl<T: Float + CDatatype> CCEOp<T> for custos::CudaDevice {}
+impl<T: Float + CDatatype> CCEOp<T> for custos::CUDA {}
 
 pub fn cce<T: Float>(device: &dyn CCEOp<T>, preds: &Matrix<T>, targets: &Matrix<T>) -> T {
     let preds = device.clip(preds, T::as_generic(1E-7), T::as_generic(1. - 1E-7));

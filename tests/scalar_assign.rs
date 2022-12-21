@@ -26,9 +26,9 @@ fn test_scalar_assign_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_scalar_assign_cu() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let mut buf = Matrix::from((&device, 2, 2, [1., 2., 3., 4.]));
     buf += 1.;

@@ -38,7 +38,7 @@ fn test_diagflat_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_diagflat_cuda() {
-    let device = custos::CudaDevice::new(0).unwrap();
+    let device = custos::CUDA::new(0).unwrap();
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., 4.]));
     let result = device.diagflat(&x);

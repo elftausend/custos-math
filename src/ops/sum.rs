@@ -9,7 +9,7 @@ use custos::OpenCL;
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: CDatatype, D: SumOps<T>> Matrix<'a, T, D> {
     pub fn sum(&self) -> T {
@@ -112,7 +112,7 @@ impl<T: CDatatype> SumOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> SumOps<T> for CudaDevice {
+impl<T: CDatatype> SumOps<T> for CUDA {
     fn sum(&self, x: &Matrix<T>) -> T {
         cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
     }

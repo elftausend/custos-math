@@ -51,7 +51,7 @@ fn test_sum_ops_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_sum_ops_cu() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let a = Matrix::from((
         &device,

@@ -1,14 +1,14 @@
-use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice};
+use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA};
 
 /// Element-wise operations. The op/operation is usually "+", "-", "*", "/".
 ///
 /// # Example
 /// ```
-/// use custos::{CudaDevice, Buffer, VecRead};
+/// use custos::{CUDA, Buffer, VecRead};
 /// use custos_math::cu_ew;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CudaDevice::new(0)?;
+///     let device = CUDA::new(0)?;
 ///     let lhs = Buffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
 ///     let rhs = Buffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
 ///
@@ -18,7 +18,7 @@ use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CudaDevice}
 /// }
 /// ```
 pub fn cu_ew<'a, T: CDatatype>(
-    device: &'a CudaDevice,
+    device: &'a CUDA,
     lhs: &Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,
@@ -60,11 +60,11 @@ pub fn cu_ew<'a, T: CDatatype>(
 ///
 /// # Example
 /// ```
-/// use custos::{CudaDevice, Buffer, VecRead};
+/// use custos::{CUDA, Buffer, VecRead};
 /// use custos_math::cu_ew_self;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CudaDevice::new(0)?;
+///     let device = CUDA::new(0)?;
 ///     let mut lhs = Buffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
 ///     let rhs = Buffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
 ///
@@ -74,7 +74,7 @@ pub fn cu_ew<'a, T: CDatatype>(
 /// }
 /// ```
 pub fn cu_ew_self<T: CDatatype>(
-    device: &CudaDevice,
+    device: &CUDA,
     lhs: &mut Buffer<T>,
     rhs: &Buffer<T>,
     op: &str,

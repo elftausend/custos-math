@@ -24,7 +24,7 @@ pub fn bench_gemm_cuda(c: &mut Criterion) {
     const COLS: usize = ROWS;
 
     //let device = custos::CPU::new().select();
-    let device = custos::CudaDevice::new(0).unwrap().select();
+    let device = custos::CUDA::new(0).unwrap().select();
 
     let a = Matrix::<f32>::from((&device, (ROWS, COLS), vec![2.3; ROWS*COLS]));
     let b = Matrix::<f32>::from((&device, (COLS, ROWS), vec![1.9; ROWS*COLS]));

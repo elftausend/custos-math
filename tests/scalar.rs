@@ -46,7 +46,7 @@ fn test_scalar_apply() {
 #[test]
 fn test_scalar_op_cuda() -> custos::Result<()> {
     use custos_math::cu_scalar_op;
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
     let x = Matrix::from((&device, (1, 5), [-1.31, 2.12, 1., 5., 4.]));
 
     let res = cu_scalar_op(&device, &x, 0.5, "+")?;

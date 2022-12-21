@@ -66,9 +66,9 @@ fn test_sub_assign_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_sub_assign_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -81,9 +81,9 @@ fn test_sub_assign_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_add_assign_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));

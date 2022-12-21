@@ -57,7 +57,7 @@ fn test_fns_cl() -> Result<(), custos::Error> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_fns_cuda() -> Result<(), custos::Error> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let x = Matrix::from((&device, (1, 4), [1.5, 2., 6., -3.]));
 

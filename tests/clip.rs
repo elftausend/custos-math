@@ -28,7 +28,7 @@ fn test_clip_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_clip_cuda() {
-    let device = custos::CudaDevice::new(0).unwrap();
+    let device = custos::CUDA::new(0).unwrap();
 
     let x = Matrix::<i32>::from((&device, (1, 5), [100, 10, 2000, -500, -5]));
 

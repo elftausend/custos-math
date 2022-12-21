@@ -43,10 +43,10 @@ impl<T: custos::CDatatype> ColOp<T> for OpenCL {
 #[cfg(feature = "cuda")]
 use crate::cu_to_cpu_lr;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 #[cfg(feature = "cuda")]
-impl<T: custos::CDatatype> ColOp<T> for CudaDevice {
+impl<T: custos::CDatatype> ColOp<T> for CUDA {
     fn add_col(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }

@@ -136,7 +136,7 @@ impl<T: CDatatype> BaseOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> BaseOps<T> for custos::CudaDevice {
+impl<T: CDatatype> BaseOps<T> for custos::CUDA {
     fn add(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
         let buf = cu_ew(self, lhs, rhs, "+").unwrap();
         (buf, lhs.dims()).into()

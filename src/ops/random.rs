@@ -55,10 +55,10 @@ impl<T: Float> RandOp<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-use custos::{cuda::api::cu_write, CudaDevice};
+use custos::{cuda::api::cu_write, CUDA};
 
 #[cfg(feature = "cuda")]
-impl<T: Float> RandOp<T> for CudaDevice {
+impl<T: Float> RandOp<T> for CUDA {
     fn rand(&self, x: &mut Buffer<T>, lo: T, hi: T) {
         let mut data = vec![T::default(); x.len()];
         rand_slice(&mut data, lo, hi);

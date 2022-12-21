@@ -9,7 +9,7 @@ use custos::OpenCL;
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_lr, cu_to_cpu_lr_mut};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 impl<'a, T: CDatatype, D: RowOp<T>> Matrix<'a, T, D> {
     pub fn add_row(&self, rhs: &Matrix<T, D>) -> Matrix<'a, T, D> {
@@ -51,7 +51,7 @@ impl<T: CDatatype> RowOp<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> RowOp<T> for CudaDevice {
+impl<T: CDatatype> RowOp<T> for CUDA {
     fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }

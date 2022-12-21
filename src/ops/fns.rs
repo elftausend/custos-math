@@ -5,7 +5,7 @@ use crate::{each_op, Matrix};
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op_mat;
@@ -88,7 +88,7 @@ impl<T: CDatatype> FnsOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> FnsOps<T> for CudaDevice {
+impl<T: CDatatype> FnsOps<T> for CUDA {
     fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "exp(x)").unwrap();
         (out, x.dims()).into()
