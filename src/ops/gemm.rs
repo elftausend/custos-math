@@ -13,7 +13,7 @@ use crate::Matrix;
 /// Matrix multiplication. Uses provided device.
 /// # Example
 /// ```
-/// use custos::{CPU, VecRead};
+/// use custos::{CPU, Read};
 /// use custos_math::{Matrix, Gemm};
 ///
 /// let device = CPU::new();
@@ -23,7 +23,7 @@ use crate::Matrix;
 ///
 /// let c = device.gemm(&a, &b);
 ///
-/// assert_eq!(device.read(c.as_buf()), vec![20., 14., 56., 41.,]);
+/// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
 /// ```
 pub trait Gemm<T, D: Device = Self>: Device {
     fn gemm(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;

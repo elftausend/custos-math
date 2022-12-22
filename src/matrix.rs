@@ -14,8 +14,6 @@ use custos::{
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
 
-#[cfg(any(feature = "cuda", feature = "opencl"))]
-use custos::cache::Cache;
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -76,12 +74,12 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     /// Returns a reference to the underlying buffer.
     /// # Example
     /// ```
-    /// use custos::{CPU, VecRead};
+    /// use custos::{CPU, Read};
     /// use custos_math::Matrix;
     ///
     /// let device = CPU::new();
     /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 3., 2., 1.,]));
-    /// let read = device.read(a.as_buf());
+    /// let read = a.read();
     /// assert_eq!(vec![1., 2., 3., 3., 2., 1.,], read);
     /// ```
     #[inline]
@@ -442,7 +440,7 @@ impl<'a, 'b, T> From<(&'a OpenCL, Matrix<'b, T>)> for Matrix<'a, T, OpenCL> {
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     fn from(device_matrix: (&'a CUDA, Matrix<'b, T>)) -> Self {
-        let dst = Cache::get(device_matrix.0, device_matrix.1.size(), ());
+        let dst = device_matrix.0.retrieve(device_matrix.1.size(), ());
         cu_write(dst.ptr.ptr, &device_matrix.1).unwrap();
         Matrix::from((dst, device_matrix.1.dims()))
     }

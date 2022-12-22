@@ -55,14 +55,14 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
 ///
 /// # Example
 /// ```
-/// use custos::{OpenCL, VecRead};
+/// use custos::{OpenCL, Read};
 /// use custos_math::{Matrix, opencl::cpu_exec, FnsOps};
 ///
 /// fn main() -> custos::Result<()> {
 ///     let device = OpenCL::new(0)?;
-///     let a = Matrix::<f32>::from((&device, 2, 2, [1., 2., 3., 4.]));
+///     let a = Matrix::from((&device, 2, 2, [1f32, 2., 3., 4.]));
 ///     let res = cpu_exec(&device, &a, |cpu, x| cpu.neg(x))?;
-///     assert_eq!(device.read(&res), vec![-1., -2., -3., -4.]);
+///     assert_eq!(res.read(), vec![-1., -2., -3., -4.]);
 ///     Ok(())
 /// }
 /// ```

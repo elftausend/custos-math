@@ -26,13 +26,13 @@ impl <T: !GenericOCL>Both for T {
 ///
 /// # Example
 /// ```
-/// use custos::{OpenCL, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, Read};
 /// use custos_math::cl_tew;
 ///
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = OpenCL::new(0)?;
-///     let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8]));
-///     let rhs = Buffer::<i16>::from((&device, [10, 9, 8, 6, 3]));
+///     let lhs = Buffer::from((&device, [15i16, 30, 21, 5, 8]));
+///     let rhs = Buffer::from((&device, [10i16, 9, 8, 6, 3]));
 ///
 ///     let result = cl_tew(&device, &lhs, &rhs, "+")?;
 ///     assert_eq!(vec![25, 39, 29, 11, 11], device.read(&result));
@@ -62,13 +62,13 @@ pub fn cl_tew<'a, T: CDatatype>(
 ///
 /// # Example
 /// ```
-/// use custos::{OpenCL, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, Read};
 /// use custos_math::cl_tew_self;
 ///
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = OpenCL::new(0)?;
-///     let mut lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8]));
-///     let rhs = Buffer::<i16>::from((&device, [10, 9, 8, 6, 3]));
+///     let mut lhs = Buffer::<i16, OpenCL>::from((&device, [15, 30, 21, 5, 8]));
+///     let rhs = Buffer::<i16, OpenCL>::from((&device, [10, 9, 8, 6, 3]));
 ///
 ///     cl_tew_self(&device, &mut lhs, &rhs, "+")?;
 ///     assert_eq!(vec![25, 39, 29, 11, 11], device.read(&lhs));
