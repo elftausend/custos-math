@@ -1,6 +1,6 @@
 use crate::Matrix;
 use custos::{
-    cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA, Read, WriteBuf, CPU, prelude::CUBuffer,
+    cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, Read, WriteBuf, CPU, CUDA,
 };
 
 pub fn cu_scalar_op<'a, T: CDatatype>(
@@ -101,7 +101,6 @@ where
 }
 
 pub fn cu_to_cpu_s_mut<T: Copy + Default, F: Fn(&CPU, &mut Matrix<T>)>(
-    device: &CUDA,
     x: &mut Matrix<T, CUDA>,
     f: F,
 ) {
@@ -109,11 +108,10 @@ pub fn cu_to_cpu_s_mut<T: Copy + Default, F: Fn(&CPU, &mut Matrix<T>)>(
     let mut cpux = Matrix::from((&cpu, x.dims(), x.read()));
 
     f(&cpu, &mut cpux);
-    device.write(x, &cpux)
+    x.write(&cpux);
 }
 
 pub fn cu_to_cpu_scalar<T: Copy + Default, F: Fn(&CPU, Matrix<T>) -> T>(
-    device: &CUDA,
     x: &Matrix<T, CUDA>,
     f: F,
 ) -> T {

@@ -1,4 +1,4 @@
-use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA, prelude::CUBuffer};
+use custos::{cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, CUDA};
 
 /// Element-wise operations. The op/operation is usually "+", "-", "*", "/".
 ///

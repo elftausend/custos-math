@@ -95,11 +95,11 @@ impl<T: Number, D: MainMemory> SumOps<T, D> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> SumOps<T> for OpenCL {
     fn sum(&self, x: &Matrix<T, Self>) -> T {
-        cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
+        cl_to_cpu_scalar(x, |device, x| device.sum(x))
     }
 
     fn mean(&self, x: &Matrix<T, Self>) -> T {
-        cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
+        cl_to_cpu_scalar(x, |device, x| device.mean(x))
     }
 
     fn sum_rows<'a>(&'a self, x: &Matrix<T, Self>) -> Matrix<'a, T, Self> {
@@ -114,11 +114,11 @@ impl<T: CDatatype> SumOps<T> for OpenCL {
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> SumOps<T> for CUDA {
     fn sum(&self, x: &Matrix<T, CUDA>) -> T {
-        cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
+        cu_to_cpu_scalar(x, |device, x| device.sum(&x))
     }
 
     fn mean(&self, x: &Matrix<T, CUDA>) -> T {
-        cu_to_cpu_scalar(self, x, |device, x| device.mean(&x))
+        cu_to_cpu_scalar(x, |device, x| device.mean(&x))
     }
 
     fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {

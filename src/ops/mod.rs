@@ -56,7 +56,11 @@ where
 
 #[cfg(feature = "opencl")]
 ///OpenCL
-pub fn cl_to_cpu_s<'a, 'o, T, F>(device: &'o OpenCL, x: &Matrix<'a, T, OpenCL>, f: F) -> Matrix<'o, T, OpenCL>
+pub fn cl_to_cpu_s<'a, 'o, T, F>(
+    device: &'o OpenCL,
+    x: &Matrix<'a, T, OpenCL>,
+    f: F,
+) -> Matrix<'o, T, OpenCL>
 where
     T: Copy + Default + std::fmt::Debug,
     F: for<'b> Fn(&'b CPU, &Matrix<'_, T>) -> Matrix<'b, T>,
@@ -68,10 +72,9 @@ where
 #[cfg(feature = "opencl")]
 ///OpenCL
 fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, &Matrix<T>) -> T>(
-    device: &OpenCL,
     x: &Matrix<T, OpenCL>,
     f: F,
 ) -> T {
     use crate::opencl::cpu_exec_scalar;
-    cpu_exec_scalar(device, x, f)
+    cpu_exec_scalar(x, f)
 }

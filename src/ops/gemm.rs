@@ -55,7 +55,11 @@ impl<T: CDatatype> Gemm<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: GenericBlas> Gemm<T> for custos::CUDA {
-    fn gemm(&self, lhs: &Matrix<T, custos::CUDA>, rhs: &Matrix<T, custos::CUDA>) -> Matrix<T, custos::CUDA> {
+    fn gemm(
+        &self,
+        lhs: &Matrix<T, custos::CUDA>,
+        rhs: &Matrix<T, custos::CUDA>,
+    ) -> Matrix<T, custos::CUDA> {
         use custos::CacheBuf;
         assert!(
             lhs.cols() == rhs.rows(),

@@ -1,9 +1,6 @@
 use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps};
 use custos::{number::Float, CDatatype, Device};
 
-#[cfg(feature = "opencl")]
-use custos::OpenCL;
-
 pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);
 }
@@ -11,9 +8,17 @@ pub trait CCE<T> {
 impl<'a, T, D> Matrix<'a, T, D> where D: Device {}
 
 pub trait CCEOp<T, D: Device = Self>: Device {
-    fn cce<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, Self>);
+    fn cce<'a>(
+        &self,
+        preds: &Matrix<'a, T, D>,
+        targets: &Matrix<'a, T, D>,
+    ) -> (T, Matrix<'a, T, Self>);
     fn cce_loss(&self, preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T;
-    fn cce_grad<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, Self>;
+    fn cce_grad<'a>(
+        &self,
+        preds: &Matrix<'a, T, D>,
+        targets: &Matrix<'a, T, D>,
+    ) -> Matrix<'a, T, Self>;
 }
 
 impl<'a, T, D: CCEOp<T>> Matrix<'a, T, D> {
@@ -28,19 +33,18 @@ impl<'a, T, D: CCEOp<T>> Matrix<'a, T, D> {
     pub fn cce_grad(&self, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, D> {
         self.device().cce_grad(self, targets)
     }
-
-} 
+}
 
 impl<
         T: Float + CDatatype,
-        D: FnsOps<T>
-            + ClipOp<T>
-            + BaseOps<T>
-            + SumOps<T>
-            + AdditionalOps<T>,
+        D: FnsOps<T> + ClipOp<T> + BaseOps<T> + SumOps<T> + AdditionalOps<T>,
     > CCEOp<T, D> for D
 {
-    fn cce<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, Self>) {
+    fn cce<'a>(
+        &self,
+        preds: &Matrix<'a, T, D>,
+        targets: &Matrix<'a, T, D>,
+    ) -> (T, Matrix<'a, T, Self>) {
         let loss = self.cce_loss(preds, targets);
         let grad = self.cce_grad(preds, targets);
 
@@ -53,7 +57,11 @@ impl<
         confidences.ln().neg().mean()
     }
 
-    fn cce_grad<'a>(&self, preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, Self> {
+    fn cce_grad<'a>(
+        &self,
+        preds: &Matrix<'a, T, D>,
+        targets: &Matrix<'a, T, D>,
+    ) -> Matrix<'a, T, Self> {
         let grad = (targets / preds).neg();
         grad / T::from_usize(preds.rows())
     }

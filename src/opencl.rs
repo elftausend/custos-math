@@ -7,7 +7,7 @@ use custos::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error, GraphReturn, WriteBuf, CPU, prelude::CLBuffer,
+    prelude::CLBuffer, CDatatype, Error, GraphReturn, WriteBuf, CPU,
 };
 use std::fmt::Debug;
 
@@ -93,7 +93,6 @@ where
         .map(|buf| (buf, dims).into());
     }
     */
-
     let cpu = CPU::new();
 
     #[cfg(feature = "realloc")]
@@ -109,7 +108,11 @@ where
     Ok(convert)
 }
 
-pub fn cpu_exec_mut<T, F>(device: &OpenCL, matrix: &mut Matrix<T, OpenCL>, f: F) -> custos::Result<()>
+pub fn cpu_exec_mut<T, F>(
+    device: &OpenCL,
+    matrix: &mut Matrix<T, OpenCL>,
+    f: F,
+) -> custos::Result<()>
 where
     F: Fn(&CPU, &mut Matrix<T>),
     T: Copy + Default,
@@ -203,7 +206,7 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
+pub fn cpu_exec_scalar<T, F>(matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,

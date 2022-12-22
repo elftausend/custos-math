@@ -1,6 +1,6 @@
 use custos::{Buffer, CPU};
 #[cfg(feature = "cuda")]
-use custos::{CUDA, Read};
+use custos::{Read, CUDA};
 use custos_math::RandOp;
 
 #[cfg(feature = "cuda")]

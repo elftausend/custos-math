@@ -1,4 +1,4 @@
-use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, OpenCL, Device, prelude::CLBuffer};
+use custos::{opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, Device, OpenCL};
 
 trait Both {
     fn as_str<'a>() -> &'a str;

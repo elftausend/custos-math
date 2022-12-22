@@ -1,8 +1,4 @@
-use std::{
-    ffi::c_void,
-    marker::PhantomData,
-    ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
-};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 use crate::{AdditionalOps, AssignOps, BaseOps, Gemm};
 
@@ -12,8 +8,7 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, BufFlag, Buffer, CDatatype, CloneBuf, CommonPtrs, Device, GenericBlas, GraphReturn,
-    MainMemory, Node, Read, CPU,
+    Alloc, Buffer, CDatatype, CloneBuf, Device, GenericBlas, GraphReturn, MainMemory, Read, CPU,
 };
 
 #[cfg(feature = "cuda")]
@@ -359,7 +354,7 @@ impl<'a, T> From<(*mut T, (usize, usize))> for Matrix<'a, T> {
     #[inline]
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
-        
+
         unsafe {
             Matrix {
                 data: Buffer::from_raw_host(ptr_dims.0, dims.0 * dims.1),
@@ -369,7 +364,7 @@ impl<'a, T> From<(*mut T, (usize, usize))> for Matrix<'a, T> {
     }
 }
 
-/* 
+/*
 // TODO: unsafe from raw parts?
 // is wrapper flag ok?
 #[cfg(not(feature = "safe"))]
@@ -431,8 +426,13 @@ impl<'a, 'b, T> From<(&'a OpenCL, Matrix<'b, T>)> for Matrix<'a, T, OpenCL> {
         let out = device_matrix.0.retrieve(device_matrix.1.size(), ());
 
         let event = unsafe {
-            enqueue_write_buffer(&device_matrix.0.queue(), out.ptr.ptr, &device_matrix.1, true)
-                .unwrap()
+            enqueue_write_buffer(
+                &device_matrix.0.queue(),
+                out.ptr.ptr,
+                &device_matrix.1,
+                true,
+            )
+            .unwrap()
         };
         wait_for_event(event).unwrap();
         Matrix::from((out, device_matrix.1.dims()))
@@ -830,7 +830,7 @@ where
     }
 }
 
-impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T, D>> core::fmt::Debug for Matrix<'a, T, D> 
+impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T, D>> core::fmt::Debug for Matrix<'a, T, D>
 where
     D: Read<T, D> + Device + 'a,
     //for<'b> <D as Read<T, D>>::Read<'b>: Iterator,

@@ -1,4 +1,3 @@
-
 fn main() {
     //#[cfg(feature="opencl")]
     //if custos::UNIFIED_CL_MEM {

@@ -30,7 +30,6 @@ impl<T: CDatatype> DivAssign<T> for Matrix<'_, T> {
     }
 }
 
-
 pub trait ScalarAssign<T, D: Device = Self>: Device {
     fn adds_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
     fn muls_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);

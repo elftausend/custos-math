@@ -4,7 +4,7 @@ use crate::{
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
 use crate::{ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
-use custos::{number::Float, range, GenericBlas, CPU, Device, MainMemory};
+use custos::{number::Float, range, Device, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
 use custos::{CDatatype, OpenCL};
 
@@ -27,7 +27,10 @@ pub trait SoftmaxOps<T, D: Device = Self>: Device {
     fn softmax_grad(&self, activated: &Matrix<T, D>, grads: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU where CPU: ColOp<T>{
+impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU
+where
+    CPU: ColOp<T>,
+{
     fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
         let exp = self.exp(&self.sub_col(inputs, &self.max_cols(inputs)));
         self.div_col(&exp, &self.sum_cols(&exp))
@@ -111,7 +114,11 @@ impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CUDA {
         cu_to_cpu_s(self, inputs, |cpu, x| cpu.softmax(&x))
     }
 
-    fn softmax_grad(&self, activated: &Matrix<T, Self>, grads: &Matrix<T, Self>) -> Matrix<T, Self> {
+    fn softmax_grad(
+        &self,
+        activated: &Matrix<T, Self>,
+        grads: &Matrix<T, Self>,
+    ) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, activated, grads, |cpu, activated, grads| {
             cpu.softmax_grad(activated, grads)
         })
@@ -125,7 +132,11 @@ impl<T: GenericBlas + Float> SoftmaxOps<T> for OpenCL {
         cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(inputs))
     }
 
-    fn softmax_grad(&self, activated: &Matrix<T, Self>, grads: &Matrix<T, Self>) -> Matrix<T, Self> {
+    fn softmax_grad(
+        &self,
+        activated: &Matrix<T, Self>,
+        grads: &Matrix<T, Self>,
+    ) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, activated, grads, |device, activated, grads| {
             device.softmax_grad(activated, grads)
         })

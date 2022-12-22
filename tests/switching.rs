@@ -3,7 +3,7 @@ use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 use custos_math::{cpu_exec_lhs_rhs_mut, FnsOps, Matrix, RowOp};
 
 #[cfg(feature = "cuda")]
-use custos::{CUDA, Read};
+use custos::{Read, CUDA};
 #[cfg(feature = "cuda")]
 use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 
@@ -99,7 +99,7 @@ fn test_scalar_switch_cuda() -> custos::Result<()> {
 
     let device = CUDA::new(0)?;
     let a = Matrix::from((&device, 3, 2, [1, 2, 3, 4, 5, 6]));
-    let sum = cu_to_cpu_scalar(&device, &a, |cpu, x| cpu.sum(&x));
+    let sum = cu_to_cpu_scalar(&a, |cpu, x| cpu.sum(&x));
 
     assert_eq!(sum, 21);
 
