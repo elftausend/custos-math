@@ -94,22 +94,22 @@ impl<T: CDatatype> FnsOps<T> for CUDA {
         (out, x.dims()).into()
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn ln(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "logf(x)").unwrap();
         (out, x.dims()).into()
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn neg(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "-x").unwrap();
         (out, x.dims()).into()
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn powf(&self, x: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    fn powi(&self, x: &Matrix<T, Self>, rhs: i32) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
     }

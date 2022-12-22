@@ -3,7 +3,7 @@ use custos_math::{cl_to_cpu_s, nn::SoftmaxOps};
 use custos_math::{cpu_exec_lhs_rhs_mut, FnsOps, Matrix, RowOp};
 
 #[cfg(feature = "cuda")]
-use custos::{CUDA, VecRead};
+use custos::{CUDA, Read};
 #[cfg(feature = "cuda")]
 use custos_math::{cu_to_cpu_lr, cu_to_cpu_s, cu_to_cpu_scalar, SumOps};
 

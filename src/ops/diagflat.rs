@@ -39,7 +39,7 @@ impl<T: Default + Copy, D: MainMemory> DiagflatOp<T, D> for CPU {
 
 #[cfg(feature = "cuda")]
 impl<T: Copy + Default> DiagflatOp<T> for CUDA {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn diagflat(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.diagflat(&x))
     }
 }

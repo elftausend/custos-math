@@ -88,13 +88,13 @@ pub fn cu_to_cpu_lr_mut<T: Copy + Default, F: Fn(&CPU, &mut Matrix<T>, &Matrix<T
     device.write(lhs, &cpu_lhs);
 }
 
-pub fn cu_to_cpu_s<'o, T, F>(device: &'o CUDA, x: &Matrix<T>, f: F) -> Matrix<'o, T>
+pub fn cu_to_cpu_s<'o, T, F>(device: &'o CUDA, x: &Matrix<T, CUDA>, f: F) -> Matrix<'o, T, CUDA>
 where
     T: Copy + Default,
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
 {
     let cpu = custos::CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x)));
+    let x = Matrix::from((&cpu, x.dims(), x.read()));
 
     let result = f(&cpu, &x);
     Matrix::from((device, result))
@@ -102,11 +102,11 @@ where
 
 pub fn cu_to_cpu_s_mut<T: Copy + Default, F: Fn(&CPU, &mut Matrix<T>)>(
     device: &CUDA,
-    x: &mut Matrix<T>,
+    x: &mut Matrix<T, CUDA>,
     f: F,
 ) {
     let cpu = custos::CPU::new();
-    let mut cpux = Matrix::from((&cpu, x.dims(), device.read(x)));
+    let mut cpux = Matrix::from((&cpu, x.dims(), x.read()));
 
     f(&cpu, &mut cpux);
     device.write(x, &cpux)
@@ -114,10 +114,10 @@ pub fn cu_to_cpu_s_mut<T: Copy + Default, F: Fn(&CPU, &mut Matrix<T>)>(
 
 pub fn cu_to_cpu_scalar<T: Copy + Default, F: Fn(&CPU, Matrix<T>) -> T>(
     device: &CUDA,
-    x: &Matrix<T>,
+    x: &Matrix<T, CUDA>,
     f: F,
 ) -> T {
     let cpu = custos::CPU::new();
-    let x = Matrix::from((&cpu, x.dims(), device.read(x)));
+    let x = Matrix::from((&cpu, x.dims(), x.read()));
     f(&cpu, x)
 }

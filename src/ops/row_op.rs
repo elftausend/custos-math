@@ -52,11 +52,11 @@ impl<T: CDatatype> RowOp<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> RowOp<T> for CUDA {
-    fn add_row(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn add_row(&self, lhs: &Matrix<T, CUDA>, rhs: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
     }
 
-    fn add_row_mut(&self, lhs: &mut Matrix<T>, rhs: &Matrix<T>) {
+    fn add_row_mut(&self, lhs: &mut Matrix<T, CUDA>, rhs: &Matrix<T, CUDA>) {
         cu_to_cpu_lr_mut(self, lhs, rhs, |device, lhs, rhs| {
             device.add_row_mut(lhs, rhs)
         })

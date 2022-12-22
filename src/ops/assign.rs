@@ -83,11 +83,11 @@ impl<T: CDatatype> AssignOps<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> AssignOps<T> for custos::CUDA {
-    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+    fn add_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "+").unwrap();
     }
 
-    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T>) {
+    fn sub_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "-").unwrap();
     }
 }

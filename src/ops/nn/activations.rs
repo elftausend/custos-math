@@ -118,36 +118,36 @@ impl<T: Float, D: MainMemory> ActivationOps<T, D> for CPU {
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> ActivationOps<T> for CUDA {
     #[inline]
-    fn sigmoid(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sigmoid(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "1.0 / (1.0 + exp(-x))").unwrap();
         (out, x.dims()).into()
     }
 
-    fn sigmoid_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sigmoid_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "x * (1.0 - x)").unwrap();
         (out, x.dims()).into()
     }
 
     #[inline]
-    fn tanh(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn tanh(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "tanh(x)").unwrap();
         (out, x.dims()).into()
     }
 
     #[inline]
-    fn tanh_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn tanh_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap();
         (out, x.dims()).into()
     }
 
     #[inline]
-    fn relu(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn relu(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "x * (x >= 0)").unwrap();
         (out, x.dims()).into()
     }
 
     #[inline]
-    fn relu_grad(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn relu_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "(x >= 0)").unwrap();
         (out, x.dims()).into()
     }

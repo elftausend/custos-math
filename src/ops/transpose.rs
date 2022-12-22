@@ -56,9 +56,9 @@ impl<T: CDatatype> TransposeOp<T> for custos::OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CudaTranspose> TransposeOp<T> for custos::CUDA {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn transpose(&self, x: &Matrix<T, custos::CUDA>) -> Matrix<T, custos::CUDA> {
         let out = Cache::get(self, x.len(), x.node.idx);
-        T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.2, out.ptr.2).unwrap();
+        T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.ptr, out.ptr.ptr).unwrap();
         (out, x.cols(), x.rows()).into()
     }
 }

@@ -113,19 +113,19 @@ impl<T: CDatatype> SumOps<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> SumOps<T> for CUDA {
-    fn sum(&self, x: &Matrix<T>) -> T {
+    fn sum(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
+    fn mean(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(self, x, |device, x| device.mean(&x))
     }
 
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_cols(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
     }
 }

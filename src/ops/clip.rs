@@ -78,10 +78,10 @@ impl<T: CDatatype> ClipOp<T> for OpenCL {
 #[cfg(feature = "cuda")]
 pub fn cu_clip<'a, T: CDatatype>(
     device: &'a CUDA,
-    x: &Buffer<T>,
+    x: &Buffer<T, CUDA>,
     min: T,
     max: T,
-) -> custos::Result<Buffer<'a, T>> {
+) -> custos::Result<Buffer<'a, T, CUDA>> {
     let src = format!(
         r#"extern "C" __global__ void clip({datatype}* lhs, {datatype} min, {datatype} max, {datatype}* out, int numElements)
             {{
@@ -102,7 +102,7 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.len(), x.node.idx);
+    let out = Cache::get::<T, 0>(device, x.len(), x.node.idx);
     launch_kernel1d(
         x.len(),
         device,
@@ -115,7 +115,7 @@ pub fn cu_clip<'a, T: CDatatype>(
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> ClipOp<T> for CUDA {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+    fn clip(&self, x: &Matrix<T, CUDA>, min: T, max: T) -> Matrix<T, CUDA> {
         let buf = cu_clip(self, x, min, max).unwrap();
         (buf, x.dims()).into()
     }

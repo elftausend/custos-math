@@ -2,7 +2,7 @@ use custos::{cpu::CPU, number::Float};
 use custos_math::{scalar_apply, Matrix};
 
 #[cfg(feature = "cuda")]
-use custos::VecRead;
+use custos::Read;
 
 pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
     for (a, b) in lhs.iter().zip(rhs) {

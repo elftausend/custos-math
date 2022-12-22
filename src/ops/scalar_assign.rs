@@ -80,19 +80,19 @@ impl<T: CDatatype> ScalarAssign<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> ScalarAssign<T> for CUDA {
-    fn adds_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn adds_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "+").unwrap();
     }
 
-    fn muls_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn muls_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "*").unwrap();
     }
 
-    fn divs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn divs_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "/").unwrap();
     }
 
-    fn subs_assign(&self, lhs: &mut Matrix<T>, rhs: T) {
+    fn subs_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "-").unwrap();
     }
 }

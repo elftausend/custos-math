@@ -1,4 +1,4 @@
-use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA};
+use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA, prelude::CUBuffer};
 
 /// Element-wise operations. The op/operation is usually "+", "-", "*", "/".
 ///
@@ -19,10 +19,10 @@ use custos::{cache::Cache, cuda::launch_kernel1d, Buffer, CDatatype, CUDA};
 /// ```
 pub fn cu_ew<'a, T: CDatatype>(
     device: &'a CUDA,
-    lhs: &Buffer<T>,
-    rhs: &Buffer<T>,
+    lhs: &CUBuffer<T>,
+    rhs: &CUBuffer<T>,
     op: &str,
-) -> custos::Result<Buffer<'a, T>> {
+) -> custos::Result<CUBuffer<'a, T>> {
     let src = format!(
         r#"extern "C" __global__ void ew({datatype}* lhs, {datatype}* rhs, {datatype}* out, int numElements)
             {{
@@ -36,7 +36,7 @@ pub fn cu_ew<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out: Buffer<T> = Cache::get(device, lhs.len, (lhs, rhs));
+    let out: CUBuffer<T> = Cache::get(device, lhs.len, (lhs, rhs));
 
     launch_kernel1d(lhs.len, device, &src, "ew", &[lhs, rhs, &out, &lhs.len])?;
 
@@ -75,8 +75,8 @@ pub fn cu_ew<'a, T: CDatatype>(
 /// ```
 pub fn cu_ew_self<T: CDatatype>(
     device: &CUDA,
-    lhs: &mut Buffer<T>,
-    rhs: &Buffer<T>,
+    lhs: &mut CUBuffer<T>,
+    rhs: &CUBuffer<T>,
     op: &str,
 ) -> custos::Result<()> {
     let src = format!(

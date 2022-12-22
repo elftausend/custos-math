@@ -36,15 +36,15 @@ pub trait AdditionalOps<T, D: Device = Self>: Device {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> AdditionalOps<T> for CUDA {
-    fn adds(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn adds(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "+").unwrap(), lhs.dims()).into()
     }
 
-    fn muls(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn muls(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "*").unwrap(), lhs.dims()).into()
     }
 
-    fn divs(&self, lhs: &Matrix<T>, rhs: T) -> Matrix<T> {
+    fn divs(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "/").unwrap(), lhs.dims()).into()
     }
 }

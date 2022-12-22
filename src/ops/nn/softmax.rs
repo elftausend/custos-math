@@ -107,11 +107,11 @@ impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU where CPU: ColOp<T>{
 
 #[cfg(feature = "cuda")]
 impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CUDA {
-    fn softmax(&self, inputs: &Matrix<T>) -> Matrix<T> {
+    fn softmax(&self, inputs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_s(self, inputs, |cpu, x| cpu.softmax(&x))
     }
 
-    fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
+    fn softmax_grad(&self, activated: &Matrix<T, Self>, grads: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, activated, grads, |cpu, activated, grads| {
             cpu.softmax_grad(activated, grads)
         })

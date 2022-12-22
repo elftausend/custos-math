@@ -20,7 +20,7 @@ custos = { path = "../custos", default-features = false, features=["blas"] }
 fastrand = "1.7.0"
 
 [build-dependencies]
-custos = { path = "../custos", default-features = false, optional=true }
+#custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
 default = ["opencl", "cuda"]

@@ -137,22 +137,22 @@ impl<T: CDatatype> BaseOps<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> BaseOps<T> for custos::CUDA {
-    fn add(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn add(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "+").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn sub(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn sub(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "-").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn mul(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn mul(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "*").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn div(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn div(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "/").unwrap();
         (buf, lhs.dims()).into()
     }

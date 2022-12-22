@@ -107,15 +107,15 @@ impl<T: CDatatype> MaxOps<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: Number> MaxOps<T> for CUDA {
-    fn max(&self, x: &Matrix<T>) -> T {
+    fn max(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(self, x, |cpu, x| cpu.max(&x))
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.max_rows(&x))
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.max_cols(&x))
     }
 }
