@@ -7,7 +7,8 @@ use custos::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    prelude::CLBuffer, CDatatype, Error, GraphReturn, WriteBuf, CPU,
+    prelude::CLBuffer,
+    CDatatype, Error, GraphReturn, WriteBuf, CPU,
 };
 use std::fmt::Debug;
 

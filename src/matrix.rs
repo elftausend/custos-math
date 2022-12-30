@@ -8,12 +8,12 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, Buffer, CDatatype, CloneBuf, Device, GenericBlas, GraphReturn, MainMemory, Read, CPU,
+    Alloc, Buffer, CDatatype, CloneBuf, Device, GenericBlas, GraphReturn, MainMemory, Read, Shape,
+    CPU,
 };
 
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
-
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -30,12 +30,12 @@ use custos::{cuda::api::cu_write, CUDA};
 /// assert_eq!(m.size(), 5*8);
 /// assert_eq!(m.read(), vec![0; 5*8])
 /// ```
-pub struct Matrix<'a, T, D: Device = CPU> {
-    pub data: Buffer<'a, T, D>,
+pub struct Matrix<'a, T = f32, D: Device = CPU, S: Shape = ()> {
+    pub data: Buffer<'a, T, D, S>,
     pub dims: (usize, usize),
 }
 
-impl<'a, T, D: Device> Matrix<'a, T, D> {
+impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Returns an empty matrix with the specified dimensions (rows, cols).
     /// # Example
     /// ```
@@ -48,9 +48,9 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
-    pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D>
+    pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D, S>
     where
-        D: Alloc<'a, T> + GraphReturn,
+        D: Alloc<'a, T, S> + GraphReturn,
     {
         Matrix {
             data: Buffer::new(device, dims.0 * dims.1),
@@ -66,7 +66,7 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     // TODO: mind ptrs_Mut
     //#[inline]
     //pub fn ptr(&self) -> (*mut T, *mut c_void, u64)
-    //where D::Ptr<T, 0>: CommonPtrs<T>
+    //where D::Ptr<T, ()>: CommonPtrs<T>
     //{
     //    self.data.ptrs_mut()
     //}
@@ -83,18 +83,18 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     /// assert_eq!(vec![1., 2., 3., 3., 2., 1.,], read);
     /// ```
     #[inline]
-    pub fn as_buf(&self) -> &Buffer<'a, T, D> {
+    pub fn as_buf(&self) -> &Buffer<'a, T, D, S> {
         &self.data
     }
 
     #[inline]
-    pub fn to_buf(self) -> Buffer<'a, T, D> {
+    pub fn to_buf(self) -> Buffer<'a, T, D, S> {
         self.data
     }
 
     /// Returns a mutable reference to the underlying buffer.
     #[inline]
-    pub fn as_mut_buf(&mut self) -> &mut Buffer<'a, T, D> {
+    pub fn as_mut_buf(&mut self) -> &mut Buffer<'a, T, D, S> {
         &mut self.data
     }
 
@@ -171,32 +171,6 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
         self.as_mut_buf().as_mut_slice()
     }
 
-    /// Matrix multiplication. Uses current global device.
-    /// # Example
-    /// ```
-    /// use custos::CPU;
-    /// use custos_math::Matrix;
-    ///
-    /// let device = CPU::new();
-    ///
-    /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
-    /// let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));
-    ///
-    /// let c = a.gemm(&b);
-    /// println!("c: {c:?}");
-    ///
-    /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
-    /// ```
-    #[inline]
-    pub fn gemm<'b>(&'a self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
-    where
-        T: CDatatype + GenericBlas,
-        D: Gemm<T, D>,
-    {
-        //let device = get_device!(self.device(), Gemm<T>);
-        self.device().gemm(self, rhs)
-    }
-
     /*
     /// Sets all elements to zero.
     /// # Example
@@ -232,7 +206,7 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     pub fn read(&'a self) -> D::Read<'a>
     where
         T: Default + Copy,
-        D: Read<T, D>,
+        D: Read<T, D, S>,
     {
         self.device().read(self.as_buf())
     }
@@ -252,15 +226,15 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     pub fn read_to_vec(&self) -> Vec<T>
     where
         T: Default + Copy,
-        D: Read<T, D>,
+        D: Read<T, D, S>,
     {
         self.device().read_to_vec(self.as_buf())
     }
 
     /// Creates a shallow copy of &self.
-    pub fn shallow(&self) -> Matrix<'a, T, D>
+    pub fn shallow(&self) -> Matrix<'a, T, D, S>
     where
-        D::Ptr<T, 0>: Copy,
+        D::Ptr<T, S>: Copy,
     {
         unsafe {
             Self {
@@ -271,10 +245,10 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     }
 
     /// Creates a shallow copy or a deep copy of &self, depening on whether the `realloc` feature is activated.
-    pub fn shallow_or_clone(&self) -> Matrix<'a, T, D>
+    pub fn shallow_or_clone(&self) -> Matrix<'a, T, D, S>
     where
         T: Clone,
-        D::Ptr<T, 0>: Copy,
+        D::Ptr<T, S>: Copy,
         D: CloneBuf<'a, T>,
     {
         unsafe {
@@ -286,9 +260,37 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     }
 }
 
+impl<'a, T, D: Device> Matrix<'a, T, D> {
+    /// Matrix multiplication. Uses current global device.
+    /// # Example
+    /// ```
+    /// use custos::CPU;
+    /// use custos_math::Matrix;
+    ///
+    /// let device = CPU::new();
+    ///
+    /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
+    /// let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));
+    ///
+    /// let c = a.gemm(&b);
+    /// println!("c: {c:?}");
+    ///
+    /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
+    /// ```
+    #[inline]
+    pub fn gemm<'b>(&'a self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
+    where
+        T: CDatatype + GenericBlas,
+        D: Gemm<T, D>,
+    {
+        //let device = get_device!(self.device(), Gemm<T>);
+        self.device().gemm(self, rhs)
+    }
+}
+
 impl<T, D: Device> Default for Matrix<'_, T, D>
 where
-    D::Ptr<T, 0>: Default,
+    D::Ptr<T, ()>: Default,
 {
     fn default() -> Self {
         Self {
@@ -298,15 +300,15 @@ where
     }
 }
 
-impl<'a, T, D: Device> std::ops::Deref for Matrix<'a, T, D> {
-    type Target = Buffer<'a, T, D>;
+impl<'a, T, D: Device, S: Shape> std::ops::Deref for Matrix<'a, T, D, S> {
+    type Target = Buffer<'a, T, D, S>;
 
     fn deref(&self) -> &Self::Target {
         self.as_buf()
     }
 }
 
-impl<'a, T, D: Device> std::ops::DerefMut for Matrix<'a, T, D> {
+impl<'a, T, D: Device, S: Shape> std::ops::DerefMut for Matrix<'a, T, D, S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut_buf()
     }
@@ -323,9 +325,9 @@ impl<'a, T: Clone, D: Device + CloneBuf<'a, T>> Clone for Matrix<'a, T, D> {
 
 // From conversions
 
-impl<'a, T, D: Device> From<(Buffer<'a, T, D>, (usize, usize))> for Matrix<'a, T, D> {
+impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))> for Matrix<'a, T, D, S> {
     #[inline]
-    fn from(ptr_dims: (Buffer<'a, T, D>, (usize, usize))) -> Self {
+    fn from(ptr_dims: (Buffer<'a, T, D, S>, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
         Matrix {
             data: ptr_dims.0,
@@ -335,9 +337,9 @@ impl<'a, T, D: Device> From<(Buffer<'a, T, D>, (usize, usize))> for Matrix<'a, T
 }
 
 // no tuple for dims
-impl<'a, T, D: Device> From<(Buffer<'a, T, D>, usize, usize)> for Matrix<'a, T, D> {
+impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, usize, usize)> for Matrix<'a, T, D, S> {
     #[inline]
-    fn from(ptr_dims: (Buffer<'a, T, D>, usize, usize)) -> Self {
+    fn from(ptr_dims: (Buffer<'a, T, D, S>, usize, usize)) -> Self {
         let dims = (ptr_dims.1, ptr_dims.2);
         Matrix {
             data: ptr_dims.0,

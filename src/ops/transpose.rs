@@ -2,7 +2,7 @@
 use std::ptr::null_mut;
 
 use crate::Matrix;
-use custos::{cpu::CPU, CDatatype, Cache, Device, MainMemory, OpenCL};
+use custos::{cpu::CPU, CDatatype, Cache, Device, MainMemory};
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -46,7 +46,7 @@ impl<T: Default + Copy, D: MainMemory> TransposeOp<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> TransposeOp<T> for custos::OpenCL {
-    fn transpose(&self, x: &Matrix<T, OpenCL>) -> Matrix<T, OpenCL> {
+    fn transpose(&self, x: &Matrix<T, custos::OpenCL>) -> Matrix<T, custos::OpenCL> {
         Matrix {
             data: cl_transpose(self, x, x.rows(), x.cols()).unwrap(),
             dims: (x.cols(), x.rows()),

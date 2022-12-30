@@ -1,4 +1,4 @@
-use custos::{cache::Cache, number::Number, CDatatype, Device, MainMemory, CPU};
+use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -19,19 +19,18 @@ pub trait ClipOp<T, D: Device = Self>: Device {
 
 impl<T: Number, D: MainMemory> ClipOp<T, D> for CPU {
     fn clip(&self, x: &Matrix<T, D>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, 0>(self, x.size(), x.node.idx);
-        let y_slice = y.as_mut_slice();
+        let mut out = self.retrieve(x.size(), x.node.idx);
 
-        for (idx, value) in x.as_slice().iter().enumerate() {
+        for (idx, value) in x.iter().enumerate() {
             if *value < min {
-                y_slice[idx] = min;
+                out[idx] = min;
             } else if *value > max {
-                y_slice[idx] = max;
+                out[idx] = max;
             } else {
-                y_slice[idx] = *value;
+                out[idx] = *value;
             }
         }
-        (y, x.dims()).into()
+        (out, x.dims()).into()
     }
 }
 
@@ -63,7 +62,7 @@ fn cl_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, 0>(device, x.size(), x.node.idx);
+    let out = device.retrieve::<T, ()>(x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }

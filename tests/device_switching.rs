@@ -44,7 +44,7 @@ fn test_device_switching_s() -> Result<(), custos::Error> {
     let c = Matrix::from((&cpu, c.dims(), c.read()));
     let d_cpu = cpu.add(&c, &c);
 
-    let out = Cache::get::<f32, 0>(&device, d_cpu.size(), c.node.idx);
+    let out = Cache::get::<f32, ()>(&device, d_cpu.size(), c.node.idx);
     let event = unsafe {
         enqueue_write_buffer(
             &device.queue(),

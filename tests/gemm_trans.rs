@@ -17,7 +17,7 @@ fn test_gemm_trans() {
 
     let out_t = mat.gemm(&trans_mat);
 
-    let mut out = Matrix::new(&device, (4, 4));
+    let mut out: Matrix = Matrix::new(&device, (4, 4));
     GenericBlas::gemmT(4, 4, 3, &mat, &mat, &mut out);
 
     assert_eq!(out_t.as_slice(), out.as_slice());
@@ -39,7 +39,7 @@ fn test_gemm_trans_perf() {
     let start = Instant::now();
 
     for _ in range(0..10) {
-        let mut out = Cache::get::<f32, 0>(&device, mat.rows() * mat.rows(), ());
+        let mut out = Cache::get::<f32, ()>(&device, mat.rows() * mat.rows(), ());
         GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
     }
 

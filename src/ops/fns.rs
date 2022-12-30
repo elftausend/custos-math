@@ -1,4 +1,7 @@
-use custos::{cpu::CPU, number::Float, CDatatype, Device, MainMemory};
+use custos::{cpu::CPU, number::Float, CDatatype, Device, MainMemory, Shape, impl_stack};
+
+#[cfg(feature="stack")]
+use custos::Stack;
 
 use crate::{each_op, Matrix};
 
@@ -12,7 +15,7 @@ use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype + Float, D: FnsOps<T>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype + Float, S: Shape, D: FnsOps<T, D, S>> Matrix<'a, T, D, S> {
     pub fn exp(&self) -> Self {
         self.device().exp(self)
     }
@@ -34,32 +37,38 @@ impl<'a, T: CDatatype + Float, D: FnsOps<T>> Matrix<'a, T, D> {
     }
 }
 
-pub trait FnsOps<T, D: Device = Self>: Device {
-    fn exp(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn ln(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn neg(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn powf(&self, x: &Matrix<T, D>, rhs: T) -> Matrix<T, Self>;
-    fn powi(&self, x: &Matrix<T, D>, rhs: i32) -> Matrix<T, Self>;
+pub trait FnsOps<T, D: Device = Self, S: Shape = ()>: Device {
+    fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn ln(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn neg(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn powf(&self, x: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn powi(&self, x: &Matrix<T, D, S>, rhs: i32) -> Matrix<T, Self, S>;
 }
 
-impl<T: Float, D: MainMemory> FnsOps<T, D> for CPU {
-    fn exp(&self, x: &Matrix<T, D>) -> Matrix<T> {
+#[impl_stack]
+impl<T, D, S> FnsOps<T, D, S> for CPU
+where
+    T: Float,
+    D: MainMemory,
+    S: Shape,
+{
+    fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.exp())
     }
 
-    fn ln(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn ln(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.ln())
     }
 
-    fn neg(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn neg(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| -x)
     }
 
-    fn powf(&self, x: &Matrix<T, D>, rhs: T) -> Matrix<T> {
+    fn powf(&self, x: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.powf(rhs))
     }
 
-    fn powi(&self, x: &Matrix<T, D>, rhs: i32) -> Matrix<T> {
+    fn powi(&self, x: &Matrix<T, D, S>, rhs: i32) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.powi(rhs))
     }
 }
@@ -112,5 +121,26 @@ impl<T: CDatatype> FnsOps<T> for CUDA {
     fn powi(&self, x: &Matrix<T, Self>, rhs: i32) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    #[cfg(feature="stack")]
+    #[test]
+    fn test_stack_impl() {
+        use custos::{Buffer, Stack};
+
+        use crate::Matrix;
+
+        let data = Buffer::from((Stack, &[3., 1., 5.,]));
+        let mat = Matrix {
+            data,
+            dims: (1, 3),
+        };
+
+        mat.ln();
     }
 }
