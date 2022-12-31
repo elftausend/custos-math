@@ -1,4 +1,7 @@
-use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape, CPU};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
@@ -13,21 +16,23 @@ impl<'a, T: CDatatype, D: ClipOp<T>> Matrix<'a, T, D> {
     }
 }
 
-pub trait ClipOp<T, D: Device = Self>: Device {
-    fn clip(&self, x: &Matrix<T, D>, min: T, max: T) -> Matrix<T, Self>;
+pub trait ClipOp<T, D: Device = Self, S: Shape = ()>: Device {
+    fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S>;
 }
 
-impl<T: Number, D: MainMemory> ClipOp<T, D> for CPU {
-    fn clip(&self, x: &Matrix<T, D>, min: T, max: T) -> Matrix<T> {
+#[impl_stack]
+impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, D, S> for CPU {
+    fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S> {
         let mut out = self.retrieve(x.size(), x.node.idx);
+        let out_slice = &mut out[..];
 
         for (idx, value) in x.iter().enumerate() {
             if *value < min {
-                out[idx] = min;
+                out_slice[idx] = min;
             } else if *value > max {
-                out[idx] = max;
+                out_slice[idx] = max;
             } else {
-                out[idx] = *value;
+                out_slice[idx] = *value;
             }
         }
         (out, x.dims()).into()

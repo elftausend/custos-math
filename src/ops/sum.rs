@@ -1,5 +1,8 @@
 use crate::Matrix;
-use custos::{number::Number, CDatatype, Cache, Device, MainMemory, CPU};
+use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
+
+#[cfg(feature="cpu")]
+use custos::Cache;
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
@@ -36,6 +39,7 @@ pub trait SumOps<T, D: Device = Self>: Device {
     fn sum_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
+#[cfg(feature="cpu")]
 impl<T: Number, D: MainMemory> SumOps<T, D> for CPU {
     fn sum(&self, x: &Matrix<T, D>) -> T {
         x.iter().copied().sum()

@@ -1,4 +1,7 @@
-use custos::{cache::Cache, number::Number, Buffer, Device, MainMemory, CPU};
+use custos::{impl_stack, number::Number, Alloc, Buffer, Device, MainMemory, Shape, CPU};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -28,7 +31,7 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 /// device.sub_assign(&mut lhs, &rhs);
 /// assert_eq!(vec![3, 5, 4, 1], lhs.read());
 /// ```
-pub trait AssignOps<T, D: Device = Self>: Device {
+pub trait AssignOps<T, D: Device = Self, S: Shape = ()>: Device {
     /// Add assign
     /// # Examples
     /// ```
@@ -45,27 +48,35 @@ pub trait AssignOps<T, D: Device = Self>: Device {
     /// device.sub_assign(&mut lhs, &rhs);
     /// assert_eq!(vec![3, 5, 4, 1], lhs.read());
     /// ```
-    fn add_assign(&self, lhs: &mut Buffer<T, Self>, rhs: &Buffer<T, D>);
-    fn sub_assign(&self, lhs: &mut Buffer<T, Self>, rhs: &Buffer<T, D>);
+    fn add_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>);
+    fn sub_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>);
 }
 
-pub fn ew_op<'a, T: Copy + Default, F: Fn(T, T) -> T, D: MainMemory>(
-    device: &'a CPU,
-    lhs: &Matrix<T, D>,
-    rhs: &Matrix<T, D>,
+pub fn ew_op<'a, T, F, D, S, Host>(
+    device: &'a Host,
+    lhs: &Matrix<T, D, S>,
+    rhs: &Matrix<T, D, S>,
     f: F,
-) -> Matrix<'a, T> {
-    let mut out = Cache::get(device, lhs.size(), [lhs.node.idx, rhs.node.idx]);
+) -> Matrix<'a, T, Host, S>
+where
+    T: Copy + Default,
+    F: Fn(T, T) -> T,
+    D: MainMemory,
+    S: Shape,
+    Host: for<'b> Alloc<'b, T, S> + MainMemory,
+{
+    let mut out = device.retrieve(lhs.size(), (lhs.node.idx, rhs.node.idx));
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()
 }
 
-impl<T: Number, D: MainMemory> AssignOps<T, D> for CPU {
-    fn add_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
+#[impl_stack]
+impl<T: Number, D: MainMemory, S: Shape> AssignOps<T, D, S> for CPU {
+    fn add_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
 
-    fn sub_assign(&self, lhs: &mut Buffer<T>, rhs: &Buffer<T, D>) {
+    fn sub_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
     }
 }

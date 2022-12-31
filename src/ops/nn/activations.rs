@@ -1,9 +1,18 @@
+
+use crate::{each_op, Matrix};
+use custos::{number::Float, CDatatype, Device, MainMemory, Shape, impl_stack};
+
+#[cfg(feature = "cpu")]
+use custos::CPU;
+
+#[cfg(feature = "stack")]
+use custos::Stack;
+
+
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op_mat;
-use crate::{each_op, Matrix};
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
-use custos::{devices::cpu::CPU, number::Float, CDatatype, Device, MainMemory};
 
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
@@ -43,13 +52,13 @@ impl<'a, T: CDatatype + Float, D: ActivationOps<T>> Matrix<'a, T, D> {
     }
 }
 
-pub trait ActivationOps<T, D: Device = Self>: Device {
-    fn sigmoid(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn sigmoid_grad(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn tanh(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn tanh_grad(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn relu(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn relu_grad(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+pub trait ActivationOps<T, S: Shape = (), D: Device = Self>: Device {
+    fn sigmoid(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn sigmoid_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn tanh(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn tanh_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn relu(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn relu_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 }
 
 #[cfg(feature = "opencl")]
@@ -84,33 +93,34 @@ impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
     }
 }
 
-impl<T: Float, D: MainMemory> ActivationOps<T, D> for CPU {
+#[impl_stack]
+impl<T: Float, D: MainMemory, S: Shape> ActivationOps<T, S, D> for CPU {
     #[inline]
-    fn sigmoid(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn sigmoid(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::one() / (T::one() + -x.exp()))
     }
     #[inline]
-    fn sigmoid_grad(&self, activated: &Matrix<T, D>) -> Matrix<T> {
+    fn sigmoid_grad(&self, activated: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, activated, |x| x * (T::one() - x))
     }
 
     #[inline]
-    fn tanh(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn tanh(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.tanh())
     }
 
     #[inline]
-    fn tanh_grad(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn tanh_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::one() - x.tanh().powi(2))
     }
 
     #[inline]
-    fn relu(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn relu(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
     #[inline]
-    fn relu_grad(&self, x: &Matrix<T, D>) -> Matrix<T> {
+    fn relu_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::from_usize((x >= T::default()) as usize))
     }
 }

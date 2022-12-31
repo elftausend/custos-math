@@ -1,6 +1,9 @@
-use custos::{number::Number, Device, MainMemory, CPU};
+use custos::{impl_stack, number::Number, Device, MainMemory, Shape, CPU};
 
 use crate::{ew_op, Matrix};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -32,7 +35,7 @@ use crate::cu_ew;
 /// let sub = device.sub(&a, &b);
 /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
 /// ```
-pub trait BaseOps<T, D: Device = Self>: Device {
+pub trait BaseOps<T, D: Device = Self, S: Shape = ()>: Device {
     /// Element-wise addition
     /// # Example
     /// ```
@@ -46,7 +49,7 @@ pub trait BaseOps<T, D: Device = Self>: Device {
     /// let c = a + b;
     /// assert_eq!(c.read(), vec![14, 8, 9, 9, 5, 9]);
     /// ```
-    fn add(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn add(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise subtraction
     /// # Example
@@ -61,7 +64,7 @@ pub trait BaseOps<T, D: Device = Self>: Device {
     /// let sub = device.sub(&a, &b);
     /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
     /// ```
-    fn sub(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn sub(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise multiplication
     /// # Example
@@ -76,7 +79,7 @@ pub trait BaseOps<T, D: Device = Self>: Device {
     /// let mul = a * b;
     /// assert_eq!(mul.read(), vec![24, 16, 18, 8, -50, -36]);
     /// ```
-    fn mul(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn mul(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise division
     /// # Example
@@ -91,23 +94,29 @@ pub trait BaseOps<T, D: Device = Self>: Device {
     /// let div = device.div(&a, &b);
     /// assert_eq!(div.read(), vec![0, 1, 2, 8, -2, -4]);
     /// ```
-    fn div(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 }
 
-impl<T: Number, D: MainMemory> BaseOps<T, D> for CPU {
-    fn add(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self> {
+#[impl_stack]
+impl<T, S, D> BaseOps<T, D, S> for CPU
+where
+    T: Number,
+    S: Shape,
+    D: MainMemory,
+{
+    fn add(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x + y)
     }
 
-    fn sub(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self> {
+    fn sub(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x - y)
     }
 
-    fn mul(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self> {
+    fn mul(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x * y)
     }
 
-    fn div(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self> {
+    fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x / y)
     }
 }

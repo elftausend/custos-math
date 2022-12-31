@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "no-std", no_std)]
+
 pub mod cpu;
 #[cfg(feature = "cuda")]
 pub mod cuda;

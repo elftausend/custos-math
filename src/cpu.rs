@@ -1,16 +1,18 @@
 use crate::Matrix;
-use custos::{number::Number, Device, MainMemory, Shape, CPU, Alloc};
+use custos::{number::Number, Alloc, Device, MainMemory, Shape, CPU};
 
-pub fn scalar_apply<'a, T, F, D>(
-    device: &'a CPU,
-    lhs: &Matrix<T, D>,
+pub fn scalar_apply<'a, T, F, D, S, Host>(
+    device: &'a Host,
+    lhs: &Matrix<T, D, S>,
     scalar: T,
     f: F,
-) -> Matrix<'a, T>
+) -> Matrix<'a, T, Host, S>
 where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
+    S: Shape,
+    Host: for<'b> Alloc<'b, T, S> + MainMemory,
 {
     let mut out = device.retrieve(lhs.len, lhs.node.idx);
     scalar_apply_slice(lhs, &mut out, scalar, f);
@@ -107,12 +109,16 @@ where
     }
 }
 
-pub fn each_op<'a, T, F, D, S, Host>(device: &'a Host, x: &Matrix<T, D, S>, f: F) -> Matrix<'a, T, Host, S>
+pub fn each_op<'a, T, F, D, S, Host>(
+    device: &'a Host,
+    x: &Matrix<T, D, S>,
+    f: F,
+) -> Matrix<'a, T, Host, S>
 where
     T: Copy + Default,
     F: Fn(T) -> T,
     D: MainMemory,
-    for<'b> Host: Alloc<'b, T, S> + MainMemory,
+    Host: for<'b> Alloc<'b, T, S> + MainMemory,
     S: Shape,
 {
     let mut out = device.retrieve(x.len(), x.node.idx);

@@ -214,7 +214,7 @@ fn test_gemm_cpu() {
     let b = Matrix::from((&device, (4, 1), [5., 4., 2., 9.]));
 
     for _ in range(500) {
-        let c2 = a.gemm(&b);
+        let c2: Matrix<f64> = a.gemm(&b);
         assert_eq!(c2.read(), vec![106.])
     }
 }
@@ -356,7 +356,7 @@ fn test_larger_gemm() {
     let a = Matrix::from((&cpu, (5, 7), arr1));
     let b = Matrix::from((&cpu, (7, 10), arr2));
 
-    let cpu_c = a.gemm(&b);
+    let cpu_c: Matrix = a.gemm(&b);
     roughly_equals(&cpu.read(cpu_c.as_buf()), &should, 1e-3);
 }
 

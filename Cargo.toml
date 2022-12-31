@@ -15,20 +15,22 @@ repository = "https://github.com/elftausend/custos-math"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-custos = { path = "../custos", default-features = false, features=["blas", "macro", "cpu"] }
+custos = { path = "../custos", default-features = false, features=["blas", "macro"] }
 
 #custos = { version = "0.5.0", default-features = false }
-fastrand = "1.7.0"
+fastrand = "1.8.0"
 
 [build-dependencies]
 #custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
-default = ["stack"]
+default = ["no-std"]
+cpu = ["custos/cpu"]
 stack = ["custos/stack"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]
 realloc = ["custos/realloc"]
+no-std = ["custos/no-std", "stack"]
 
 [[example]]
 name = "simple"

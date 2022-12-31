@@ -1,5 +1,11 @@
 use crate::{cpu::scalar_apply, Matrix};
-use custos::{cpu::CPU, number::Number, CDatatype, Device, MainMemory};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape};
+
+#[cfg(feature="cpu")]
+use custos::CPU;
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_scalar_op_mat;
@@ -11,39 +17,47 @@ use crate::cuda::cu_scalar_op;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype, D> Matrix<'a, T, D>
+impl<'a, T, D, S> Matrix<'a, T, D, S>
 where
-    D: AdditionalOps<T>,
+    D: AdditionalOps<T, S>,
+    T: CDatatype,
+    S: Shape,
 {
-    pub fn adds(&self, rhs: T) -> Matrix<'a, T, D> {
+    #[inline]
+    pub fn adds(&self, rhs: T) -> Self {
         self.device().adds(self, rhs)
     }
 
-    pub fn muls(&self, rhs: T) -> Matrix<'a, T, D> {
+    #[inline]
+    pub fn muls(&self, rhs: T) -> Self {
         self.device().muls(self, rhs)
     }
 
-    pub fn divs(&self, rhs: T) -> Matrix<'a, T, D> {
+    #[inline]
+    pub fn divs(&self, rhs: T) -> Self {
         self.device().divs(self, rhs)
     }
 }
 
-pub trait AdditionalOps<T, D: Device = Self>: Device {
-    fn adds(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T, Self>;
-    fn muls(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T, Self>;
-    fn divs(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T, Self>;
+pub trait AdditionalOps<T, S: Shape = (), D: Device = Self>: Device {
+    fn adds(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn muls(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn divs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
 }
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> AdditionalOps<T> for CUDA {
+    #[inline]
     fn adds(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "+").unwrap(), lhs.dims()).into()
     }
 
+    #[inline]
     fn muls(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "*").unwrap(), lhs.dims()).into()
     }
 
+    #[inline]
     fn divs(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "/").unwrap(), lhs.dims()).into()
     }
@@ -51,29 +65,36 @@ impl<T: CDatatype> AdditionalOps<T> for CUDA {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AdditionalOps<T> for OpenCL {
+    #[inline]
     fn adds(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "+").unwrap()
     }
 
+    #[inline]
     fn muls(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "*").unwrap()
     }
 
+    #[inline]
     fn divs(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "/").unwrap()
     }
 }
 
-impl<T: Number, D: MainMemory> AdditionalOps<T, D> for CPU {
-    fn adds(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T> {
+#[impl_stack]
+impl<T: Number, D: MainMemory, S: Shape> AdditionalOps<T, S, D> for CPU {
+    #[inline]
+    fn adds(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a + b)
     }
 
-    fn muls(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T> {
+    #[inline]
+    fn muls(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a * b)
     }
 
-    fn divs(&self, lhs: &Matrix<T, D>, rhs: T) -> Matrix<T> {
+    #[inline]
+    fn divs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a / b)
     }
 }

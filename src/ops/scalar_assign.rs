@@ -1,6 +1,9 @@
 use crate::{assign_to_lhs_scalar, Matrix};
-use custos::{CDatatype, Device, MainMemory, CPU};
-use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use custos::{impl_stack, CDatatype, Device, MainMemory, Shape, CPU};
+use core::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(feature = "opencl")]
 use crate::cl_assign_scalar;
@@ -12,58 +15,83 @@ use crate::cu_assign_scalar;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype, D: ScalarAssign<T>> AddAssign<T> for Matrix<'a, T, D> {
+impl<'a, T, S, D> AddAssign<T> for Matrix<'a, T, D, S>
+where
+    T: CDatatype,
+    S: Shape,
+    D: ScalarAssign<T, S>,
+{
+    #[inline]
     fn add_assign(&mut self, rhs: T) {
         self.device().adds_assign(self, rhs)
     }
 }
 
-impl<T: CDatatype> MulAssign<T> for Matrix<'_, T> {
+impl<T, S, D> MulAssign<T> for Matrix<'_, T, D, S>
+where
+    T: CDatatype,
+    S: Shape,
+    D: ScalarAssign<T, S>,
+{
+    #[inline]
     fn mul_assign(&mut self, rhs: T) {
         self.device().muls_assign(self, rhs);
     }
 }
 
-impl<T: CDatatype> DivAssign<T> for Matrix<'_, T> {
+impl<T, S, D> DivAssign<T> for Matrix<'_, T, D, S>
+where
+    T: CDatatype,
+    S: Shape,
+    D: ScalarAssign<T, S>,
+{
+    #[inline]
     fn div_assign(&mut self, rhs: T) {
         self.device().divs_assign(self, rhs);
     }
 }
 
-pub trait ScalarAssign<T, D: Device = Self>: Device {
-    fn adds_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
-    fn muls_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
-    fn divs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
-    fn subs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T);
+pub trait ScalarAssign<T, S: Shape = (), D: Device = Self>: Device {
+    fn adds_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T);
+    fn muls_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T);
+    fn divs_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T);
+    fn subs_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T);
 }
 
-impl<T, D: MainMemory> ScalarAssign<T, D> for CPU
+#[impl_stack]
+impl<T, D: MainMemory, S: Shape> ScalarAssign<T, S, D> for CPU
 where
     T: Copy + AddAssign + MulAssign + DivAssign + SubAssign,
 {
-    fn adds_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
+    #[inline]
+    fn adds_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x += y);
     }
 
-    fn muls_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
+    #[inline]
+    fn muls_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x *= y);
     }
 
-    fn divs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
+    #[inline]
+    fn divs_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x /= y);
     }
 
-    fn subs_assign(&self, lhs: &mut Matrix<T, D>, rhs: T) {
+    #[inline]
+    fn subs_assign(&self, lhs: &mut Matrix<T, D, S>, rhs: T) {
         assign_to_lhs_scalar(lhs, rhs, |x, y| *x -= y);
     }
 }
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> ScalarAssign<T> for OpenCL {
+    #[inline]
     fn adds_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "+").unwrap();
     }
 
+    #[inline]
     fn muls_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "*").unwrap();
     }
@@ -79,18 +107,22 @@ impl<T: CDatatype> ScalarAssign<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> ScalarAssign<T> for CUDA {
+    #[inline]
     fn adds_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "+").unwrap();
     }
 
+    #[inline]
     fn muls_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "*").unwrap();
     }
 
+    #[inline]
     fn divs_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "/").unwrap();
     }
 
+    #[inline]
     fn subs_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "-").unwrap();
     }

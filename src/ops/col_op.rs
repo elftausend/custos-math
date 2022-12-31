@@ -13,14 +13,17 @@ pub trait ColOp<T, D: Device = Self>: Device {
 }
 
 impl<T: Number, D: MainMemory> ColOp<T, D> for CPU {
+    #[inline]
     fn add_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a + b)
     }
 
+    #[inline]
     fn sub_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a - b)
     }
 
+    #[inline]
     fn div_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
         col_op(self, lhs, rhs, |c, a, b| *c = a / b)
     }
@@ -28,14 +31,17 @@ impl<T: Number, D: MainMemory> ColOp<T, D> for CPU {
 
 #[cfg(feature = "opencl")]
 impl<T: custos::CDatatype> ColOp<T> for OpenCL {
+    #[inline]
     fn add_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }
 
+    #[inline]
     fn sub_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.sub_col(lhs, rhs))
     }
 
+    #[inline]
     fn div_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.div_col(lhs, rhs))
     }
@@ -47,14 +53,17 @@ use custos::CUDA;
 
 #[cfg(feature = "cuda")]
 impl<T: custos::CDatatype> ColOp<T> for CUDA {
+    #[inline]
     fn add_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
     }
 
+    #[inline]
     fn sub_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.sub_col(lhs, rhs))
     }
 
+    #[inline]
     fn div_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.div_col(lhs, rhs))
     }

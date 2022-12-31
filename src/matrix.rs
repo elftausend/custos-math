@@ -1,6 +1,6 @@
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
-use crate::{AdditionalOps, AssignOps, BaseOps, Gemm};
+use crate::{AdditionalOps, AssignOps, BaseOps};
 
 #[cfg(feature = "opencl")]
 use custos::{
@@ -8,8 +8,7 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, Buffer, CDatatype, CloneBuf, Device, GenericBlas, GraphReturn, MainMemory, Read, Shape,
-    CPU,
+    Alloc, Buffer, CDatatype, CloneBuf, Device, GraphReturn, MainMemory, Read, Shape, CPU,
 };
 
 #[cfg(feature = "cuda")]
@@ -223,6 +222,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// let a = Matrix::from((&device, (2, 2), [5, 7, 2, 10,]));
     /// assert_eq!(a.read(), vec![5, 7, 2, 10])
     /// ```
+    #[cfg(not(feature="no-std"))]
     pub fn read_to_vec(&self) -> Vec<T>
     where
         T: Default + Copy,
@@ -249,7 +249,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     where
         T: Clone,
         D::Ptr<T, S>: Copy,
-        D: CloneBuf<'a, T>,
+        D: CloneBuf<'a, T, S>,
     {
         unsafe {
             Self {
@@ -257,34 +257,6 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
                 dims: self.dims,
             }
         }
-    }
-}
-
-impl<'a, T, D: Device> Matrix<'a, T, D> {
-    /// Matrix multiplication. Uses current global device.
-    /// # Example
-    /// ```
-    /// use custos::CPU;
-    /// use custos_math::Matrix;
-    ///
-    /// let device = CPU::new();
-    ///
-    /// let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.,]));
-    /// let b = Matrix::from((&device, (3, 2), [6., 5., 4., 3., 2., 1.,]));
-    ///
-    /// let c = a.gemm(&b);
-    /// println!("c: {c:?}");
-    ///
-    /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
-    /// ```
-    #[inline]
-    pub fn gemm<'b>(&'a self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
-    where
-        T: CDatatype + GenericBlas,
-        D: Gemm<T, D>,
-    {
-        //let device = get_device!(self.device(), Gemm<T>);
-        self.device().gemm(self, rhs)
     }
 }
 
@@ -300,7 +272,7 @@ where
     }
 }
 
-impl<'a, T, D: Device, S: Shape> std::ops::Deref for Matrix<'a, T, D, S> {
+impl<'a, T, D: Device, S: Shape> core::ops::Deref for Matrix<'a, T, D, S> {
     type Target = Buffer<'a, T, D, S>;
 
     fn deref(&self) -> &Self::Target {
@@ -308,7 +280,7 @@ impl<'a, T, D: Device, S: Shape> std::ops::Deref for Matrix<'a, T, D, S> {
     }
 }
 
-impl<'a, T, D: Device, S: Shape> std::ops::DerefMut for Matrix<'a, T, D, S> {
+impl<'a, T, D: Device, S: Shape> core::ops::DerefMut for Matrix<'a, T, D, S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut_buf()
     }
@@ -325,7 +297,9 @@ impl<'a, T: Clone, D: Device + CloneBuf<'a, T>> Clone for Matrix<'a, T, D> {
 
 // From conversions
 
-impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))> for Matrix<'a, T, D, S> {
+impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))>
+    for Matrix<'a, T, D, S>
+{
     #[inline]
     fn from(ptr_dims: (Buffer<'a, T, D, S>, (usize, usize))) -> Self {
         let dims = ptr_dims.1;
@@ -350,6 +324,7 @@ impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, usize, usize)> for M
 
 // TODO: unsafe from raw parts?
 // is wrapper flag ok? I think so
+#[cfg(feature="cpu")]
 impl<'a, T> From<(*mut T, (usize, usize))> for Matrix<'a, T> {
     #[inline]
     fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
@@ -497,6 +472,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
     }
 }
 
+#[cfg(not(feature="no-std"))]
 impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
     for Matrix<'a, T, D>
 {
@@ -510,6 +486,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 }
 
 // no tuple for dims
+#[cfg(not(feature="no-std"))]
 impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
     for Matrix<'a, T, D>
 {
@@ -547,6 +524,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
     }
 }
 
+#[cfg(not(feature="no-std"))]
 impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
     for Matrix<'a, T, D>
 {
@@ -605,11 +583,11 @@ where
     }
 }
 
-impl<'a, T: CDatatype, D> Add<T> for &Matrix<'a, T, D>
+impl<'a, T: CDatatype, D, S: Shape> Add<T> for &Matrix<'a, T, D, S>
 where
-    D: Device + AdditionalOps<T, D>,
+    D: Device + AdditionalOps<T, S>,
 {
-    type Output = Matrix<'a, T, D>;
+    type Output = Matrix<'a, T, D, S>;
 
     fn add(self, rhs: T) -> Self::Output {
         self.adds(rhs)
@@ -618,7 +596,7 @@ where
 
 impl<'a, T: CDatatype, D> Add<T> for Matrix<'a, T, D>
 where
-    D: Device + AdditionalOps<T, D>,
+    D: Device + AdditionalOps<T>,
 {
     type Output = Matrix<'a, T, D>;
 
@@ -726,24 +704,24 @@ where
     }
 }
 
-impl<'a, T: CDatatype> Mul<T> for Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T: CDatatype, D: AdditionalOps<T>> Mul<T> for Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
 
     fn mul(self, rhs: T) -> Self::Output {
         self.muls(rhs)
     }
 }
 
-impl<'a, T: CDatatype> Mul<&T> for Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T: CDatatype, D: AdditionalOps<T>> Mul<&T> for Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
 
     fn mul(self, rhs: &T) -> Self::Output {
         self.muls(*rhs)
     }
 }
 
-impl<'a, T: CDatatype> Mul<T> for &Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T: CDatatype, D: AdditionalOps<T>> Mul<T> for &Matrix<'a, T, D> {
+    type Output = Matrix<'a, T, D>;
 
     fn mul(self, rhs: T) -> Self::Output {
         self.muls(rhs)
@@ -760,7 +738,7 @@ impl<'a, T: CDatatype, D: BaseOps<T, D>> Div<Self> for &Matrix<'a, T, D> {
     }
 }
 
-impl<'a, T: CDatatype, D: AdditionalOps<T, D>> Div<T> for Matrix<'a, T, D> {
+impl<'a, T: CDatatype, D: AdditionalOps<T>> Div<T> for Matrix<'a, T, D> {
     type Output = Matrix<'a, T, D>;
 
     fn div(self, rhs: T) -> Self::Output {
@@ -768,7 +746,7 @@ impl<'a, T: CDatatype, D: AdditionalOps<T, D>> Div<T> for Matrix<'a, T, D> {
     }
 }
 
-impl<'a, T: CDatatype, D: AdditionalOps<T, D>> Div<T> for &Matrix<'a, T, D> {
+impl<'a, T: CDatatype, D: AdditionalOps<T>> Div<T> for &Matrix<'a, T, D> {
     type Output = Matrix<'a, T, D>;
 
     fn div(self, rhs: T) -> Self::Output {
@@ -830,6 +808,8 @@ where
     }
 }
 
+
+#[cfg(not(feature = "no-std"))]
 impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T, D>> core::fmt::Debug for Matrix<'a, T, D>
 where
     D: Read<T, D> + Device + 'a,

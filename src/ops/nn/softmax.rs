@@ -27,6 +27,7 @@ pub trait SoftmaxOps<T, D: Device = Self>: Device {
     fn softmax_grad(&self, activated: &Matrix<T, D>, grads: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
+#[cfg(feature="cpu")]
 impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU
 where
     CPU: ColOp<T>,
@@ -65,7 +66,7 @@ where
                 &self.gemm(&single_out, &self.transpose(&single_out)),
             );
 
-            let res = self.gemm(&jacobian_matrix, &single_grad);
+            let res: Matrix<T> = self.gemm(&jacobian_matrix, &single_grad);
 
             let data_row = &mut data[index..index + cols];
             data_row.copy_from_slice(&res);

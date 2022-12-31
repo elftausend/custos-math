@@ -15,7 +15,7 @@ fn test_gemm_trans() {
     ));
     let trans_mat = mat.T();
 
-    let out_t = mat.gemm(&trans_mat);
+    let out_t: Matrix = mat.gemm(&trans_mat);
 
     let mut out: Matrix = Matrix::new(&device, (4, 4));
     GenericBlas::gemmT(4, 4, 3, &mat, &mat, &mut out);
@@ -32,7 +32,7 @@ fn test_gemm_trans_perf() {
 
     for _ in range(0..10) {
         let trans_mat = mat.T();
-        let _out_t = mat.gemm(&trans_mat);
+        let _out_t: Matrix = mat.gemm(&trans_mat);
     }
     println!("pre_trans elapsed: {:?}", start.elapsed());
 
@@ -49,7 +49,7 @@ fn test_gemm_trans_perf() {
     GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
 
     let trans_mat = mat.T();
-    let out_t = mat.gemm(&trans_mat);
+    let out_t: Matrix = mat.gemm(&trans_mat);
 
     println!("");
     assert_eq!(out_t.as_slice(), out.as_slice());
