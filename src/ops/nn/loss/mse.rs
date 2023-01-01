@@ -1,14 +1,14 @@
-use crate::Matrix;
-use custos::CDatatype;
+use crate::{Matrix, BaseOps, SumOps, AdditionalOps};
+use custos::{CDatatype, Device};
 #[cfg(feature = "opencl")]
 use custos::{opencl::enqueue_kernel, OpenCL};
 
-pub fn mse<T: CDatatype>(preds: &Matrix<T>, targets: &Matrix<T>) -> T {
+pub fn mse<T: CDatatype, D: BaseOps<T>+ SumOps<T>>(preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T {
     let x = preds - targets;
     (&x * &x).mean()
 }
 
-pub fn mse_grad<'a, T: CDatatype>(preds: &Matrix<'a, T>, targets: &Matrix<'a, T>) -> Matrix<'a, T> {
+pub fn mse_grad<'a, T: CDatatype, D: BaseOps<T>+ SumOps<T>+ AdditionalOps<T>>(preds: &Matrix<'a, T, D>, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, D> {
     let x = preds - targets;
     (&x * T::two() / T::from_usize(preds.cols())) / T::from_usize(preds.rows())
 }

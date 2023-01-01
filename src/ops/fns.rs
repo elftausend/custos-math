@@ -57,6 +57,7 @@ where
 {
     #[inline]
     fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
+        
         each_op(self, x, |x| x.exp())
     }
 

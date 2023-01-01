@@ -93,7 +93,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
 
     /// Returns a mutable reference to the underlying buffer.
     #[inline]
-    pub fn as_mut_buf(&mut self) -> &mut Buffer<'a, T, D, S> {
+    pub fn as_buf_mut(&mut self) -> &mut Buffer<'a, T, D, S> {
         &mut self.data
     }
 
@@ -167,7 +167,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     where
         D: MainMemory,
     {
-        self.as_mut_buf().as_mut_slice()
+        self.as_buf_mut().as_mut_slice()
     }
 
     /*
@@ -282,7 +282,7 @@ impl<'a, T, D: Device, S: Shape> core::ops::Deref for Matrix<'a, T, D, S> {
 
 impl<'a, T, D: Device, S: Shape> core::ops::DerefMut for Matrix<'a, T, D, S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.as_mut_buf()
+        self.as_buf_mut()
     }
 }
 

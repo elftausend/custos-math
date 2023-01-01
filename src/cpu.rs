@@ -59,16 +59,17 @@ where
     }
 }
 
-pub fn row_op<'a, T, F, D>(
-    device: &'a CPU,
+pub fn row_op<'a, T, F, D, Host>(
+    device: &'a Host,
     lhs: &Matrix<T, D>,
     rhs: &Matrix<T, D>,
     f: F,
-) -> Matrix<'a, T>
+) -> Matrix<'a, T, Host>
 where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
+    Host: for<'b> Alloc<'b, T> + MainMemory
 {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
@@ -77,16 +78,17 @@ where
     (out, lhs.dims()).into()
 }
 
-pub fn col_op<'a, T, F, D>(
-    device: &'a CPU,
+pub fn col_op<'a, T, F, D, Host>(
+    device: &'a Host,
     lhs: &Matrix<T, D>,
     rhs: &Matrix<T, D>,
     f: F,
-) -> Matrix<'a, T>
+) -> Matrix<'a, T, Host>
 where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
+    Host: for<'b> Alloc<'b, T> + MainMemory
 {
     let mut out = device.retrieve(lhs.len, [lhs.node.idx, rhs.node.idx]);
     col_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);

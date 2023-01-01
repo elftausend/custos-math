@@ -92,7 +92,9 @@ pub trait Gemm<T, D: Device = Self, LS: Shape = (), RS: Shape = (), OS: Shape = 
     fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS>;
 }
 
-#[impl_stack]
+
+#[cfg(not(feature="no-std"))]
+#[cfg(feature="cpu")]
 impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
 where
     T: GenericBlas + Default + Copy,
