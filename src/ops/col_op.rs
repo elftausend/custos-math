@@ -12,7 +12,7 @@ pub trait ColOp<T, D: Device = Self>: Device {
     fn div_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 impl<T: Number, D: MainMemory> ColOp<T, D> for CPU {
     #[inline]
     fn add_col(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {

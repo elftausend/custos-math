@@ -1,7 +1,7 @@
 use crate::Matrix;
 use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::cache::Cache;
 
 #[cfg(feature = "cuda")]
@@ -38,7 +38,7 @@ pub trait MaxOps<T, D: Device = Self>: Device {
 }
 
 // TODO: refactor this into own methods
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
     fn max(&self, x: &Matrix<T, D>) -> T {
         let mut max = x[0];

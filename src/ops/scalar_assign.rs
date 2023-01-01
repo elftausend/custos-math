@@ -1,6 +1,6 @@
 use crate::{assign_to_lhs_scalar, Matrix};
-use custos::{impl_stack, CDatatype, Device, MainMemory, Shape, CPU};
 use core::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use custos::{impl_stack, CDatatype, Device, MainMemory, Shape, CPU};
 
 #[cfg(feature = "stack")]
 use custos::Stack;

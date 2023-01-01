@@ -1,6 +1,6 @@
 use custos::{impl_stack, Device, Dim2, GenericBlas, MainMemory, Shape, CPU};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::cache::Cache;
 
 #[cfg(feature = "stack")]
@@ -92,9 +92,11 @@ pub trait Gemm<T, D: Device = Self, LS: Shape = (), RS: Shape = (), OS: Shape = 
     fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS>;
 }
 
-
-#[cfg(not(feature="no-std"))]
-#[cfg(feature="cpu")]
+// #[cfg(not(feature = "no-std"))]
+// #[cfg(feature = "cpu")]
+#[cfg(feature = "blas")]
+#[cfg(not(feature = "matrixmultiply"))]
+#[impl_stack]
 impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
 where
     T: GenericBlas + Default + Copy,
@@ -111,6 +113,29 @@ where
 
         let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
         T::gemm(m, n, k, lhs, rhs, &mut out);
+        (out, m, n).into()
+    }
+}
+
+#[cfg(feature = "matrixmultiply")]
+#[cfg(not(feature = "blas"))]
+#[impl_stack]
+impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
+where
+    T: crate::matrix_multiply::MatrixMultiply + Default + Copy,
+    D: MainMemory,
+    LS: Shape,
+    RS: Shape,
+    OS: Shape,
+{
+    #[inline]
+    fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS> {
+        assert!(lhs.dims().1 == rhs.dims().0);
+        let (m, k) = lhs.dims();
+        let n = rhs.cols();
+
+        let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
+        T::gemm(m, k, n, lhs, k, 1, rhs, 1, n, &mut out, n, 1);
         (out, m, n).into()
     }
 }

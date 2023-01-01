@@ -15,22 +15,26 @@ repository = "https://github.com/elftausend/custos-math"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-custos = { path = "../custos", default-features = false, features=["blas", "macro"] }
+custos = { path = "../custos", default-features = false, features=["macro"] }
 
 #custos = { version = "0.5.0", default-features = false }
-fastrand = "1.8.0"
+fastrand = {version="1.8.0", optional=true}
+matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 
 [build-dependencies]
 #custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
-default = ["no-std"]
+default = ["cpu", "matrixmultiply"]
+#default = ["fastrand", "stack", "cpu", "matrixmultiply"]
+#matrixmultiply = ["dep:matrixmultiply"]
 cpu = ["custos/cpu"]
 stack = ["custos/stack"]
 opencl = ["custos/opencl"]
 cuda = ["custos/cuda"]
 realloc = ["custos/realloc"]
-no-std = ["custos/no-std", "stack"]
+no-std = ["custos/no-std", "stack", "matrixmultiply"]
+blas = ["custos/blas"]
 
 [[example]]
 name = "simple"

@@ -35,7 +35,7 @@ use crate::cu_ew;
 /// let sub = device.sub(&a, &b);
 /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
 /// ```
-pub trait BaseOps<T, D: Device = Self, S: Shape = ()>: Device {
+pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
     /// Element-wise addition
     /// # Example
     /// ```
@@ -98,7 +98,7 @@ pub trait BaseOps<T, D: Device = Self, S: Shape = ()>: Device {
 }
 
 #[impl_stack]
-impl<T, S, D> BaseOps<T, D, S> for CPU
+impl<T, S, D> BaseOps<T, S, D> for CPU
 where
     T: Number,
     S: Shape,

@@ -1,4 +1,7 @@
-pub use crate::{assign_to_lhs, assign_to_lhs_scalar, rand_slice, scalar_apply, slice_transpose};
+pub use crate::{assign_to_lhs, assign_to_lhs_scalar, scalar_apply, slice_transpose};
+
+#[cfg(feature = "fastrand")]
+pub use crate::rand_slice;
 
 #[cfg(feature = "opencl")]
 pub use crate::{

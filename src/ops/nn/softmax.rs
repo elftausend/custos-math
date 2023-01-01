@@ -3,7 +3,7 @@ use crate::{
     cl_diagflat,
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
-use crate::{ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp};
+use crate::{ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp, matrix_multiply::MatrixMultiply};
 use custos::{number::Float, range, Device, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
 use custos::{CDatatype, OpenCL};
@@ -27,8 +27,8 @@ pub trait SoftmaxOps<T, D: Device = Self>: Device {
     fn softmax_grad(&self, activated: &Matrix<T, D>, grads: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-#[cfg(feature="cpu")]
-impl<T: Float + GenericBlas> SoftmaxOps<T> for CPU
+#[cfg(feature = "cpu")]
+impl<T: Float + GenericBlas + MatrixMultiply> SoftmaxOps<T> for CPU
 where
     CPU: ColOp<T>,
 {

@@ -1,7 +1,7 @@
 use crate::{cpu::row_op, row_op_slice_lhs, Matrix};
 use custos::{number::Number, CDatatype, Device, MainMemory};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::CPU;
 
 #[cfg(feature = "opencl")]
@@ -31,7 +31,7 @@ pub trait RowOp<T, D: Device = Self>: Device {
     fn add_row_mut(&self, lhs: &mut Matrix<T, D>, rhs: &Matrix<T, D>);
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 impl<T: Number, D: MainMemory> RowOp<T, D> for CPU {
     #[inline]
     fn add_row(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {

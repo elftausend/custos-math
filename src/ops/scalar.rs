@@ -1,7 +1,7 @@
 use crate::{cpu::scalar_apply, Matrix};
 use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::CPU;
 
 #[cfg(feature = "stack")]

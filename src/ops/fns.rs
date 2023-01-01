@@ -1,6 +1,6 @@
 use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::CPU;
 
 #[cfg(feature = "stack")]
@@ -57,7 +57,6 @@ where
 {
     #[inline]
     fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
-        
         each_op(self, x, |x| x.exp())
     }
 

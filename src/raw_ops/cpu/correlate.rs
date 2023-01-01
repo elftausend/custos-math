@@ -37,7 +37,7 @@ pub fn correlate_valid_mut<T: Number>(
     }
 }
 
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 pub fn add_full_padding<T: Number>(
     lhs: &[T],
     lhs_dims: (usize, usize),
@@ -65,7 +65,7 @@ pub fn add_full_padding<T: Number>(
     (out, out_rows, out_cols)
 }
 
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 pub fn rot_kernel<T: Number>(kernel: &[T], kernel_shape: (usize, usize)) -> Vec<T> {
     let (kernel_rows, kernel_cols) = kernel_shape;
     let mut rotated = vec![T::default(); kernel.len()];

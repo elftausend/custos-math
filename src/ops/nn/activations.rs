@@ -1,13 +1,11 @@
-
 use crate::{each_op, Matrix};
-use custos::{number::Float, CDatatype, Device, MainMemory, Shape, impl_stack};
+use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "cpu")]
 use custos::CPU;
 
 #[cfg(feature = "stack")]
 use custos::Stack;
-
 
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op_mat;

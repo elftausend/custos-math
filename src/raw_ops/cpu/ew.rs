@@ -1,10 +1,10 @@
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 extern crate alloc;
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use alloc::vec::Vec;
 
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 pub fn element_wise_op<T: Copy + Default, F>(lhs: &[T], rhs: &[T], f: F) -> Vec<T>
 where
     F: Fn(T, T) -> T,

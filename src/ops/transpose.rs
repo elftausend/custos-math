@@ -4,8 +4,8 @@ use std::ptr::null_mut;
 use crate::Matrix;
 use custos::{CDatatype, Device, MainMemory};
 
-#[cfg(feature="cpu")]
-use custos::{CPU, Cache};
+#[cfg(feature = "cpu")]
+use custos::{Cache, CPU};
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -39,7 +39,7 @@ pub trait TransposeOp<T, D: Device = Self>: Device {
     fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 impl<T: Default + Copy, D: MainMemory> TransposeOp<T, D> for CPU {
     fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let mut out = Cache::get(self, x.len, x.node.idx);

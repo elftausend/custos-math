@@ -21,3 +21,5 @@ pub use cuda::*;
 #[cfg(feature = "opencl")]
 pub use opencl::*;
 pub use ops::*;
+
+pub mod matrix_multiply;

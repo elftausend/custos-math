@@ -5,7 +5,7 @@ use crate::Matrix;
 use custos::CUDA;
 use custos::{CDatatype, Device, MainMemory};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 use custos::{cache::Cache, cpu::CPU};
 
 #[cfg(feature = "opencl")]
@@ -29,7 +29,7 @@ pub trait DiagflatOp<T, D: Device = Self>: Device {
     fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 impl<T: Default + Copy, D: MainMemory> DiagflatOp<T, D> for CPU {
     fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T> {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);

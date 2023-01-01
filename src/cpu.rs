@@ -69,7 +69,7 @@ where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
-    Host: for<'b> Alloc<'b, T> + MainMemory
+    Host: for<'b> Alloc<'b, T> + MainMemory,
 {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
@@ -88,7 +88,7 @@ where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
-    Host: for<'b> Alloc<'b, T> + MainMemory
+    Host: for<'b> Alloc<'b, T> + MainMemory,
 {
     let mut out = device.retrieve(lhs.len, [lhs.node.idx, rhs.node.idx]);
     col_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
