@@ -130,12 +130,13 @@ where
 {
     #[inline]
     fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS> {
-        assert!(lhs.dims().1 == rhs.dims().0);
         let (m, k) = lhs.dims();
         let n = rhs.cols();
 
+        assert!(k == rhs.rows());
+
         let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
-        T::gemm(m, k, n, lhs, k, 1, rhs, 1, n, &mut out, n, 1);
+        T::gemm(m, k, n, lhs, k, 1, rhs, n, 1, &mut out, n, 1);
         (out, m, n).into()
     }
 }

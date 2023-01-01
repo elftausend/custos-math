@@ -12,6 +12,7 @@ mod implements {
 
     #[rustfmt::skip]
     impl MatrixMultiply for f32 {
+        #[inline]
         fn gemm(m: usize, k: usize, n: usize,
             a: &[Self], rsa: usize, csa: usize,
             b: &[Self], rsb: usize, csb: usize,
@@ -26,6 +27,7 @@ mod implements {
     
     #[rustfmt::skip]
     impl MatrixMultiply for f64 {
+        #[inline]
         fn gemm(m: usize, k: usize, n: usize,
             a: &[Self], rsa: usize, csa: usize,
             b: &[Self], rsb: usize, csb: usize,
