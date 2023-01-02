@@ -7,9 +7,7 @@ use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
     OpenCL,
 };
-use custos::{
-    Alloc, Buffer, CDatatype, CloneBuf, Device, GraphReturn, MainMemory, Read, Shape, CPU,
-};
+use custos::{Alloc, Buffer, CDatatype, CloneBuf, Device, MainMemory, Read, Shape, CPU, GraphReturn};
 
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
@@ -49,7 +47,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// ```
     pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D, S>
     where
-        D: Alloc<'a, T, S> + GraphReturn,
+        D: Alloc<'a, T, S>,
     {
         Matrix {
             data: Buffer::new(device, dims.0 * dims.1),
@@ -423,8 +421,8 @@ impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
-    From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T, D>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize> From<(&'a D, (usize, usize), [T; N])>
+    for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
@@ -435,30 +433,9 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize)>
-    for Matrix<'a, T, D>
-{
-    fn from((device, rows, cols): (&'a D, usize, usize)) -> Self {
-        let data = Buffer::new(device, rows * cols);
-        Matrix {
-            data,
-            dims: (rows, cols),
-        }
-    }
-}
-
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize))>
-    for Matrix<'a, T, D>
-{
-    fn from((device, dims): (&'a D, (usize, usize))) -> Self {
-        let data = Buffer::new(device, dims.0 * dims.1);
-        Matrix { data, dims }
-    }
-}
-
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
-    From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T, D>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize> From<(&'a D, usize, usize, [T; N])>
+    for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
@@ -469,8 +446,25 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
     }
 }
 
+impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, usize, usize)> for Matrix<'a, T, D> {
+    fn from((device, rows, cols): (&'a D, usize, usize)) -> Self {
+        let data = Buffer::new(device, rows * cols);
+        Matrix {
+            data,
+            dims: (rows, cols),
+        }
+    }
+}
+
+impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize))> for Matrix<'a, T, D> {
+    fn from((device, dims): (&'a D, (usize, usize))) -> Self {
+        let data = Buffer::new(device, dims.0 * dims.1);
+        Matrix { data, dims }
+    }
+}
+
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), Vec<T>)) -> Self {
@@ -484,7 +478,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 
 // no tuple for dims
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, Vec<T>)) -> Self {
@@ -496,7 +490,8 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &[T])>
+// FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, (usize, usize), &[T])>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &[T])) -> Self {
@@ -509,9 +504,8 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, &[T])>
-    for Matrix<'a, T, D>
-{
+// FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, usize, usize, &[T])> for Matrix<'a, T, D> {
     fn from(dims_slice: (&'a D, usize, usize, &[T])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -522,7 +516,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
 }
 
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &Vec<T>)) -> Self {
@@ -833,6 +827,19 @@ impl<'a, T, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     for Matrix<'a, T, custos::Stack, custos::Dim1<N>>
 {
     fn from((_, rows, cols, array): (&custos::Stack, usize, usize, [T; N])) -> Self {
+        let data = Buffer::from((&custos::Stack, array));
+        Matrix {
+            data,
+            dims: (rows, cols),
+        }
+    }
+}
+
+impl<'a, T: Copy+Default, const A: usize, const B: usize, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
+    for Matrix<'a, T, custos::Stack, custos::Dim2<A, B>>
+{
+    fn from((_, rows, cols, array): (&custos::Stack, usize, usize, [T; N])) -> Self {
+        
         let data = Buffer::from((&custos::Stack, array));
         Matrix {
             data,

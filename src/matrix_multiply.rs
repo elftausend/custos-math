@@ -24,7 +24,7 @@ mod implements {
                 
         }
     }
-    
+
     #[rustfmt::skip]
     impl MatrixMultiply for f64 {
         #[inline]
@@ -39,5 +39,4 @@ mod implements {
             }           
         }
     }
-    
 }

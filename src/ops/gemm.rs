@@ -107,9 +107,10 @@ where
 {
     #[inline]
     fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS> {
-        assert!(lhs.dims().1 == rhs.dims().0);
         let (m, k) = lhs.dims();
         let n = rhs.cols();
+
+        debug_assert!(k == rhs.rows());
 
         let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
         T::gemm(m, n, k, lhs, rhs, &mut out);
@@ -133,10 +134,34 @@ where
         let (m, k) = lhs.dims();
         let n = rhs.cols();
 
-        assert!(k == rhs.rows());
+        debug_assert!(k == rhs.rows());
 
         let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
         T::gemm(m, k, n, lhs, k, 1, rhs, n, 1, &mut out, n, 1);
+        (out, m, n).into()
+    }
+}
+
+#[cfg(not(feature = "matrixmultiply"))]
+#[cfg(not(feature = "blas"))]
+#[impl_stack]
+impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
+where
+    T: Default + Copy + core::ops::Mul<Output=T> + core::ops::AddAssign,
+    D: MainMemory,
+    LS: Shape,
+    RS: Shape,
+    OS: Shape,
+{
+    #[inline]
+    fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS> {
+        let (m, k) = lhs.dims();
+        let n = rhs.cols();
+
+        debug_assert!(k == rhs.rows());
+
+        let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
+        crate::raw_ops::naive_gemm(m, k, n, lhs, rhs, &mut out);
         (out, m, n).into()
     }
 }
