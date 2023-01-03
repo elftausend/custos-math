@@ -7,7 +7,7 @@ use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
     OpenCL,
 };
-use custos::{Alloc, Buffer, CDatatype, CloneBuf, Device, MainMemory, Read, Shape, CPU, GraphReturn};
+use custos::{Alloc, Buffer, CDatatype, CloneBuf, Device, MainMemory, Read, Shape, CPU, GraphReturn, ShallowCopy};
 
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
@@ -232,7 +232,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Creates a shallow copy of &self.
     pub fn shallow(&self) -> Matrix<'a, T, D, S>
     where
-        D::Ptr<T, S>: Copy,
+        D::Ptr<T, S>: ShallowCopy,
     {
         unsafe {
             Self {
@@ -246,7 +246,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     pub fn shallow_or_clone(&self) -> Matrix<'a, T, D, S>
     where
         T: Clone,
-        D::Ptr<T, S>: Copy,
+        D::Ptr<T, S>: ShallowCopy,
         D: CloneBuf<'a, T, S>,
     {
         unsafe {
@@ -273,12 +273,14 @@ where
 impl<'a, T, D: Device, S: Shape> core::ops::Deref for Matrix<'a, T, D, S> {
     type Target = Buffer<'a, T, D, S>;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         self.as_buf()
     }
 }
 
 impl<'a, T, D: Device, S: Shape> core::ops::DerefMut for Matrix<'a, T, D, S> {
+    #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_buf_mut()
     }
@@ -463,8 +465,9 @@ impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize))> for Ma
     }
 }
 
+// FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), Vec<T>)) -> Self {
@@ -478,7 +481,8 @@ impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize), Vec<T>)
 
 // no tuple for dims
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
+// FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, Vec<T>)) -> Self {
@@ -516,7 +520,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, usize, usi
 }
 
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &Vec<T>)) -> Self {
@@ -823,6 +827,7 @@ where
     }
 }
 
+#[cfg(feature="stack")]
 impl<'a, T, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     for Matrix<'a, T, custos::Stack, custos::Dim1<N>>
 {
@@ -835,6 +840,7 @@ impl<'a, T, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     }
 }
 
+#[cfg(feature="stack")]
 impl<'a, T: Copy+Default, const A: usize, const B: usize, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     for Matrix<'a, T, custos::Stack, custos::Dim2<A, B>>
 {
@@ -848,6 +854,7 @@ impl<'a, T: Copy+Default, const A: usize, const B: usize, const N: usize> From<(
     }
 }
 
+#[cfg(feature="stack")]
 #[cfg(not(feature = "no-std"))]
 #[cfg(test)]
 mod tests {

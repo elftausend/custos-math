@@ -16,7 +16,7 @@ use custos::OpenCL;
 
 use crate::Matrix;
 
-impl<'a, T, D: Device> Matrix<'a, T, D> {
+impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
     /// Matrix multiplication. Uses current global device.
     /// # Example
     /// ```
@@ -34,15 +34,15 @@ impl<'a, T, D: Device> Matrix<'a, T, D> {
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
     #[inline]
-    pub fn gemm<'b>(&'a self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
+    pub fn gemm<RS: Shape, OS: Shape>(&self, rhs: &Matrix<'a, T, D, RS>) -> Matrix<'a, T, D, OS>
     where
-        D: Gemm<T, D>,
+        D: Gemm<T, LS, RS, OS, D>,
     {
         self.device().gemm(self, rhs)
     }
 }
 
-impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, K>> {
+/*impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, K>> {
     /// Matrix multiplication. Uses current global device.
     /// # Example
     /// ```
@@ -60,16 +60,16 @@ impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, 
     /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
     /// ```
     #[inline]
-    pub fn gemm<'b, const N: usize>(
-        &'a self,
+    pub fn gemm<const N: usize>(
+        &self,
         rhs: &Matrix<'a, T, D, Dim2<K, N>>,
     ) -> Matrix<'a, T, D, Dim2<M, N>>
     where
-        D: Gemm<T, D, Dim2<M, K>, Dim2<K, N>, Dim2<M, N>>,
+        D: Gemm<T, Dim2<M, K>, Dim2<K, N>, Dim2<M, N>, D>,
     {
         self.device().gemm(self, rhs)
     }
-}
+}*/
 
 /// Matrix multiplication. Uses provided device.
 /// # Example
@@ -86,7 +86,7 @@ impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, 
 ///
 /// assert_eq!(c.read(), vec![20., 14., 56., 41.,]);
 /// ```
-pub trait Gemm<T, D: Device = Self, LS: Shape = (), RS: Shape = (), OS: Shape = ()>:
+pub trait Gemm<T, LS: Shape = (), RS: Shape = (), OS: Shape = (), D: Device = Self>:
     Device
 {
     fn gemm(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, OS>;
@@ -97,7 +97,7 @@ pub trait Gemm<T, D: Device = Self, LS: Shape = (), RS: Shape = (), OS: Shape = 
 #[cfg(feature = "blas")]
 #[cfg(not(feature = "matrixmultiply"))]
 #[impl_stack]
-impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
+impl<T, D, LS, RS, OS> Gemm<T, LS, RS, OS, D> for CPU
 where
     T: GenericBlas + Default + Copy,
     D: MainMemory,

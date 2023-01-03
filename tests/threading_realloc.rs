@@ -1,5 +1,5 @@
 #[cfg(feature = "realloc")]
-use custos::{devices::cpu::CPU, range, VecRead};
+use custos::{devices::cpu::CPU, range, Read};
 
 #[cfg(feature = "realloc")]
 #[cfg(feature = "opencl")]

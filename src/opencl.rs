@@ -76,9 +76,11 @@ where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
-    #[cfg(not(feature = "realloc"))]
+    
+    
     /*
-    // use compile time unified_cl flag -> get from custos?
+    // TODO: use compile time unified_cl flag -> get from custos?
+    #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
         // Using a CPU stored in a OpenCL in order to get a (correct) cache entry.
         // Due to the (new) caching architecture, using a new CPU isn't possible,
@@ -96,16 +98,17 @@ where
     */
     let cpu = CPU::new();
 
-    #[cfg(feature = "realloc")]
+    // TODO: fix
+    /*#[cfg(feature = "realloc")]
     if device.unified_mem() {
         return Ok(Matrix::from((device, f(&cpu, matrix))));
-    }
+    }*/
 
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
     let mut convert = Matrix::from((device, mat));
-    convert.node = device.graph().add(convert.len, matrix.node.idx);
+    convert.node = device.graph().add(convert.len(), matrix.node.idx);
     Ok(convert)
 }
 
@@ -161,10 +164,13 @@ where
     }
     */
 
+    /*
+    // TODO: fix
+    
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
         return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
-    }
+    }*/
 
     // convert an OpenCL buffer to a cpu buffer
     let lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
@@ -173,7 +179,7 @@ where
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
     convert.node = device
         .graph()
-        .add(convert.len, (lhs.node.idx, rhs.node.idx));
+        .add(convert.len(), (lhs.node.idx, rhs.node.idx));
 
     Ok(convert)
 }

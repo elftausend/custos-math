@@ -1,5 +1,8 @@
 use crate::{cpu::row_op, row_op_slice_lhs, Matrix};
-use custos::{number::Number, CDatatype, Device, MainMemory};
+use custos::{number::Number, CDatatype, Device, MainMemory, Shape, impl_stack};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(feature = "cpu")]
 use custos::CPU;
@@ -14,32 +17,39 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_lr_mut};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype, D: RowOp<T>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype, LS: Shape, D: Device> Matrix<'a, T, D, LS> {
     #[inline]
-    pub fn add_row(&self, rhs: &Matrix<T, D>) -> Matrix<'a, T, D> {
+    pub fn add_row<RS: Shape>(&self, rhs: &Matrix<T, D, RS>) -> Matrix<'a, T, D, LS> 
+    where
+        D: RowOp<T, LS, RS>
+    {
         self.device().add_row(self, rhs)
     }
 
     #[inline]
-    pub fn add_row_mut(&mut self, rhs: &Matrix<'a, T, D>) {
+    pub fn add_row_mut<RS: Shape>(&mut self, rhs: &Matrix<'a, T, D, RS>) 
+    where
+        D: RowOp<T, LS, RS>
+    {
         rhs.device().add_row_mut(self, rhs)
     }
 }
 
-pub trait RowOp<T, D: Device = Self>: Device {
-    fn add_row(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T, Self>;
-    fn add_row_mut(&self, lhs: &mut Matrix<T, D>, rhs: &Matrix<T, D>);
+pub trait RowOp<T, LS: Shape = (), RS: Shape = (), D: Device = Self>: Device {
+    fn add_row(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, LS>;
+    fn add_row_mut(&self, lhs: &mut Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>);
 }
 
-#[cfg(feature = "cpu")]
-impl<T: Number, D: MainMemory> RowOp<T, D> for CPU {
+//#[cfg(feature = "cpu")]
+#[impl_stack]
+impl<T: Number, D: MainMemory, LS: Shape, RS: Shape> RowOp<T, LS, RS, D> for CPU {
     #[inline]
-    fn add_row(&self, lhs: &Matrix<T, D>, rhs: &Matrix<T, D>) -> Matrix<T> {
+    fn add_row(&self, lhs: &Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) -> Matrix<T, Self, LS> {
         row_op(self, lhs, rhs, |c, a, b| *c = a + b)
     }
 
     #[inline]
-    fn add_row_mut(&self, lhs: &mut Matrix<T, D>, rhs: &Matrix<T, D>) {
+    fn add_row_mut(&self, lhs: &mut Matrix<T, D, LS>, rhs: &Matrix<T, D, RS>) {
         let (lhs_rows, lhs_cols) = lhs.dims();
         row_op_slice_lhs(lhs, lhs_rows, lhs_cols, rhs, |c, a| *c += a)
     }

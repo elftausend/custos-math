@@ -32,8 +32,8 @@ pub fn cl_transpose<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let gws = [x.len, 0, 0];
-    let out = device.retrieve::<T, ()>(x.len, x.node.idx);
+    let gws = [x.len(), 0, 0];
+    let out = device.retrieve::<T, ()>(x.len(), x.node.idx);
     enqueue_kernel(device, &src, gws, None, &[x, &out])?;
     Ok(out)
 }

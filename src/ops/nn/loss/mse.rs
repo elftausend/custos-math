@@ -45,11 +45,11 @@ pub fn mse_grad_cl<'a, T: CDatatype>(
     );
 
     let out: custos::Buffer<T, OpenCL> =
-        device.retrieve(preds.len, (preds.node.idx, targets.node.idx));
+        device.retrieve(preds.len(), (preds.node.idx, targets.node.idx));
     enqueue_kernel(
         device,
         &src,
-        [preds.len, 0, 0],
+        [preds.len(), 0, 0],
         None,
         &[
             preds,

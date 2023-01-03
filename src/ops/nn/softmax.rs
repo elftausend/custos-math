@@ -15,7 +15,7 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_s};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: GenericBlas, D: SoftmaxOps<T>> Matrix<'a, T, D> {
+impl<'a, T: GenericBlas + MatrixMultiply, D: SoftmaxOps<T>> Matrix<'a, T, D> {
     pub fn softmax(&self) -> Matrix<'a, T, D> {
         self.device().softmax(self)
     }
@@ -45,7 +45,7 @@ where
 
         use crate::{BaseOps, Gemm};
 
-        let mut data: Matrix<T> = (Cache::get(self, grads.len, ()), grads.dims()).into();
+        let mut data: Matrix<T> = (Cache::get(self, grads.len(), ()), grads.dims()).into();
 
         let rows = grads.rows();
         let cols = grads.cols();
@@ -130,7 +130,7 @@ impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CUDA {
 
 #[cfg(feature = "opencl")]
 // TODO: Softmax running on the opencl device
-impl<T: GenericBlas + Float> SoftmaxOps<T> for OpenCL {
+impl<T: GenericBlas + MatrixMultiply + Float> SoftmaxOps<T> for OpenCL {
     fn softmax(&self, inputs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, inputs, |device, inputs| device.softmax(inputs))
     }

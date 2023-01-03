@@ -18,7 +18,7 @@ where
     ", datatype=T::as_c_type_str());
 
     //let out = Cache::get::<T, _>(device, x.len, x.node.idx);
-    let out: CLBuffer<T> = device.retrieve(x.len, x.node.idx);
-    enqueue_kernel(device, &src, [x.len, 0, 0], None, &[x, &scalar, &out])?;
+    let out: CLBuffer<T> = device.retrieve(x.len(), x.node.idx);
+    enqueue_kernel(device, &src, [x.len(), 0, 0], None, &[x, &scalar, &out])?;
     Ok(out)
 }

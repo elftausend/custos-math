@@ -6,7 +6,7 @@ pub trait MatrixMultiply where Self: Sized {
         c: &mut [Self], rsc: usize, csc: usize);
 }
 
-#[cfg(feature = "matrixmultiply")]
+#[allow(unused)]
 mod implements {
     use super::MatrixMultiply;
 
@@ -17,7 +17,11 @@ mod implements {
             a: &[Self], rsa: usize, csa: usize,
             b: &[Self], rsb: usize, csb: usize,
             c: &mut [Self], rsc: usize, csc: usize) {
+
+                #[cfg(not(feature = "matrixmultiply"))]
+                unimplemented!("Activate the matrixmultiply feature");
             
+                #[cfg(feature = "matrixmultiply")]
                 unsafe {
                     matrixmultiply::sgemm(m, k, n, 1., a.as_ptr(), rsa as isize, csa as isize, b.as_ptr(), rsb as isize, csb as isize, 1., c.as_mut_ptr(), rsc as isize, csc as isize);
                 }
@@ -32,8 +36,10 @@ mod implements {
             a: &[Self], rsa: usize, csa: usize,
             b: &[Self], rsb: usize, csb: usize,
             c: &mut [Self], rsc: usize, csc: usize) 
-            
-            {
+        {
+            #[cfg(not(feature = "matrixmultiply"))]
+            unimplemented!("Activate the matrixmultiply feature");
+            #[cfg(feature = "matrixmultiply")]
             unsafe {
                 matrixmultiply::dgemm(m, k, n, 1., a.as_ptr(), rsa as isize, csa as isize, b.as_ptr(), rsb as isize, csb as isize, 1., c.as_mut_ptr(), rsc as isize, csc as isize);
             }           

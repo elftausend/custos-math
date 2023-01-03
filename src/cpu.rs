@@ -14,7 +14,7 @@ where
     S: Shape,
     Host: for<'b> Alloc<'b, T, S> + MainMemory,
 {
-    let mut out = device.retrieve(lhs.len, lhs.node.idx);
+    let mut out = device.retrieve(lhs.len(), lhs.node.idx);
     scalar_apply_slice(lhs, &mut out, scalar, f);
     (out, lhs.dims()).into()
 }
@@ -59,21 +59,21 @@ where
     }
 }
 
-pub fn row_op<'a, T, F, D, Host>(
+pub fn row_op<'a, T, F, D, Host, LS: Shape, RS: Shape>(
     device: &'a Host,
-    lhs: &Matrix<T, D>,
-    rhs: &Matrix<T, D>,
+    lhs: &Matrix<T, D, LS>,
+    rhs: &Matrix<T, D, RS>,
     f: F,
-) -> Matrix<'a, T, Host>
+) -> Matrix<'a, T, Host, LS>
 where
     T: Number,
     F: Fn(&mut T, T, T),
     D: MainMemory,
-    Host: for<'b> Alloc<'b, T> + MainMemory,
+    Host: for<'b> Alloc<'b, T, LS> + MainMemory,
 {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
-    let mut out = device.retrieve(lhs.len, [lhs.node.idx, rhs.node.idx]);
+    let mut out = device.retrieve(lhs.len(), [lhs.node.idx, rhs.node.idx]);
     row_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
     (out, lhs.dims()).into()
 }
@@ -90,7 +90,7 @@ where
     D: MainMemory,
     Host: for<'b> Alloc<'b, T> + MainMemory,
 {
-    let mut out = device.retrieve(lhs.len, [lhs.node.idx, rhs.node.idx]);
+    let mut out = device.retrieve(lhs.len(), [lhs.node.idx, rhs.node.idx]);
     col_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
     (out, lhs.dims()).into()
 }

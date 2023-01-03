@@ -20,6 +20,6 @@ where
         datatype = T::as_c_type_str()
     );
 
-    enqueue_kernel(device, &src, [x.len, 0, 0], None, &[x, &scalar])?;
+    enqueue_kernel(device, &src, [x.len(), 0, 0], None, &[x, &scalar])?;
     Ok(())
 }

@@ -235,7 +235,7 @@ fn test_gemm() {
     let b_cl = Matrix::from((&device, (4, 1), [5., 4., 2., 9.]));
 
     for _ in range(500) {
-        let c1 = cpu.gemm(&a, &b);
+        let c1: Matrix = cpu.gemm(&a, &b);
         let c3 = device.gemm(&a_cl, &b_cl);
         let c2 = a.gemm(&b);
 

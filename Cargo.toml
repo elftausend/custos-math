@@ -25,12 +25,12 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 #custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
-default = ["no-std"]
+default = ["realloc", "blas", "fastrand", "cpu", "opencl"]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
 cpu = ["custos/cpu"]
 stack = ["custos/stack"]
-opencl = ["custos/opencl"]
+opencl = ["custos/opencl", "cpu"]
 cuda = ["custos/cuda"]
 realloc = ["custos/realloc"]
 no-std = ["custos/no-std", "stack"]

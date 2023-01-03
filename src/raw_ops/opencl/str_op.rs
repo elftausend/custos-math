@@ -19,7 +19,7 @@ where
         datatype = T::as_c_type_str()
     );
 
-    let out: CLBuffer<T> = device.retrieve(x.len, x.node.idx);
-    enqueue_kernel(device, &src, [x.len, 0, 0], None, &[x, &out])?;
+    let out: CLBuffer<T> = device.retrieve(x.len(), x.node.idx);
+    enqueue_kernel(device, &src, [x.len(), 0, 0], None, &[x, &out])?;
     Ok(out)
 }

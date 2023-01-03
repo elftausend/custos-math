@@ -42,7 +42,7 @@ pub trait TransposeOp<T, D: Device = Self>: Device {
 #[cfg(feature = "cpu")]
 impl<T: Default + Copy, D: MainMemory> TransposeOp<T, D> for CPU {
     fn transpose(&self, x: &Matrix<T, D>) -> Matrix<T> {
-        let mut out = Cache::get(self, x.len, x.node.idx);
+        let mut out = Cache::get(self, x.len(), x.node.idx);
         slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
         (out, x.cols(), x.rows()).into()
     }
