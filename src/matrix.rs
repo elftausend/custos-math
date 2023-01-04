@@ -7,7 +7,10 @@ use custos::{
     opencl::api::{enqueue_write_buffer, wait_for_event},
     OpenCL,
 };
-use custos::{Alloc, Buffer, CDatatype, CloneBuf, Device, MainMemory, Read, Shape, CPU, GraphReturn, ShallowCopy};
+use custos::{
+    Alloc, Buffer, CDatatype, CloneBuf, Device, GraphReturn, MainMemory, Read, ShallowCopy, Shape,
+    ToDim, CPU, IsConstDim, RawConv,
+};
 
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
@@ -270,6 +273,23 @@ where
     }
 }
 
+impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
+    /// Converts a (non stack allocated) `Buffer` with no shape to a `Buffer` with shape `O`.
+    #[inline]
+    pub fn to_dims<O: Shape>(self) -> Matrix<'a, T, D, O>
+    where
+        D: ToDim<T, S, O>,
+    {
+        let data = self.data.to_dims();
+        
+        Matrix {
+            data,
+            dims: self.dims,
+        }
+    }
+}
+
+
 impl<'a, T, D: Device, S: Shape> core::ops::Deref for Matrix<'a, T, D, S> {
     type Target = Buffer<'a, T, D, S>;
 
@@ -423,8 +443,8 @@ impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize> From<(&'a D, (usize, usize), [T; N])>
-    for Matrix<'a, T, D>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
+    From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.2));
@@ -436,8 +456,8 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize> From<(
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize> From<(&'a D, usize, usize, [T; N])>
-    for Matrix<'a, T, D>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
+    From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, [T; N])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
@@ -495,7 +515,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
 }
 
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, (usize, usize), &[T])>
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &[T])>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &[T])) -> Self {
@@ -509,7 +529,9 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, (usize, us
 
 // no tuple for dims
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn+ ?Sized> From<(&'a D, usize, usize, &[T])> for Matrix<'a, T, D> {
+impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, &[T])>
+    for Matrix<'a, T, D>
+{
     fn from(dims_slice: (&'a D, usize, usize, &[T])) -> Self {
         let data = Buffer::from((dims_slice.0, dims_slice.3));
         Matrix {
@@ -827,7 +849,7 @@ where
     }
 }
 
-#[cfg(feature="stack")]
+#[cfg(feature = "stack")]
 impl<'a, T, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     for Matrix<'a, T, custos::Stack, custos::Dim1<N>>
 {
@@ -840,12 +862,12 @@ impl<'a, T, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
     }
 }
 
-#[cfg(feature="stack")]
-impl<'a, T: Copy+Default, const A: usize, const B: usize, const N: usize> From<(&custos::Stack, usize, usize, [T; N])>
+#[cfg(feature = "stack")]
+impl<'a, T: Copy + Default, const A: usize, const B: usize, const N: usize>
+    From<(&custos::Stack, usize, usize, [T; N])>
     for Matrix<'a, T, custos::Stack, custos::Dim2<A, B>>
 {
     fn from((_, rows, cols, array): (&custos::Stack, usize, usize, [T; N])) -> Self {
-        
         let data = Buffer::from((&custos::Stack, array));
         Matrix {
             data,
@@ -854,14 +876,12 @@ impl<'a, T: Copy+Default, const A: usize, const B: usize, const N: usize> From<(
     }
 }
 
-#[cfg(feature="stack")]
-#[cfg(not(feature = "no-std"))]
 #[cfg(test)]
 mod tests {
-    use custos::{Buffer, Stack};
-
     use crate::Matrix;
 
+    #[cfg(feature = "stack")]
+    #[cfg(not(feature = "no-std"))]
     #[test]
     fn test_run() {
         let device = custos::CPU::new();
@@ -873,5 +893,16 @@ mod tests {
             let out = &a + &b;
             assert_eq!(out.as_slice(), &[8; 1000]);
         }
+    }
+
+    #[cfg(feature="cpu")]
+    #[test]
+    fn test_to_dims() {
+        use custos::{CPU, ToDim, Dim1};
+
+        let device = CPU::new();
+        let a = Matrix::from((&device, 1, 1000, [1; 1000]));
+        ToDim::<i32, (), Dim1<1000>>::to_dim(&device, a.data.ptr);
+        //let b: custos::cpu::CPUPtr<i32> = a.device().to_dim(a.ptr);
     }
 }

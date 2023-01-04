@@ -76,8 +76,6 @@ where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
-    
-    
     /*
     // TODO: use compile time unified_cl flag -> get from custos?
     #[cfg(not(feature = "realloc"))]
@@ -166,7 +164,7 @@ where
 
     /*
     // TODO: fix
-    
+
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
         return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));

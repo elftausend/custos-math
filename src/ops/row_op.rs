@@ -1,5 +1,5 @@
 use crate::{cpu::row_op, row_op_slice_lhs, Matrix};
-use custos::{number::Number, CDatatype, Device, MainMemory, Shape, impl_stack};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "stack")]
 use custos::Stack;
@@ -19,17 +19,17 @@ use custos::CUDA;
 
 impl<'a, T: CDatatype, LS: Shape, D: Device> Matrix<'a, T, D, LS> {
     #[inline]
-    pub fn add_row<RS: Shape>(&self, rhs: &Matrix<T, D, RS>) -> Matrix<'a, T, D, LS> 
+    pub fn add_row<RS: Shape>(&self, rhs: &Matrix<T, D, RS>) -> Matrix<'a, T, D, LS>
     where
-        D: RowOp<T, LS, RS>
+        D: RowOp<T, LS, RS>,
     {
         self.device().add_row(self, rhs)
     }
 
     #[inline]
-    pub fn add_row_mut<RS: Shape>(&mut self, rhs: &Matrix<'a, T, D, RS>) 
+    pub fn add_row_mut<RS: Shape>(&mut self, rhs: &Matrix<'a, T, D, RS>)
     where
-        D: RowOp<T, LS, RS>
+        D: RowOp<T, LS, RS>,
     {
         rhs.device().add_row_mut(self, rhs)
     }

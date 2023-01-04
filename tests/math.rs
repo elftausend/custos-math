@@ -222,7 +222,7 @@ fn test_gemm_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_gemm() {
-    use custos_math::Gemm;
+    use custos_math::{Gemm};
 
     let cpu = CPU::new();
 
@@ -237,7 +237,7 @@ fn test_gemm() {
     for _ in range(500) {
         let c1: Matrix = cpu.gemm(&a, &b);
         let c3 = device.gemm(&a_cl, &b_cl);
-        let c2 = a.gemm(&b);
+        let c2 : Matrix<f32, CPU, ()>= a.gemm(&b);
 
         assert_eq!(cpu.read(c1.as_buf()), cpu.read(c2.as_buf()));
         assert_eq!(cpu.read(c1.as_buf()), device.read(c3.as_buf()));
@@ -296,6 +296,8 @@ fn test_larger_gemm_cl_f64() {
 #[test]
 fn test_larger_gemm_cl() {
     //5x7
+
+    use custos_math;
     let arr1 = [
         9., 1., 3., 6., 7., 3., 63f32, 93., 51., 23., 36., 87., 3., 63., 9., 1., 43., 46.3, 7., 3.,
         63., 9., 15., 73., 6.3, 7., 53., 63., 69., 1., 3., 6., 7., 43., 63.,

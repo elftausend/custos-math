@@ -1,4 +1,4 @@
-use custos::{impl_stack, Device, Dim2, GenericBlas, MainMemory, Shape, CPU};
+use custos::{impl_stack, Device, Dim2, GenericBlas, MainMemory, MayDim2, Shape, CPU};
 
 #[cfg(feature = "cpu")]
 use custos::cache::Cache;
@@ -15,6 +15,37 @@ use crate::cl_gemm;
 use custos::OpenCL;
 
 use crate::Matrix;
+
+/*pub trait GemmMat<'a,
+    T,
+    D: Gemm<T, LS, RS, OS, D>,
+    LS: MayDim2<M, K>,
+    RS: MayDim2<K, N>,
+    OS: MayDim2<M, N>,
+    const M: usize = 0,
+    const K: usize = 0,
+    const N: usize = 0,
+>
+{
+    fn gemm(&self, rhs: &Matrix<'a, T, D, RS>) -> Matrix<T, D, OS>;
+}
+
+impl<
+        'a,
+        T,
+        D: Gemm<T, LS, RS, OS, D>,
+        LS: MayDim2<M, K>,
+        RS: MayDim2<K, N>,
+        OS: MayDim2<M, N>,
+        const M: usize,
+        const K: usize,
+        const N: usize,
+    > GemmMat<'a, T, D, LS, RS, OS, M, K, N> for Matrix<'a, T, D, LS>
+{
+    fn gemm(&self, rhs: &Matrix<'a, T, D, RS>) -> Matrix<T, D, OS> {
+        self.device().gemm(self, rhs)
+    }
+}*/
 
 impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
     /// Matrix multiplication. Uses current global device.
@@ -41,6 +72,17 @@ impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
         self.device().gemm(self, rhs)
     }
 }
+
+/*impl<'a, T, D: Device> Matrix<'a, T, D> {
+    #[inline]
+    pub fn gemm(&self, rhs: &Matrix<'a, T, D>) -> Matrix<'a, T, D>
+    where
+        D: Gemm<T, (), (), (), D>,
+    {
+        self.device().gemm(self, rhs)
+    }
+}*/
+
 
 /*impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, K>> {
     /// Matrix multiplication. Uses current global device.
@@ -147,7 +189,7 @@ where
 #[impl_stack]
 impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
 where
-    T: Default + Copy + core::ops::Mul<Output=T> + core::ops::AddAssign,
+    T: Default + Copy + core::ops::Mul<Output = T> + core::ops::AddAssign,
     D: MainMemory,
     LS: Shape,
     RS: Shape,
