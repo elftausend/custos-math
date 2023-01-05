@@ -17,7 +17,6 @@ use custos::CUDA;
 
 impl<'a, T, S, D> AddAssign<T> for Matrix<'a, T, D, S>
 where
-    T: CDatatype,
     S: Shape,
     D: ScalarAssign<T, S>,
 {
@@ -29,7 +28,6 @@ where
 
 impl<T, S, D> MulAssign<T> for Matrix<'_, T, D, S>
 where
-    T: CDatatype,
     S: Shape,
     D: ScalarAssign<T, S>,
 {
@@ -41,7 +39,6 @@ where
 
 impl<T, S, D> DivAssign<T> for Matrix<'_, T, D, S>
 where
-    T: CDatatype,
     S: Shape,
     D: ScalarAssign<T, S>,
 {

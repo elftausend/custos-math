@@ -17,7 +17,7 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_lr_mut};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype, LS: Shape, D: Device> Matrix<'a, T, D, LS> {
+impl<'a, T, LS: Shape, D: Device> Matrix<'a, T, D, LS> {
     #[inline]
     pub fn add_row<RS: Shape>(&self, rhs: &Matrix<T, D, RS>) -> Matrix<'a, T, D, LS>
     where

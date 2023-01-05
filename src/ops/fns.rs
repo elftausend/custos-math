@@ -18,7 +18,7 @@ use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype + Float, S: Shape, D: FnsOps<T, D, S>> Matrix<'a, T, D, S> {
+impl<'a, T: Float, S: Shape, D: FnsOps<T, D, S>> Matrix<'a, T, D, S> {
     pub fn exp(&self) -> Self {
         self.device().exp(self)
     }

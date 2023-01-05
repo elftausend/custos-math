@@ -10,7 +10,7 @@ use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::{cuda::launch_kernel1d, Buffer, CUDA};
 
-impl<'a, T: CDatatype, D: ClipOp<T>> Matrix<'a, T, D> {
+impl<'a, T, D: ClipOp<T>> Matrix<'a, T, D> {
     pub fn clip(&self, min: T, max: T) -> Matrix<T, D> {
         self.device().clip(self, min, max)
     }

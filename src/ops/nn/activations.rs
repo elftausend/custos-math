@@ -1,4 +1,4 @@
-use crate::{each_op, Matrix, each_op_slice_mut, cl_str_op_mut};
+use crate::{cl_str_op_mut, each_op, each_op_slice_mut, Matrix};
 use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "cpu")]
@@ -129,7 +129,7 @@ impl<T: Float, D: MainMemory, S: Shape> ActivationOps<T, S, D> for CPU {
     }
 
     fn relu_mut(&self, x: &mut Matrix<T, D, S>) {
-        each_op_slice_mut(x,  |x| T::from_usize((x >= T::zero()) as usize) * x)
+        each_op_slice_mut(x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
     #[inline]

@@ -31,7 +31,7 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 /// device.sub_assign(&mut lhs, &rhs);
 /// assert_eq!(vec![3, 5, 4, 1], lhs.read());
 /// ```
-pub trait AssignOps<T, D: Device = Self, S: Shape = ()>: Device {
+pub trait AssignOps<T, S: Shape = (), D: Device = Self>: Device {
     /// Add assign
     /// # Examples
     /// ```
@@ -71,7 +71,7 @@ where
 }
 
 #[impl_stack]
-impl<T: Number, D: MainMemory, S: Shape> AssignOps<T, D, S> for CPU {
+impl<T: Number, D: MainMemory, S: Shape> AssignOps<T, S, D> for CPU {
     fn add_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }

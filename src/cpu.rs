@@ -138,7 +138,7 @@ where
     }
 }
 
-pub fn each_op_slice_mut<T, F>(x: &mut [T],  f: F)
+pub fn each_op_slice_mut<T, F>(x: &mut [T], f: F)
 where
     T: Copy,
     F: Fn(T) -> T,

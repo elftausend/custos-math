@@ -13,7 +13,7 @@ fn test_gemm_trans() {
         3,
         [1., 4., 6., 3., 1., 7., 9., 4., 1., 5., 4., 3.],
     ));
-    let trans_mat = mat.T();
+    let trans_mat = mat.T::<()>();
 
     let out_t: Matrix = mat.gemm(&trans_mat);
 
@@ -31,7 +31,7 @@ fn test_gemm_trans_perf() {
     let start = Instant::now();
 
     for _ in range(0..10) {
-        let trans_mat = mat.T();
+        let trans_mat = mat.T::<()>();
         let _out_t: Matrix = mat.gemm(&trans_mat);
     }
     println!("pre_trans elapsed: {:?}", start.elapsed());
@@ -48,7 +48,7 @@ fn test_gemm_trans_perf() {
     let mut out: custos::Buffer<f32> = Cache::get(&device, mat.rows() * mat.rows(), ());
     GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
 
-    let trans_mat = mat.T();
+    let trans_mat = mat.T::<()>();
     let out_t: Matrix = mat.gemm(&trans_mat);
 
     println!("");

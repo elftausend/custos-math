@@ -10,7 +10,7 @@ fn test_transpose_cpu() {
 
     let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.]));
 
-    let res = a.T();
+    let res = a.T::<()>();
     assert_eq!(vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0], res.read());
 }
 

@@ -13,7 +13,7 @@ use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype, D: DiagflatOp<T>> Matrix<'a, T, D> {
+impl<'a, T, D: DiagflatOp<T>> Matrix<'a, T, D> {
     pub fn diagflat(&self) -> Matrix<'a, T, D> {
         self.device().diagflat(self)
     }

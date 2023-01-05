@@ -14,7 +14,7 @@ use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: CDatatype, D: MaxOps<T>> Matrix<'a, T, D> {
+impl<'a, T, D: MaxOps<T>> Matrix<'a, T, D> {
     #[inline]
     pub fn max(&self) -> T {
         self.device().max(self)
@@ -39,7 +39,7 @@ pub trait MaxOps<T, D: Device = Self>: Device {
 
 // TODO: refactor this into own methods
 #[cfg(feature = "cpu")]
-impl<T: Number, D: MainMemory> MaxOps<T, D> for CPU {
+impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
     fn max(&self, x: &Matrix<T, D>) -> T {
         let mut max = x[0];
 

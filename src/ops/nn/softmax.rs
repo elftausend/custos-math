@@ -15,7 +15,7 @@ use crate::{cu_to_cpu_lr, cu_to_cpu_s};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: GenericBlas + MatrixMultiply, D: SoftmaxOps<T>> Matrix<'a, T, D> {
+impl<'a, T, D: SoftmaxOps<T>> Matrix<'a, T, D> {
     pub fn softmax(&self) -> Matrix<'a, T, D> {
         self.device().softmax(self)
     }
@@ -63,10 +63,8 @@ where
             let diagflat = self.diagflat(&single_out);
 
             // cols 1 x 1 cols
-            let jacobian_matrix = self.sub(
-                &diagflat,
-                &self.gemm(&single_out, &self.transpose(&single_out)),
-            );
+            let jacobian_matrix =
+                self.sub(&diagflat, &self.gemm(&single_out, &single_out.T::<()>()));
 
             let res: Matrix<T> = self.gemm(&jacobian_matrix, &single_grad);
 

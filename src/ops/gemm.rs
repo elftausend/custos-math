@@ -83,7 +83,6 @@ impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
     }
 }*/
 
-
 /*impl<'a, T, D: Device, const M: usize, const K: usize> Matrix<'a, T, D, Dim2<M, K>> {
     /// Matrix multiplication. Uses current global device.
     /// # Example

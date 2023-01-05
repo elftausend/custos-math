@@ -20,7 +20,6 @@ use custos::CUDA;
 impl<'a, T, D, S> Matrix<'a, T, D, S>
 where
     D: AdditionalOps<T, S>,
-    T: CDatatype,
     S: Shape,
 {
     #[inline]

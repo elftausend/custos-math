@@ -14,7 +14,7 @@ use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype, D: SumOps<T>> Matrix<'a, T, D> {
+impl<'a, T, D: SumOps<T>> Matrix<'a, T, D> {
     pub fn sum(&self) -> T {
         self.device().sum(self)
     }
