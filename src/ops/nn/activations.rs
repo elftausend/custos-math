@@ -17,7 +17,7 @@ use crate::cu_str_op;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype + Float, D: ActivationOps<T, S>, S: Shape> Matrix<'a, T, D, S> {
+impl<'a, T, D: ActivationOps<T, S>, S: Shape> Matrix<'a, T, D, S> {
     #[inline]
     pub fn tanh(&self) -> Matrix<'a, T, D, S> {
         self.device().tanh(self)
@@ -34,13 +34,18 @@ impl<'a, T: CDatatype + Float, D: ActivationOps<T, S>, S: Shape> Matrix<'a, T, D
     }
 
     #[inline]
-    pub fn relu_mut(&mut self) -> Matrix<'a, T, D, S> {
-        self.device().relu(self)
+    pub fn relu_mut(&mut self) {
+        self.device().relu_mut(self)
     }
 
     #[inline]
     pub fn relu_grad(&self) -> Matrix<'a, T, D, S> {
         self.device().relu_grad(self)
+    }
+
+    #[inline]
+    pub fn relu_grad_mut(&mut self) {
+        self.device().relu_grad_mut(self)
     }
 
     #[inline]
@@ -64,6 +69,8 @@ pub trait ActivationOps<T, S: Shape = (), D: Device = Self>: Device {
     /// inplace
     fn relu_mut(&self, x: &mut Matrix<T, D, S>);
     fn relu_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    /// inplace
+    fn relu_grad_mut(&self, x: &mut Matrix<T, D, S>);
 }
 
 #[cfg(feature = "opencl")]
@@ -92,6 +99,7 @@ impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
         cl_str_op_mat(self, x, "x * (x >= 0)").unwrap()
     }
 
+    #[inline]
     fn relu_mut(&self, x: &mut Matrix<T, Self, ()>) {
         cl_str_op_mut(self, x, "x * (x >= 0)").unwrap();
     }
@@ -99,6 +107,11 @@ impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
     #[inline]
     fn relu_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "(x >= 0)").unwrap()
+    }
+
+    #[inline]
+    fn relu_grad_mut(&self, x: &mut Matrix<T, Self, ()>) {
+        cl_str_op_mut(self, x, "(x >= 0)").unwrap()
     }
 }
 
@@ -128,6 +141,7 @@ impl<T: Float, D: MainMemory, S: Shape> ActivationOps<T, S, D> for CPU {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
+    #[inline]
     fn relu_mut(&self, x: &mut Matrix<T, D, S>) {
         each_op_slice_mut(x, |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
@@ -135,6 +149,11 @@ impl<T: Float, D: MainMemory, S: Shape> ActivationOps<T, S, D> for CPU {
     #[inline]
     fn relu_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::from_usize((x >= T::default()) as usize))
+    }
+
+    #[inline]
+    fn relu_grad_mut(&self, x: &mut Matrix<T, D, S>) {
+        each_op_slice_mut(x, |x| T::from_usize((x >= T::default()) as usize))
     }
 }
 

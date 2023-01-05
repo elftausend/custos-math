@@ -13,14 +13,14 @@ use crate::opencl::cl_write;
 pub trait RandBuf<T> {
     fn rand(&mut self, lo: T, hi: T);
 }
-impl<T: Float, S: Shape, D: RandOp<T, S>> RandBuf<T> for Buffer<'_, T, D, S> {
+impl<T, S: Shape, D: RandOp<T, S>> RandBuf<T> for Buffer<'_, T, D, S> {
     #[inline]
     fn rand(&mut self, lo: T, hi: T) {
         self.device().rand(self, lo, hi)
     }
 }
 
-impl<'a, T: Float, S: Shape, D: RandOp<T, S>> Matrix<'a, T, D, S> {
+impl<'a, T, S: Shape, D: RandOp<T, S>> Matrix<'a, T, D, S> {
     #[inline]
     pub fn rand(&mut self, lo: T, hi: T) {
         self.as_buf_mut().rand(lo, hi);
