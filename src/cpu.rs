@@ -1,5 +1,5 @@
 use crate::Matrix;
-use custos::{number::Number, Alloc, Device, MainMemory, Shape, CPU};
+use custos::{number::Number, Alloc, MainMemory, Shape};
 
 pub fn scalar_apply<'a, T, F, D, S, Host>(
     device: &'a Host,
@@ -117,7 +117,7 @@ pub fn each_op<'a, T, F, D, S, Host>(
     f: F,
 ) -> Matrix<'a, T, Host, S>
 where
-    T: Copy + Default,
+    T: Copy,
     F: Fn(T) -> T,
     D: MainMemory,
     Host: for<'b> Alloc<'b, T, S> + MainMemory,
@@ -130,10 +130,20 @@ where
 
 pub fn each_op_slice<T, F>(x: &[T], out: &mut [T], f: F)
 where
-    T: Copy + Default,
+    T: Copy,
     F: Fn(T) -> T,
 {
     for (idx, value) in out.iter_mut().enumerate() {
         *value = f(x[idx]);
+    }
+}
+
+pub fn each_op_slice_mut<T, F>(x: &mut [T],  f: F)
+where
+    T: Copy,
+    F: Fn(T) -> T,
+{
+    for value in x.iter_mut() {
+        *value = f(*value);
     }
 }

@@ -8,7 +8,7 @@ use custos::{
         AsClCvoidPtr,
     },
     prelude::CLBuffer,
-    CDatatype, Error, GraphReturn, WriteBuf, CPU,
+    CDatatype, Error, GraphReturn, WriteBuf, CPU, Device,
 };
 use std::fmt::Debug;
 
@@ -20,9 +20,11 @@ pub fn cl_str_op_mat<'a, T: CDatatype>(
     x: &Matrix<T, OpenCL>,
     op: &str,
 ) -> Result<Matrix<'a, T, OpenCL>, Error> {
-    let out = cl_str_op(device, x, op)?;
+    let mut out: CLBuffer<T> = device.retrieve(x.len(), x.node.idx);
+    cl_str_op(device, x, &mut out, op)?;
     Ok((out, x.dims()).into())
 }
+
 
 pub fn cl_scalar_op_mat<'a, T: CDatatype>(
     device: &'a OpenCL,

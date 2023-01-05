@@ -1,4 +1,4 @@
-use crate::{each_op, Matrix};
+use crate::{each_op, Matrix, each_op_slice_mut, cl_str_op_mut};
 use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "cpu")]
@@ -17,35 +17,40 @@ use crate::cu_str_op;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
-impl<'a, T: CDatatype + Float, D: ActivationOps<T>> Matrix<'a, T, D> {
+impl<'a, T: CDatatype + Float, D: ActivationOps<T, S>, S: Shape> Matrix<'a, T, D, S> {
     #[inline]
-    pub fn tanh(&self) -> Matrix<'a, T, D> {
+    pub fn tanh(&self) -> Matrix<'a, T, D, S> {
         self.device().tanh(self)
     }
 
     #[inline]
-    pub fn tanh_grad(&self) -> Matrix<'a, T, D> {
+    pub fn tanh_grad(&self) -> Matrix<'a, T, D, S> {
         self.device().tanh_grad(self)
     }
 
     #[inline]
-    pub fn relu(&self) -> Matrix<'a, T, D> {
+    pub fn relu(&self) -> Matrix<'a, T, D, S> {
         self.device().relu(self)
     }
 
     #[inline]
-    pub fn relu_grad(&self) -> Matrix<'a, T, D> {
+    pub fn relu_mut(&mut self) -> Matrix<'a, T, D, S> {
+        self.device().relu(self)
+    }
+
+    #[inline]
+    pub fn relu_grad(&self) -> Matrix<'a, T, D, S> {
         self.device().relu_grad(self)
     }
 
     #[inline]
-    pub fn sigmoid(&self) -> Matrix<'a, T, D> {
+    pub fn sigmoid(&self) -> Matrix<'a, T, D, S> {
         self.device().sigmoid(self)
     }
 
     #[inline]
     /// uses pre-computed sigmoid activation
-    pub fn sigmoid_grad(&self) -> Matrix<'a, T, D> {
+    pub fn sigmoid_grad(&self) -> Matrix<'a, T, D, S> {
         self.device().sigmoid_grad(self)
     }
 }
@@ -56,6 +61,8 @@ pub trait ActivationOps<T, S: Shape = (), D: Device = Self>: Device {
     fn tanh(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
     fn tanh_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
     fn relu(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    /// inplace
+    fn relu_mut(&self, x: &mut Matrix<T, D, S>);
     fn relu_grad(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 }
 
@@ -83,6 +90,10 @@ impl<T: CDatatype + Float> ActivationOps<T> for OpenCL {
     #[inline]
     fn relu(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "x * (x >= 0)").unwrap()
+    }
+
+    fn relu_mut(&self, x: &mut Matrix<T, Self, ()>) {
+        cl_str_op_mut(self, x, "x * (x >= 0)").unwrap();
     }
 
     #[inline]
@@ -115,6 +126,10 @@ impl<T: Float, D: MainMemory, S: Shape> ActivationOps<T, S, D> for CPU {
     #[inline]
     fn relu(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| T::from_usize((x >= T::zero()) as usize) * x)
+    }
+
+    fn relu_mut(&self, x: &mut Matrix<T, D, S>) {
+        each_op_slice_mut(x,  |x| T::from_usize((x >= T::zero()) as usize) * x)
     }
 
     #[inline]
