@@ -18,7 +18,7 @@ use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
-impl<'a, T: Float, S: Shape, D: FnsOps<T, D, S>> Matrix<'a, T, D, S> {
+impl<'a, T: Float, S: Shape, D: FnsOps<T, S, D>> Matrix<'a, T, D, S> {
     pub fn exp(&self) -> Self {
         self.device().exp(self)
     }
@@ -40,7 +40,7 @@ impl<'a, T: Float, S: Shape, D: FnsOps<T, D, S>> Matrix<'a, T, D, S> {
     }
 }
 
-pub trait FnsOps<T, D: Device = Self, S: Shape = ()>: Device {
+pub trait FnsOps<T, S: Shape = (), D: Device = Self>: Device {
     fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
     fn ln(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
     fn neg(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
@@ -49,7 +49,7 @@ pub trait FnsOps<T, D: Device = Self, S: Shape = ()>: Device {
 }
 
 #[impl_stack]
-impl<T, D, S> FnsOps<T, D, S> for CPU
+impl<T, D, S> FnsOps<T, S, D> for CPU
 where
     T: Float,
     D: MainMemory,

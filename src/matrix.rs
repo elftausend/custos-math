@@ -1,4 +1,4 @@
-use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign, MulAssign};
+use core::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 use crate::{AdditionalOps, AssignOps, BaseOps};
 
@@ -8,8 +8,7 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, Buffer, CloneBuf, Device, GraphReturn, MainMemory, Read,
-    ShallowCopy, Shape, ToDim, CPU,
+    Alloc, Buffer, CloneBuf, Device, GraphReturn, MainMemory, Read, ShallowCopy, Shape, ToDim, CPU,
 };
 
 #[cfg(feature = "cuda")]
@@ -48,6 +47,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// assert_eq!(m.size(), 20*10);
     /// assert_eq!(m.read(), vec![0.0; 20*10])
     /// ```
+    #[inline]
     pub fn new(device: &'a D, dims: (usize, usize)) -> Matrix<'a, T, D, S>
     where
         D: Alloc<'a, T, S>,
@@ -103,6 +103,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
         self.dims
     }
 
+    #[inline]
     pub fn reshape(&mut self, dims: (usize, usize)) {
         self.dims = dims;
     }
@@ -321,10 +322,7 @@ impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))>
 {
     #[inline]
     fn from((data, dims): (Buffer<'a, T, D, S>, (usize, usize))) -> Self {
-        Matrix {
-            data,
-            dims,
-        }
+        Matrix { data, dims }
     }
 }
 
@@ -428,15 +426,8 @@ impl<'a, 'b, T> From<(&'a OpenCL, Matrix<'b, T>)> for Matrix<'a, T, OpenCL> {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
         let out = device.retrieve(matrix.size(), ());
 
-        let event = unsafe {
-            enqueue_write_buffer(
-                &device.queue(),
-                out.ptr.ptr,
-                &matrix,
-                true,
-            )
-            .unwrap()
-        };
+        let event =
+            unsafe { enqueue_write_buffer(&device.queue(), out.ptr.ptr, &matrix, true).unwrap() };
         wait_for_event(event).unwrap();
         Matrix::from((out, matrix.dims()))
     }
@@ -456,10 +447,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
 {
     fn from((device, dims, slice): (&'a D, (usize, usize), [T; N])) -> Self {
         let data = Buffer::from((device, slice));
-        Matrix {
-            data,
-            dims,
-        }
+        Matrix { data, dims }
     }
 }
 
@@ -755,24 +743,24 @@ impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Mul<T> for &Matrix<'a, T, D, S> {
 
 // div
 
-impl<'a, T, D: BaseOps<T>> Div<Self> for &Matrix<'a, T, D> {
-    type Output = Matrix<'a, T, D>;
+impl<'a, T, S: Shape, D: BaseOps<T, S>> Div<Self> for &Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
 
     fn div(self, rhs: Self) -> Self::Output {
         self.device().div(self, rhs)
     }
 }
 
-impl<'a, T, D: AdditionalOps<T>> Div<T> for Matrix<'a, T, D> {
-    type Output = Matrix<'a, T, D>;
+impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Div<T> for Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
 
     fn div(self, rhs: T) -> Self::Output {
         self.divs(rhs)
     }
 }
 
-impl<'a, T, D: AdditionalOps<T>> Div<T> for &Matrix<'a, T, D> {
-    type Output = Matrix<'a, T, D>;
+impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Div<T> for &Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
 
     fn div(self, rhs: T) -> Self::Output {
         self.divs(rhs)

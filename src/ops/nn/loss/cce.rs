@@ -1,5 +1,5 @@
-use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps};
-use custos::{number::Float, Device};
+use crate::{AdditionalOps, BaseOps, ClipOp, FnsOps, Matrix, SumOps, SumOverOps};
+use custos::{number::Float, Device, Shape};
 
 pub trait CCE<T> {
     fn cce(&self, targets: &Matrix<T>) -> (T, Matrix<T>);
@@ -7,64 +7,65 @@ pub trait CCE<T> {
 
 impl<'a, T, D> Matrix<'a, T, D> where D: Device {}
 
-pub trait CCEOp<T, D = Self>: Device
+pub trait CCEOp<T, S: Shape = (), D = Self>: Device
 where
     D: Device,
 {
+    #[inline]
     fn cce<'a>(
         &self,
-        preds: &Matrix<'a, T, D>,
-        targets: &Matrix<'a, T, D>,
-    ) -> (T, Matrix<'a, T, Self>);
-    fn cce_loss(&self, preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T;
+        preds: &Matrix<'a, T, D, S>,
+        targets: &Matrix<'a, T, D, S>,
+    ) -> (T, Matrix<'a, T, Self, S>) {
+        (self.cce_loss(preds, targets), self.cce_grad(preds, targets))
+    }
+    fn cce_loss(&self, preds: &Matrix<T, D, S>, targets: &Matrix<T, D, S>) -> T;
     fn cce_grad<'a>(
         &self,
-        preds: &Matrix<'a, T, D>,
-        targets: &Matrix<'a, T, D>,
-    ) -> Matrix<'a, T, Self>;
+        preds: &Matrix<'a, T, D, S>,
+        targets: &Matrix<'a, T, D, S>,
+    ) -> Matrix<'a, T, Self, S>;
 }
 
-impl<'a, T, D: CCEOp<T>> Matrix<'a, T, D> {
-    pub fn cce(&self, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, D>) {
+impl<'a, T, S: Shape, D: CCEOp<T, S>> Matrix<'a, T, D, S> {
+    #[inline]
+    pub fn cce(&self, targets: &Matrix<'a, T, D, S>) -> (T, Matrix<'a, T, D, S>) {
         self.device().cce(self, targets)
     }
 
-    pub fn cce_loss(&self, targets: &Matrix<T, D>) -> T {
+    #[inline]
+    pub fn cce_loss(&self, targets: &Matrix<T, D, S>) -> T {
         self.device().cce_loss(self, targets)
     }
 
-    pub fn cce_grad(&self, targets: &Matrix<'a, T, D>) -> Matrix<'a, T, D> {
+    #[inline]
+    pub fn cce_grad(&self, targets: &Matrix<'a, T, D, S>) -> Matrix<'a, T, D, S> {
         self.device().cce_grad(self, targets)
     }
 }
 
-impl<T, D> CCEOp<T, D> for D
+impl<T, D, IS: Shape> CCEOp<T, IS> for D
 where
     T: Float,
-    D: FnsOps<T> + ClipOp<T> + BaseOps<T> + SumOps<T> + AdditionalOps<T>,
+    D: FnsOps<T>
+        + ClipOp<T, IS>
+        + BaseOps<T, IS>
+        + SumOps<T>
+        + SumOverOps<T, IS>
+        + AdditionalOps<T, IS>
+        + FnsOps<T, IS>,
 {
-    fn cce<'a>(
-        &self,
-        preds: &Matrix<'a, T, D>,
-        targets: &Matrix<'a, T, D>,
-    ) -> (T, Matrix<'a, T, Self>) {
-        let loss = self.cce_loss(preds, targets);
-        let grad = self.cce_grad(preds, targets);
-
-        (loss, grad)
-    }
-
-    fn cce_loss(&self, preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T {
+    fn cce_loss(&self, preds: &Matrix<T, D, IS>, targets: &Matrix<T, D, IS>) -> T {
         let preds = preds.clip(T::as_generic(1E-7), T::as_generic(1. - 1E-7));
-        let confidences = (&preds * targets).sum_cols();
+        let confidences = (&preds * targets).sum_cols::<()>();
         confidences.ln().neg().mean()
     }
 
     fn cce_grad<'a>(
         &self,
-        preds: &Matrix<'a, T, D>,
-        targets: &Matrix<'a, T, D>,
-    ) -> Matrix<'a, T, Self> {
+        preds: &Matrix<'a, T, D, IS>,
+        targets: &Matrix<'a, T, D, IS>,
+    ) -> Matrix<'a, T, Self, IS> {
         let grad = (targets / preds).neg();
         grad / T::from_usize(preds.rows())
     }

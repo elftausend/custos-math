@@ -10,18 +10,18 @@ use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::{cuda::launch_kernel1d, Buffer, CUDA};
 
-impl<'a, T, D: ClipOp<T>> Matrix<'a, T, D> {
-    pub fn clip(&self, min: T, max: T) -> Matrix<T, D> {
+impl<'a, T, S: Shape, D: ClipOp<T, S>> Matrix<'a, T, D, S> {
+    pub fn clip(&self, min: T, max: T) -> Matrix<T, D, S> {
         self.device().clip(self, min, max)
     }
 }
 
-pub trait ClipOp<T, D: Device = Self, S: Shape = ()>: Device {
+pub trait ClipOp<T, S: Shape = (), D: Device = Self>: Device {
     fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S>;
 }
 
 #[impl_stack]
-impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, D, S> for CPU {
+impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, S, D> for CPU {
     fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S> {
         let mut out = self.retrieve(x.size(), x.node.idx);
         let out_slice = &mut out[..];

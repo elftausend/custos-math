@@ -4,7 +4,8 @@ use crate::{
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
 use crate::{
-    matrix_multiply::MatrixMultiply, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, TransposeOp,
+    matrix_multiply::MatrixMultiply, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, SumOverOps,
+    TransposeOp,
 };
 use custos::{number::Float, range, Device, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
@@ -53,22 +54,24 @@ where
         for idx in range(rows - 1) {
             let index = idx * cols;
 
-            let single_out = Matrix::from((self,
+            let single_out = Matrix::from((
+                self,
                 (&activated[index..index + cols]).as_ptr() as *mut T,
                 (cols, 1),
             ));
-            let single_grad =
-                Matrix::from((self, (&grads[index..index + cols]).as_ptr() as *mut T, (cols, 1)));
+            let single_grad = Matrix::from((
+                self,
+                (&grads[index..index + cols]).as_ptr() as *mut T,
+                (cols, 1),
+            ));
 
-            let diagflat = self.diagflat(&single_out);
-
-            dbg!("servus");
+            let diagflat = single_out.diagflat();
 
             // cols 1 x 1 cols
             let jacobian_matrix =
                 self.sub(&diagflat, &self.gemm(&single_out, &single_out.T::<()>()));
 
-            let res: Matrix<T> = self.gemm(&jacobian_matrix, &single_grad);
+            let res: Matrix<T> = jacobian_matrix.gemm(&single_grad);
 
             let data_row = &mut data[index..index + cols];
             data_row.copy_from_slice(&res);
@@ -152,7 +155,7 @@ pub fn cl_softmax<'a, T: CDatatype>(
     mut activated: Matrix<T, OpenCL>,
     grads: &Matrix<T, OpenCL>,
 ) -> custos::Result<Matrix<'a, T, OpenCL>> {
-    use crate::{cl_tew, Gemm};
+    use crate::{cl_tew, Gemm, SumOverOps};
 
     let rows = grads.rows();
     let cols = grads.cols();

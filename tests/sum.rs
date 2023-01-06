@@ -1,5 +1,5 @@
 use custos::CPU;
-use custos_math::{Matrix, SumOps};
+use custos_math::{Matrix, SumOps, SumOverOps};
 
 #[test]
 fn test_sum_ops() {
@@ -16,10 +16,10 @@ fn test_sum_ops() {
     let res = device.mean(&a);
     assert!(res == -54. / a.size() as f32);
 
-    let res = device.sum_cols(&a);
+    let res: Matrix = device.sum_cols(&a);
     assert_eq!(res.read(), vec![-15., -15., -24.]);
 
-    let res = device.sum_rows(&a);
+    let res: Matrix = device.sum_rows(&a);
     assert_eq!(res.read(), vec![-21., -15., -18.]);
 }
 
