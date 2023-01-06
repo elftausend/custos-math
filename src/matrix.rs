@@ -8,7 +8,7 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, Buffer, CloneBuf, Device, GraphReturn, MainMemory, Read, ShallowCopy, Shape, ToDim, CPU,
+    Alloc, Buffer, CloneBuf, Device, GraphReturn, MainMemory, Read, ShallowCopy, Shape, ToDim, CPU, IsShapeIndep,
 };
 
 #[cfg(feature = "cuda")]
@@ -286,6 +286,22 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
         Matrix {
             data,
             dims: self.dims,
+        }
+    }
+}
+
+impl<'a, T, D: IsShapeIndep, S: Shape> Matrix<'a, T, D, S> {
+    #[inline]
+    pub fn as_dims<O: Shape>(&self) -> &Matrix<'a, T, D, O> {
+        unsafe {
+            &*(self as *const Self).cast()
+        }
+    }
+
+    #[inline]
+    pub fn as_dims_mut<O: Shape>(&mut self) -> &mut Matrix<'a, T, D, O> {
+        unsafe {
+            &mut *(self as *mut Self).cast()
         }
     }
 }
