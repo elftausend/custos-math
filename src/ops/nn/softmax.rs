@@ -53,14 +53,16 @@ where
         for idx in range(rows - 1) {
             let index = idx * cols;
 
-            let single_out = Matrix::from((
+            let single_out = Matrix::from((self,
                 (&activated[index..index + cols]).as_ptr() as *mut T,
                 (cols, 1),
             ));
             let single_grad =
-                Matrix::from(((&grads[index..index + cols]).as_ptr() as *mut T, (cols, 1)));
+                Matrix::from((self, (&grads[index..index + cols]).as_ptr() as *mut T, (cols, 1)));
 
             let diagflat = self.diagflat(&single_out);
+
+            dbg!("servus");
 
             // cols 1 x 1 cols
             let jacobian_matrix =

@@ -50,6 +50,7 @@ pub trait AssignOps<T, S: Shape = (), D: Device = Self>: Device {
     /// ```
     fn add_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>);
     fn sub_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>);
+    fn mul_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>);
 }
 
 pub fn ew_op<'a, T, F, D, S, Host>(
@@ -72,32 +73,48 @@ where
 
 #[impl_stack]
 impl<T: Number, D: MainMemory, S: Shape> AssignOps<T, S, D> for CPU {
+    #[inline]
     fn add_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
         assign_to_lhs(lhs, rhs, |x, y| *x += y)
     }
 
+    #[inline]
     fn sub_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
         assign_to_lhs(lhs, rhs, |x, y| *x -= y)
+    }
+
+    #[inline]
+    fn mul_assign(&self, lhs: &mut Buffer<T, Self, S>, rhs: &Buffer<T, D, S>) {
+        assign_to_lhs(lhs, rhs, |x, y| *x *= y)
     }
 }
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> AssignOps<T> for OpenCL {
+    #[inline]
     fn add_assign(&self, lhs: &mut Buffer<T, OpenCL>, rhs: &Buffer<T, OpenCL>) {
         cl_tew_self(self, lhs, rhs, "+").unwrap()
     }
 
+    #[inline]
     fn sub_assign(&self, lhs: &mut Buffer<T, OpenCL>, rhs: &Buffer<T, OpenCL>) {
         cl_tew_self(self, lhs, rhs, "-").unwrap()
+    }
+
+    #[inline]
+    fn mul_assign(&self, lhs: &mut Buffer<T, Self, ()>, rhs: &Buffer<T, Self, ()>) {
+        cl_tew_self(self, lhs, rhs, "*").unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> AssignOps<T> for custos::CUDA {
+    #[inline]
     fn add_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "+").unwrap();
     }
 
+    #[inline]
     fn sub_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "-").unwrap();
     }

@@ -1,4 +1,4 @@
-use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign, MulAssign};
 
 use crate::{AdditionalOps, AssignOps, BaseOps};
 
@@ -320,10 +320,9 @@ impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))>
     for Matrix<'a, T, D, S>
 {
     #[inline]
-    fn from(ptr_dims: (Buffer<'a, T, D, S>, (usize, usize))) -> Self {
-        let dims = ptr_dims.1;
+    fn from((data, dims): (Buffer<'a, T, D, S>, (usize, usize))) -> Self {
         Matrix {
-            data: ptr_dims.0,
+            data,
             dims,
         }
     }
@@ -332,26 +331,36 @@ impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, (usize, usize))>
 // no tuple for dims
 impl<'a, T, D: Device, S: Shape> From<(Buffer<'a, T, D, S>, usize, usize)> for Matrix<'a, T, D, S> {
     #[inline]
-    fn from(ptr_dims: (Buffer<'a, T, D, S>, usize, usize)) -> Self {
-        let dims = (ptr_dims.1, ptr_dims.2);
+    fn from((data, rows, cols): (Buffer<'a, T, D, S>, usize, usize)) -> Self {
         Matrix {
-            data: ptr_dims.0,
-            dims,
+            data,
+            dims: (rows, cols),
         }
     }
 }
 
 // TODO: unsafe from raw parts?
-// is wrapper flag ok? I think so
 #[cfg(feature = "cpu")]
 impl<'a, T> From<(*mut T, (usize, usize))> for Matrix<'a, T> {
     #[inline]
-    fn from(ptr_dims: (*mut T, (usize, usize))) -> Self {
-        let dims = ptr_dims.1;
-
+    fn from((ptr, dims): (*mut T, (usize, usize))) -> Self {
         unsafe {
             Matrix {
-                data: Buffer::from_raw_host(ptr_dims.0, dims.0 * dims.1),
+                data: Buffer::from_raw_host(ptr, dims.0 * dims.1),
+                dims,
+            }
+        }
+    }
+}
+
+// TODO: unsafe from raw parts?
+#[cfg(feature = "cpu")]
+impl<'a, T> From<(&'a CPU, *mut T, (usize, usize))> for Matrix<'a, T> {
+    #[inline]
+    fn from((cpu, ptr, dims): (&'a CPU, *mut T, (usize, usize))) -> Self {
+        unsafe {
+            Matrix {
+                data: Buffer::from_raw_host_device(cpu, ptr, dims.0 * dims.1),
                 dims,
             }
         }
@@ -415,21 +424,21 @@ impl<T: Copy + Default> From<(usize, usize, Vec<T>)> for Matrix<'_, T> {
 
 #[cfg(feature = "opencl")]
 impl<'a, 'b, T> From<(&'a OpenCL, Matrix<'b, T>)> for Matrix<'a, T, OpenCL> {
-    fn from(device_matrix: (&'a OpenCL, Matrix<'b, T>)) -> Self {
+    fn from((device, matrix): (&'a OpenCL, Matrix<'b, T>)) -> Self {
         //assert!(CPU_CACHE.with(|cache| !cache.borrow().nodes.is_empty()), "no allocations");
-        let out = device_matrix.0.retrieve(device_matrix.1.size(), ());
+        let out = device.retrieve(matrix.size(), ());
 
         let event = unsafe {
             enqueue_write_buffer(
-                &device_matrix.0.queue(),
+                &device.queue(),
                 out.ptr.ptr,
-                &device_matrix.1,
+                &matrix,
                 true,
             )
             .unwrap()
         };
         wait_for_event(event).unwrap();
-        Matrix::from((out, device_matrix.1.dims()))
+        Matrix::from((out, matrix.dims()))
     }
 }
 
@@ -445,11 +454,11 @@ impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
 impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
     From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T, D>
 {
-    fn from(dims_slice: (&'a D, (usize, usize), [T; N])) -> Self {
-        let data = Buffer::from((dims_slice.0, dims_slice.2));
+    fn from((device, dims, slice): (&'a D, (usize, usize), [T; N])) -> Self {
+        let data = Buffer::from((device, slice));
         Matrix {
             data,
-            dims: dims_slice.1,
+            dims,
         }
     }
 }
@@ -785,6 +794,24 @@ where
 {
     fn add_assign(&mut self, rhs: Self) {
         rhs.device().add_assign(self, &rhs)
+    }
+}
+
+impl<T, D, S: Shape> MulAssign<&Self> for Matrix<'_, T, D, S>
+where
+    D: AssignOps<T, S, D>,
+{
+    fn mul_assign(&mut self, rhs: &Self) {
+        rhs.device().mul_assign(self, rhs)
+    }
+}
+
+impl<T, D, S: Shape> MulAssign<Self> for Matrix<'_, T, D, S>
+where
+    D: AssignOps<T, S, D>,
+{
+    fn mul_assign(&mut self, rhs: Self) {
+        rhs.device().mul_assign(self, &rhs)
     }
 }
 
