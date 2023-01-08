@@ -290,16 +290,16 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     }
 }
 
-impl<'a, T, D: IsShapeIndep, S: Shape> Matrix<'a, T, D, S> {
+impl<T, D: IsShapeIndep, S: Shape> Matrix<'_, T, D, S> {
     #[inline]
-    pub fn as_dims<O: Shape>(&self) -> &Matrix<'a, T, D, O> {
+    pub fn as_dims<'b, O: Shape>(&self) -> &Matrix<'b, T, D, O> {
         unsafe {
             &*(self as *const Self).cast()
         }
     }
 
     #[inline]
-    pub fn as_dims_mut<O: Shape>(&mut self) -> &mut Matrix<'a, T, D, O> {
+    pub fn as_dims_mut<'b, O: Shape>(&mut self) -> &mut Matrix<'b, T, D, O> {
         unsafe {
             &mut *(self as *mut Self).cast()
         }
@@ -458,7 +458,7 @@ impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep, const N: usize>
     From<(&'a D, (usize, usize), [T; N])> for Matrix<'a, T, D>
 {
     fn from((device, dims, slice): (&'a D, (usize, usize), [T; N])) -> Self {
@@ -468,7 +468,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
 }
 
 // no tuple for dims
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized, const N: usize>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep, const N: usize>
     From<(&'a D, usize, usize, [T; N])> for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, [T; N])) -> Self {
@@ -499,7 +499,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize))> for Ma
 
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep> From<(&'a D, (usize, usize), Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), Vec<T>)) -> Self {
@@ -514,7 +514,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 // no tuple for dims
 #[cfg(not(feature = "no-std"))]
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep> From<(&'a D, usize, usize, Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, Vec<T>)) -> Self {
@@ -527,7 +527,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
 }
 
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &[T])>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep> From<(&'a D, (usize, usize), &[T])>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &[T])) -> Self {
@@ -541,7 +541,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, u
 
 // no tuple for dims
 // FIXME: In this case, GraphReturn acts as an "IsDynamic" trait, as GraphReturn is not implemented for Stack
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, usize, &[T])>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep> From<(&'a D, usize, usize, &[T])>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, usize, usize, &[T])) -> Self {
@@ -554,7 +554,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, usize, us
 }
 
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Copy, D: Alloc<'a, T> + GraphReturn + ?Sized> From<(&'a D, (usize, usize), &Vec<T>)>
+impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep> From<(&'a D, (usize, usize), &Vec<T>)>
     for Matrix<'a, T, D>
 {
     fn from(dims_slice: (&'a D, (usize, usize), &Vec<T>)) -> Self {
@@ -905,6 +905,10 @@ impl<'a, T: Copy + Default, const A: usize, const B: usize, const N: usize>
         }
     }
 }
+
+/*impl<'a, T, D: IsShapeIndep, S: Shape> From<(&D, usize, usize, [T; N])> Matrix<T, D, S> {
+    
+}*/
 
 #[cfg(test)]
 mod tests {
