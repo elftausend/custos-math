@@ -11,7 +11,7 @@ where
             for elem in 0..k {
                 acc += a_row[elem] * b[elem * n + col];
             }
-            c[row * m + row * m + col] = acc;
+            c[row * n + col] = acc;
         }
     }
 }

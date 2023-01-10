@@ -162,7 +162,7 @@ where
 #[cfg(feature = "matrixmultiply")]
 #[cfg(not(feature = "blas"))]
 #[impl_stack]
-impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
+impl<T, D, LS, RS, OS> Gemm<T, LS, RS, OS, D> for CPU
 where
     T: crate::matrix_multiply::MatrixMultiply + Default + Copy,
     D: MainMemory,
@@ -186,7 +186,7 @@ where
 #[cfg(not(feature = "matrixmultiply"))]
 #[cfg(not(feature = "blas"))]
 #[impl_stack]
-impl<T, D, LS, RS, OS> Gemm<T, D, LS, RS, OS> for CPU
+impl<T, D, LS, RS, OS> Gemm<T, LS, RS, OS, D> for CPU
 where
     T: Default + Copy + core::ops::Mul<Output = T> + core::ops::AddAssign,
     D: MainMemory,

@@ -1,14 +1,17 @@
 use crate::{AdditionalOps, BaseOps, Matrix, SumOps};
 #[cfg(feature = "opencl")]
 use custos::{opencl::enqueue_kernel, OpenCL};
-use custos::{prelude::Number, CDatatype, Shape, IsShapeIndep};
+use custos::{prelude::Number, CDatatype, IsShapeIndep, Shape};
 
 #[inline]
-pub fn mse<'a, T, D, S>(preds: &Matrix<'a, T, D, S>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, D>)
+pub fn mse<'a, T, D, S>(
+    preds: &Matrix<'a, T, D, S>,
+    targets: &Matrix<'a, T, D>,
+) -> (T, Matrix<'a, T, D>)
 where
     T: Number,
-    D: IsShapeIndep + BaseOps<T> + SumOps<T> + AdditionalOps<T>, 
-    S: Shape
+    D: IsShapeIndep + BaseOps<T> + SumOps<T> + AdditionalOps<T>,
+    S: Shape,
 {
     let preds = preds.as_dims();
     (mse_loss(preds, targets), mse_grad(preds, targets))

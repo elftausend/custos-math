@@ -3,6 +3,7 @@ use std::time::Instant;
 use custos::{range, Cache, GenericBlas, CPU};
 use custos_math::Matrix;
 
+#[cfg(feature="blas")]
 #[test]
 fn test_gemm_trans() {
     let device = CPU::new();
@@ -23,6 +24,7 @@ fn test_gemm_trans() {
     assert_eq!(out_t.as_slice(), out.as_slice());
 }
 
+#[cfg(feature="blas")]
 #[test]
 fn test_gemm_trans_perf() {
     let device = CPU::new();

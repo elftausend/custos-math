@@ -320,7 +320,12 @@ impl<'a, T, D: Device, S: Shape> core::ops::DerefMut for Matrix<'a, T, D, S> {
     }
 }
 
-impl<'a, T: Clone, D: CloneBuf<'a, T>> Clone for Matrix<'a, T, D> {
+impl<'a, T, S, D> Clone for Matrix<'a, T, D, S>
+where
+    T: Clone,
+    S: Shape,
+    D: CloneBuf<'a, T, S>,
+{
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
