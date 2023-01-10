@@ -1,17 +1,37 @@
 use crate::{AdditionalOps, BaseOps, Matrix, SumOps};
 #[cfg(feature = "opencl")]
 use custos::{opencl::enqueue_kernel, OpenCL};
-use custos::{prelude::Number, CDatatype, Device};
+use custos::{prelude::Number, CDatatype, Shape, IsShapeIndep};
 
-pub fn mse<T, D: BaseOps<T> + SumOps<T>>(preds: &Matrix<T, D>, targets: &Matrix<T, D>) -> T {
+#[inline]
+pub fn mse<'a, T, D, S>(preds: &Matrix<'a, T, D, S>, targets: &Matrix<'a, T, D>) -> (T, Matrix<'a, T, D>)
+where
+    T: Number,
+    D: IsShapeIndep + BaseOps<T> + SumOps<T> + AdditionalOps<T>, 
+    S: Shape
+{
+    let preds = preds.as_dims();
+    (mse_loss(preds, targets), mse_grad(preds, targets))
+}
+
+pub fn mse_loss<T, D, S>(preds: &Matrix<T, D, S>, targets: &Matrix<T, D, S>) -> T
+where
+    D: BaseOps<T, S> + SumOps<T, S>,
+    S: Shape,
+{
     let x = preds - targets;
     (&x * &x).mean()
 }
 
-pub fn mse_grad<'a, T: Number, D: BaseOps<T> + SumOps<T> + AdditionalOps<T>>(
-    preds: &Matrix<'a, T, D>,
-    targets: &Matrix<'a, T, D>,
-) -> Matrix<'a, T, D> {
+pub fn mse_grad<'a, T, D, S>(
+    preds: &Matrix<'a, T, D, S>,
+    targets: &Matrix<'a, T, D, S>,
+) -> Matrix<'a, T, D, S>
+where
+    T: Number,
+    D: BaseOps<T, S> + SumOps<T, S> + AdditionalOps<T, S>,
+    S: Shape,
+{
     let x = preds - targets;
     (&x * T::two() / T::from_usize(preds.cols())) / T::from_usize(preds.rows())
 }

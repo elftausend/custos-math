@@ -28,6 +28,11 @@ where
     }
 
     #[inline]
+    pub fn subs(&self, rhs: T) -> Self {
+        self.device().subs(self, rhs)
+    }
+
+    #[inline]
     pub fn muls(&self, rhs: T) -> Self {
         self.device().muls(self, rhs)
     }
@@ -40,6 +45,7 @@ where
 
 pub trait AdditionalOps<T, S: Shape = (), D: Device = Self>: Device {
     fn adds(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn subs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
     fn muls(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
     fn divs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
 }
@@ -70,6 +76,11 @@ impl<T: CDatatype> AdditionalOps<T> for OpenCL {
     }
 
     #[inline]
+    fn subs(&self, lhs: &Matrix<T, Self, ()>, rhs: T) -> Matrix<T, Self, ()> {
+        cl_scalar_op_mat(self, lhs, rhs, "-").unwrap()
+    }
+
+    #[inline]
     fn muls(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "*").unwrap()
     }
@@ -85,6 +96,11 @@ impl<T: Number, D: MainMemory, S: Shape> AdditionalOps<T, S, D> for CPU {
     #[inline]
     fn adds(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a + b)
+    }
+
+    #[inline]
+    fn subs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
+        scalar_apply(self, lhs, rhs, |c, a, b| *c = a - b)
     }
 
     #[inline]

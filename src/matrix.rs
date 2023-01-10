@@ -8,11 +8,13 @@ use custos::{
     OpenCL,
 };
 use custos::{
-    Alloc, Buffer, CloneBuf, Device, GraphReturn, MainMemory, Read, ShallowCopy, Shape, ToDim, CPU, IsShapeIndep,
+    Alloc, Buffer, CloneBuf, Device, IsShapeIndep, MainMemory, Read, ShallowCopy, Shape, ToDim, CPU,
 };
 
 #[cfg(feature = "cuda")]
 use custos::{cuda::api::cu_write, CUDA};
+
+mod impl_with_shape;
 
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
@@ -293,16 +295,12 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
 impl<T, D: IsShapeIndep, S: Shape> Matrix<'_, T, D, S> {
     #[inline]
     pub fn as_dims<'b, O: Shape>(&self) -> &Matrix<'b, T, D, O> {
-        unsafe {
-            &*(self as *const Self).cast()
-        }
+        unsafe { &*(self as *const Self).cast() }
     }
 
     #[inline]
     pub fn as_dims_mut<'b, O: Shape>(&mut self) -> &mut Matrix<'b, T, D, O> {
-        unsafe {
-            &mut *(self as *mut Self).cast()
-        }
+        unsafe { &mut *(self as *mut Self).cast() }
     }
 }
 
@@ -480,7 +478,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + IsShapeIndep, const N: usize>
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, usize, usize)> for Matrix<'a, T, D> {
+impl<'a, T: Copy, D: Alloc<'a, T>> From<(&'a D, usize, usize)> for Matrix<'a, T, D> {
     fn from((device, rows, cols): (&'a D, usize, usize)) -> Self {
         let data = Buffer::new(device, rows * cols);
         Matrix {
@@ -490,7 +488,7 @@ impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, usize, usize)> for Matr
     }
 }
 
-impl<'a, T: Copy, D: Alloc<'a, T> + ?Sized> From<(&'a D, (usize, usize))> for Matrix<'a, T, D> {
+impl<'a, T: Copy, D: Alloc<'a, T>> From<(&'a D, (usize, usize))> for Matrix<'a, T, D> {
     fn from((device, dims): (&'a D, (usize, usize))) -> Self {
         let data = Buffer::new(device, dims.0 * dims.1);
         Matrix { data, dims }
@@ -636,54 +634,63 @@ where
 
 //-------------Sub-------------
 
-impl<'a, T, D> Sub<Self> for &Matrix<'a, T, D>
+impl<'a, T, D, S> Sub<Self> for &Matrix<'a, T, D, S>
 where
-    D: BaseOps<T>,
+    D: BaseOps<T, S>,
+    S: Shape,
 {
-    type Output = Matrix<'a, T, D>;
+    type Output = Matrix<'a, T, D, S>;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.device().sub(self, rhs)
     }
 }
 
-impl<'a, T, D> Sub<Self> for Matrix<'a, T, D>
+impl<'a, T, D, S> Sub<Self> for Matrix<'a, T, D, S>
 where
-    D: BaseOps<T>,
+    D: BaseOps<T, S>,
+    S: Shape,
 {
-    type Output = Matrix<'a, T, D>;
+    type Output = Matrix<'a, T, D, S>;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.device().sub(&self, &rhs)
     }
 }
 
-impl<'a, T, D> Sub<&Self> for Matrix<'a, T, D>
+impl<'a, T, D, S> Sub<&Self> for Matrix<'a, T, D, S>
 where
-    D: BaseOps<T>,
+    D: BaseOps<T, S>,
+    S: Shape,
 {
-    type Output = Matrix<'a, T, D>;
+    type Output = Matrix<'a, T, D, S>;
 
     fn sub(self, rhs: &Self) -> Self::Output {
         self.device().sub(&self, rhs)
     }
 }
 
-impl<'a, T, D> Sub<Matrix<'a, T, D>> for &Matrix<'a, T, D>
+impl<'a, T, D, S> Sub<Matrix<'a, T, D, S>> for &Matrix<'a, T, D, S>
 where
-    D: BaseOps<T>,
+    D: BaseOps<T, S>,
+    S: Shape,
 {
-    type Output = Matrix<'a, T, D>;
+    type Output = Matrix<'a, T, D, S>;
 
-    fn sub(self, rhs: Matrix<T, D>) -> Self::Output {
+    fn sub(self, rhs: Matrix<T, D, S>) -> Self::Output {
         self.device().sub(self, &rhs)
     }
 }
 
-impl<'a, T> Sub<T> for &Matrix<'a, T> {
-    type Output = Matrix<'a, T>;
+impl<'a, T, D, S> Sub<T> for &Matrix<'a, T, D, S>
+where
+    S: Shape,
+    D: AdditionalOps<T, S>,
+{
+    type Output = Matrix<'a, T, D, S>;
 
-    fn sub(self, _rhs: T) -> Self::Output {
+    fn sub(self, rhs: T) -> Self::Output {
+        self.subs(rhs);
         todo!()
         //self.subs
     }
@@ -907,7 +914,7 @@ impl<'a, T: Copy + Default, const A: usize, const B: usize, const N: usize>
 }
 
 /*impl<'a, T, D: IsShapeIndep, S: Shape> From<(&D, usize, usize, [T; N])> Matrix<T, D, S> {
-    
+
 }*/
 
 #[cfg(test)]
