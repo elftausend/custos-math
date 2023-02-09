@@ -98,7 +98,7 @@ impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> MaxOps<T> for OpenCL {
     fn max(&self, x: &Matrix<T, Self>) -> T {
-        cl_to_cpu_scalar(x, |device, x| device.max(x))
+        cl_to_cpu_scalar(self, x, |device, x| device.max(x))
     }
 
     fn max_rows(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {

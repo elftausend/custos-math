@@ -40,6 +40,7 @@ pub fn rand_slice<T: PartialOrd + Copy + Float>(slice: &mut [T], lo: T, hi: T) {
 
 #[impl_stack]
 impl<T: Float, D: MainMemory, S: Shape> RandOp<T, S, D> for CPU {
+    #[inline]
     fn rand(&self, x: &mut Buffer<T, D, S>, lo: T, hi: T) {
         rand_slice(x, lo, hi)
     }

@@ -4,7 +4,7 @@ use crate::{
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
 use crate::{
-    matrix_multiply::MatrixMultiply, ColOp, DiagflatOp, FnsOps, Matrix, MaxOps, SumOps, SumOverOps,
+    matrix_multiply::MatrixMultiply, ColOp, FnsOps, Matrix, MaxOps, SumOverOps,
     TransposeOp,
 };
 use custos::{number::Float, range, Device, GenericBlas, CPU};
@@ -71,6 +71,7 @@ where
             let jacobian_matrix =
                 self.sub(&diagflat, &self.gemm(&single_out, &single_out.T::<()>()));
 
+            //GenericBlas::gemm();
             let res: Matrix<T> = jacobian_matrix.gemm(&single_grad);
 
             let data_row = &mut data[index..index + cols];

@@ -19,22 +19,27 @@ use crate::opencl::cl_str_op_mat;
 use custos::OpenCL;
 
 impl<'a, T: Float, S: Shape, D: FnsOps<T, S, D>> Matrix<'a, T, D, S> {
+    #[inline]
     pub fn exp(&self) -> Self {
         self.device().exp(self)
     }
 
+    #[inline]
     pub fn ln(&self) -> Self {
         self.device().ln(self)
     }
 
+    #[inline]
     pub fn neg(&self) -> Self {
         self.device().neg(self)
     }
 
+    #[inline]
     pub fn powf(&self, rhs: T) -> Self {
         self.device().powf(self, rhs)
     }
 
+    #[inline]
     pub fn powi(&self, rhs: i32) -> Self {
         self.device().powi(self, rhs)
     }

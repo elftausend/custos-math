@@ -25,9 +25,10 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 #custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
-default = ["realloc", "fastrand", "cpu", "opencl"]
+default = ["blas", "fastrand", "cpu", "opencl", "static-api"]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
+static-api = ["custos/static-api"]
 cpu = ["custos/cpu"]
 stack = ["custos/stack"]
 opencl = ["custos/opencl", "cpu"]

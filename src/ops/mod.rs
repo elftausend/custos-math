@@ -76,9 +76,10 @@ where
 #[cfg(feature = "opencl")]
 ///OpenCL
 fn cl_to_cpu_scalar<T: Default + Copy, F: Fn(&CPU, &Matrix<T>) -> T>(
+    device: &OpenCL,
     x: &Matrix<T, OpenCL>,
     f: F,
 ) -> T {
     use crate::opencl::cpu_exec_scalar;
-    cpu_exec_scalar(x, f)
+    cpu_exec_scalar(device, x, f)
 }

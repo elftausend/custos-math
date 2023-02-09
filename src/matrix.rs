@@ -452,6 +452,22 @@ impl<'a, 'b, T> From<(&'a OpenCL, Matrix<'b, T>)> for Matrix<'a, T, OpenCL> {
     }
 }
 
+#[cfg(feature = "static-api")]
+impl<'a, T: Clone> From<(usize, usize, &[T])> for Matrix<'a, T> {
+    #[inline]
+    fn from((rows, cols, slice): (usize, usize, &[T])) -> Self {
+        Matrix::from((Buffer::from(slice), rows, cols))
+    }
+}
+
+#[cfg(feature = "static-api")]
+impl<'a, T: Clone, const N: usize> From<(usize, usize, [T; N])> for Matrix<'a, T> {
+    #[inline]
+    fn from((rows, cols, slice): (usize, usize, [T; N])) -> Self {
+        Matrix::from((Buffer::from(slice), rows, cols))
+    }
+}
+
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     fn from(device_matrix: (&'a CUDA, Matrix<'b, T>)) -> Self {

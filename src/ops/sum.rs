@@ -119,11 +119,11 @@ impl<T: Copy + Default + core::ops::AddAssign, D: MainMemory, IS: Shape, OS: Sha
 #[cfg(feature = "opencl")]
 impl<T: Number> SumOps<T> for OpenCL {
     fn sum(&self, x: &Matrix<T, Self>) -> T {
-        cl_to_cpu_scalar(x, |device, x| device.sum(x))
+        cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
     }
 
     fn mean(&self, x: &Matrix<T, Self>) -> T {
-        cl_to_cpu_scalar(x, |device, x| device.mean(x))
+        cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
     }
 }
 

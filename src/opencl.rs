@@ -68,7 +68,7 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
 ///     Ok(())
 /// }
 /// ```
-pub fn cpu_exec<'c, 'a, 'o, T, F>(
+pub fn cpu_exec<'a, 'o, T, F>(
     device: &'o OpenCL,
     matrix: &Matrix<'a, T, OpenCL>,
     f: F,
@@ -77,7 +77,6 @@ where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
-    /*
     // TODO: use compile time unified_cl flag -> get from custos?
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
@@ -85,7 +84,10 @@ where
         // Due to the (new) caching architecture, using a new CPU isn't possible,
         // as the cache would be newly created every iteration.
         // host ptr matrix
-        let no_drop = f(&device.cpu, matrix);
+        let no_drop = f(
+            &device.cpu,
+            &Matrix::from((matrix.ptr.host_ptr, matrix.dims)),
+        );
 
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
@@ -94,14 +96,17 @@ where
         }
         .map(|buf| (buf, dims).into());
     }
-    */
+
     let cpu = CPU::new();
 
     // TODO: fix
-    /*#[cfg(feature = "realloc")]
+    #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, matrix))));
-    }*/
+        return Ok(Matrix::from((
+            device,
+            f(&cpu, &Matrix::from((matrix.ptr.host_ptr, matrix.dims))),
+        )));
+    }
 
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), matrix.read()));
@@ -149,10 +154,13 @@ where
 {
     let cpu = CPU::new();
 
-    /*
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
-        let no_drop = f(&device.cpu, lhs, rhs);
+        let no_drop = f(
+            &device.cpu,
+            &Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+            &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+        );
 
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
@@ -161,15 +169,18 @@ where
         }
         .map(|buf| (buf, no_drop_dims).into());
     }
-    */
-
-    /*
-    // TODO: fix
 
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
-    }*/
+        return Ok(Matrix::from((
+            device,
+            f(
+                &cpu,
+                &Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+                &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+            ),
+        )));
+    }
 
     // convert an OpenCL buffer to a cpu buffer
     let lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
@@ -195,12 +206,14 @@ where
 {
     let cpu = CPU::new();
 
-    /*
     // uses same memory as CPU
     if device.unified_mem() {
-        return Ok(f(&cpu, lhs, rhs));
+        return Ok(f(
+            &cpu,
+            &mut Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+            &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+        ));
     }
-    */
 
     //convert OpenCL matrix to cpu matrix
     let mut cpu_lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
@@ -212,18 +225,16 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_scalar<T, F>(matrix: &Matrix<T, OpenCL>, f: F) -> T
+pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,
 {
     let cpu = CPU::new();
 
-    /*
     if device.unified_mem() {
-        return f(&cpu, matrix);
+        return f(&cpu, &Matrix::from((matrix.ptr.host_ptr, matrix.dims)));
     }
-    */
 
     // convert an OpenCL buffer to a cpu buffer
     let cpu_buf = Matrix::from((&cpu, matrix.dims(), matrix.read()));
