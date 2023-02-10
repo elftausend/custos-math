@@ -19,6 +19,8 @@ custos-math = "0.6.0"
 #custos-math = { version="0.6.0", default-features = false, features=["opencl"]}
 ```
 
+`custos-math` supports no-std via the `no-std` feature. This activates the "stack" feature, providing a `Stack` device.
+
 [custos] is accessible via custos_math::custos::{..}
 
 ## Example

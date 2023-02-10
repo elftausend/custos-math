@@ -116,7 +116,7 @@ where
 }
 
 #[cfg(feature = "cuda")]
-impl<T: Default + Copy + GenericBlas> SoftmaxOps<T> for CUDA {
+impl<T: GenericBlas + MatrixMultiply + Float> SoftmaxOps<T> for CUDA {
     fn softmax(&self, inputs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_s(self, inputs, |cpu, x| cpu.softmax(&x))
     }

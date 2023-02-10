@@ -3,11 +3,12 @@ name = "custos-math"
 version = "0.6.0"
 edition = "2021"
 license = "MIT"
-categories = ["mathematics", "science"]
+categories = ["mathematics", "science", "no-std"]
 keywords = ["CUDA", "OpenCL", "arrays", "matrices", "deep-learning"]
 description = "Matrix operations with custos"
 readme = "README.md"
 repository = "https://github.com/elftausend/custos-math"
+rust-version = "1.65"
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -25,7 +26,8 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 #custos = { path = "../custos", default-features = false, optional=true }
 
 [features] 
-default = ["blas", "fastrand", "cpu", "opencl", "static-api"]
+#default = ["no-std"]
+default = ["blas", "fastrand", "cpu", "opencl", "static-api", "cuda"]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
 static-api = ["custos/static-api"]

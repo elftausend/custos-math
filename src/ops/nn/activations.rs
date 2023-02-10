@@ -1,4 +1,4 @@
-use crate::{cl_str_op_mut, each_op, each_op_slice_mut, Matrix};
+use crate::{each_op, each_op_slice_mut, Matrix};
 use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "cpu")]
@@ -8,12 +8,12 @@ use custos::CPU;
 use custos::Stack;
 
 #[cfg(feature = "opencl")]
-use crate::opencl::cl_str_op_mat;
+use crate::{opencl::cl_str_op_mat, cl_str_op_mut};
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
 #[cfg(feature = "cuda")]
-use crate::cu_str_op;
+use crate::{cu_str_op, cu_str_op_mut};
 #[cfg(feature = "cuda")]
 use custos::CUDA;
 
@@ -192,5 +192,15 @@ impl<T: CDatatype> ActivationOps<T> for CUDA {
     fn relu_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "(x >= 0)").unwrap();
         (out, x.dims()).into()
+    }
+
+    #[inline]
+    fn relu_mut(&self, x: &mut Matrix<T, Self, ()>) {
+        cu_str_op_mut(self, x, "x * (x >= 0)").unwrap();
+    }
+
+    #[inline]
+    fn relu_grad_mut(&self, x: &mut Matrix<T, Self, ()>) {
+        cu_str_op_mut(self, x, "(x >= 0)").unwrap()
     }
 }

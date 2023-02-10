@@ -36,9 +36,9 @@ pub fn cu_ew<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out: CUBuffer<T> = Cache::get(device, lhs.len, (lhs, rhs));
+    let out: CUBuffer<T> = Cache::get(device, lhs.len(), (lhs, rhs));
 
-    launch_kernel1d(lhs.len, device, &src, "ew", &[lhs, rhs, &out, &lhs.len])?;
+    launch_kernel1d(lhs.len(), device, &src, "ew", &[lhs, rhs, &out, &lhs.len()])?;
 
     /*
     let function = fn_cache(device, &src, "ew")?;
@@ -91,6 +91,6 @@ pub fn cu_ew_self<T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    launch_kernel1d(lhs.len, device, &src, "ew_self", &[lhs, rhs, &lhs.len])?;
+    launch_kernel1d(lhs.len(), device, &src, "ew_self", &[lhs, rhs, &lhs.len()])?;
     Ok(())
 }

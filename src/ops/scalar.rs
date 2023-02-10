@@ -66,6 +66,10 @@ impl<T: CDatatype> AdditionalOps<T> for CUDA {
     fn divs(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "/").unwrap(), lhs.dims()).into()
     }
+
+    fn subs(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self, ()> {
+        (cu_scalar_op(self, lhs, rhs, "-").unwrap(), lhs.dims()).into()
+    }
 }
 
 #[cfg(feature = "opencl")]

@@ -1,8 +1,5 @@
 use custos::{impl_stack, Device, Dim2, GenericBlas, MainMemory, MayDim2, Shape, CPU};
 
-#[cfg(feature = "cpu")]
-use custos::cache::Cache;
-
 #[cfg(feature = "stack")]
 use custos::Stack;
 

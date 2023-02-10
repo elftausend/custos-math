@@ -1,6 +1,6 @@
 use crate::Matrix;
 use custos::{
-    cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, Read, WriteBuf, CPU, CUDA,
+    cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, Read, WriteBuf, CPU, CUDA, Device,
 };
 
 pub fn cu_scalar_op<'a, T: CDatatype>(
@@ -22,13 +22,13 @@ pub fn cu_scalar_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, 0>(device, lhs.len, lhs.node.idx);
+    let out = device.retrieve::<T, ()>(lhs.len(), lhs);
     launch_kernel1d(
-        lhs.len,
+        lhs.len(),
         device,
         &src,
         "scalar_op",
-        &[&lhs, &rhs, &out, &lhs.len],
+        &[&lhs, &rhs, &out, &lhs.len()],
     )?;
     Ok(out)
 }
@@ -51,9 +51,31 @@ pub fn cu_str_op<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, 0>(device, lhs.len, lhs.node.idx);
-    launch_kernel1d(lhs.len, device, &src, "str_op", &[&lhs, &out, &lhs.len])?;
+    let out = device.retrieve::<T, ()>(lhs.len(), lhs);
+    launch_kernel1d(lhs.len(), device, &src, "str_op", &[&lhs, &out, &lhs.len()])?;
     Ok(out)
+}
+
+pub fn cu_str_op_mut<'a, T: CDatatype>(
+    device: &'a CUDA,
+    lhs: &CUBuffer<T>,
+    op: &str,
+) -> custos::Result<()> {
+    let src = format!(
+        r#"extern "C" __global__ void str_op_mut({datatype}* lhs, int numElements)
+            {{
+                int idx = blockDim.x * blockIdx.x + threadIdx.x;
+                if (idx < numElements) {{
+                    {datatype} x = lhs[idx];
+                    lhs[idx] = {op};
+                }}
+            }}
+    "#,
+        datatype = T::as_c_type_str()
+    );
+
+    launch_kernel1d(lhs.len(), device, &src, "str_op_mut", &[&lhs, &lhs.len()])?;
+    Ok(())
 }
 
 pub fn cu_to_cpu_lr<'o, T, F>(

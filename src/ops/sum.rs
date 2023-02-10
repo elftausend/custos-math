@@ -118,10 +118,12 @@ impl<T: Copy + Default + core::ops::AddAssign, D: MainMemory, IS: Shape, OS: Sha
 
 #[cfg(feature = "opencl")]
 impl<T: Number> SumOps<T> for OpenCL {
+    #[inline]
     fn sum(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
     }
 
+    #[inline]
     fn mean(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
     }
@@ -129,10 +131,12 @@ impl<T: Number> SumOps<T> for OpenCL {
 
 #[cfg(feature = "opencl")]
 impl<T: CDatatype> SumOverOps<T> for OpenCL {
+    #[inline]
     fn sum_rows<'a>(&'a self, x: &Matrix<T, Self>) -> Matrix<'a, T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_rows(x))
     }
 
+    #[inline]
     fn sum_cols(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_cols(x))
     }
@@ -140,18 +144,25 @@ impl<T: CDatatype> SumOverOps<T> for OpenCL {
 
 #[cfg(feature = "cuda")]
 impl<T: CDatatype> SumOps<T> for CUDA {
+    #[inline]
     fn sum(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(x, |device, x| device.sum(&x))
     }
 
+    #[inline]
     fn mean(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(x, |device, x| device.mean(&x))
     }
+}
 
+#[cfg(feature="cuda")]
+impl<T: CDatatype> SumOverOps<T> for CUDA {
+    #[inline]
     fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
     }
 
+    #[inline]
     fn sum_cols(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
     }

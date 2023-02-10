@@ -106,13 +106,13 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, 0>(device, x.len(), x.node.idx);
+    let out = device.retrieve::<T, ()>(x.len(), x);
     launch_kernel1d(
         x.len(),
         device,
         &src,
         "clip",
-        &[x, &min, &max, &out, &x.len],
+        &[x, &min, &max, &out, &x.len()],
     )?;
     Ok(out)
 }

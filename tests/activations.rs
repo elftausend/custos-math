@@ -1,3 +1,44 @@
+use custos_math::Matrix;
+
+
+#[test]
+fn test_relu_mut() {
+    let device = custos::CPU::new();
+    
+    let mut mat = Matrix::from((&device, 2, 2, [-1., -2., 3., 0.3]));
+    mat.relu_mut();
+
+    assert_eq!(mat.read(), [0., 0., 3., 0.3]);
+}
+
+#[cfg(feature="opencl")]
+#[test]
+fn test_relu_mut_cl() -> custos::Result<()> {
+    let device = custos::OpenCL::new(0)?;
+    
+    let mut mat = Matrix::from((&device, 2, 2, [-1., -2., 3., 0.3]));
+    mat.relu_mut();
+
+    assert_eq!(mat.read(), [0., 0., 3., 0.3]);
+
+    Ok(())
+}
+
+
+#[cfg(feature="cuda")]
+#[test]
+fn test_relu_mut_cu() -> custos::Result<()> {
+    let device = custos::CUDA::new(0)?;
+    
+    let mut mat = Matrix::from((&device, 2, 2, [-1., -2., 3., 0.3]));
+    // may not work
+    mat.relu_mut();
+
+    assert_eq!(mat.read(), [0., 0., 3., 0.3]);
+
+    Ok(())
+}
+
 #[cfg(feature = "opencl")]
 #[test]
 fn test_relu() {
