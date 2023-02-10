@@ -23,3 +23,8 @@ pub use opencl::*;
 pub use ops::*;
 
 pub mod matrix_multiply;
+
+pub mod custos {
+    pub use custos::*;
+}
+

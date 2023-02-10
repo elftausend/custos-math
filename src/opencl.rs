@@ -127,13 +127,12 @@ where
 {
     let cpu = CPU::new();
 
-    /*
+    
     // uses same memory as CPU
     if device.unified_mem() {
-        return Ok(f(&cpu, matrix));
+        return Ok(f(&cpu, &mut Matrix::from((matrix.ptr.host_ptr, matrix.dims))));
     }
-    */
-
+    
     //convert an OpenCL buffer to a cpu matrix
     let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     f(&cpu, &mut cpu_matrix);

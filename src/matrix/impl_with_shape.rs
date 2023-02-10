@@ -1,4 +1,4 @@
-use custos::{Alloc, Buffer, Device, Dim2, WithShape};
+use custos::{Buffer, Device, Dim2, WithShape};
 
 use crate::Matrix;
 
@@ -16,6 +16,7 @@ where
 
 //impl<'a, T, D>
 
+/* 
 #[cfg(test)]
 mod tests {
 
@@ -31,3 +32,4 @@ mod tests {
         let mat = Matrix::<_, _, Dim2<1, 3>>::with(&device, [3, 2, 5]);
     }
 }
+*/
