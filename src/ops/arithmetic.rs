@@ -1,6 +1,9 @@
-use custos::{number::Number, CPU};
+use custos::{impl_stack, number::Number, Device, MainMemory, Shape, CPU};
 
 use crate::{ew_op, Matrix};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(any(feature = "cuda", feature = "opencl"))]
 use custos::CDatatype;
@@ -8,7 +11,7 @@ use custos::CDatatype;
 #[cfg(feature = "opencl")]
 use crate::cl_tew;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 #[cfg(feature = "cuda")]
 use crate::cu_ew;
@@ -32,7 +35,7 @@ use crate::cu_ew;
 /// let sub = device.sub(&a, &b);
 /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
 /// ```
-pub trait BaseOps<T> {
+pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
     /// Element-wise addition
     /// # Example
     /// ```
@@ -46,7 +49,7 @@ pub trait BaseOps<T> {
     /// let c = a + b;
     /// assert_eq!(c.read(), vec![14, 8, 9, 9, 5, 9]);
     /// ```
-    fn add(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+    fn add(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise subtraction
     /// # Example
@@ -61,7 +64,7 @@ pub trait BaseOps<T> {
     /// let sub = device.sub(&a, &b);
     /// assert_eq!(sub.read(), vec![-10, 0, 3, 7, 15, 15]);
     /// ```
-    fn sub(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+    fn sub(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise multiplication
     /// # Example
@@ -76,7 +79,7 @@ pub trait BaseOps<T> {
     /// let mul = a * b;
     /// assert_eq!(mul.read(), vec![24, 16, 18, 8, -50, -36]);
     /// ```
-    fn mul(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+    fn mul(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 
     /// Element-wise division
     /// # Example
@@ -91,68 +94,74 @@ pub trait BaseOps<T> {
     /// let div = device.div(&a, &b);
     /// assert_eq!(div.read(), vec![0, 1, 2, 8, -2, -4]);
     /// ```
-    fn div(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>;
+    fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 }
 
-impl<T: Number> BaseOps<T> for CPU {
-    fn add(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+#[impl_stack]
+impl<T, S, D> BaseOps<T, S, D> for CPU
+where
+    T: Number,
+    S: Shape,
+    D: MainMemory,
+{
+    fn add(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x + y)
     }
 
-    fn sub(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn sub(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x - y)
     }
 
-    fn mul(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn mul(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x * y)
     }
 
-    fn div(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x / y)
     }
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> BaseOps<T> for CLDevice {
-    fn add(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+impl<T: CDatatype> BaseOps<T> for OpenCL {
+    fn add(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "+").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn sub(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn sub(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "-").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn mul(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn mul(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "*").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn div(&self, lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> {
+    fn div(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cl_tew(self, lhs, rhs, "/").unwrap();
         (buf, lhs.dims()).into()
     }
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> BaseOps<T> for custos::CudaDevice {
-    fn add(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+impl<T: CDatatype> BaseOps<T> for custos::CUDA {
+    fn add(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "+").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn sub(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn sub(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "-").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn mul(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn mul(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "*").unwrap();
         (buf, lhs.dims()).into()
     }
 
-    fn div(&self, lhs: &crate::Matrix<T>, rhs: &crate::Matrix<T>) -> crate::Matrix<T> {
+    fn div(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "/").unwrap();
         (buf, lhs.dims()).into()
     }

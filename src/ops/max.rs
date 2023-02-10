@@ -1,42 +1,49 @@
 use crate::Matrix;
-use custos::{cache::Cache, get_device, number::Number, CDatatype, CPU};
+use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
+
+#[cfg(feature = "cpu")]
+use custos::cache::Cache;
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
+impl<'a, T, D: MaxOps<T>> Matrix<'a, T, D> {
+    #[inline]
     pub fn max(&self) -> T {
-        get_device!(self.device(), MaxOps<T>).max(self)
+        self.device().max(self)
     }
 
-    pub fn max_rows(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), MaxOps<T>).max_rows(self)
+    #[inline]
+    pub fn max_rows(&self) -> Matrix<'a, T, D> {
+        self.device().max_rows(self)
     }
 
-    pub fn max_cols(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), MaxOps<T>).max_cols(self)
+    #[inline]
+    pub fn max_cols(&self) -> Matrix<'a, T, D> {
+        self.device().max_cols(self)
     }
 }
 
-pub trait MaxOps<T> {
-    fn max(&self, x: &Matrix<T>) -> T;
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait MaxOps<T, D: Device = Self>: Device {
+    fn max(&self, x: &Matrix<T, D>) -> T;
+    fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
+    fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Number> MaxOps<T> for CPU {
-    fn max(&self, x: &Matrix<T>) -> T {
-        let slice = x.as_slice();
-        let mut max = slice[0];
+// TODO: refactor this into own methods
+#[cfg(feature = "cpu")]
+impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
+    fn max(&self, x: &Matrix<T, D>) -> T {
+        let mut max = x[0];
 
-        for value in slice {
+        for value in x.iter() {
             if *value > max {
                 max = *value;
             }
@@ -44,11 +51,11 @@ impl<T: Number> MaxOps<T> for CPU {
         max
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut y = Cache::get(self, x.cols(), x.node.idx);
+    fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T> {
+        let mut out = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
-        let max_rows = y.as_mut_slice();
+        let max_rows = out.as_mut_slice();
 
         max_rows.copy_from_slice(&data[..max_rows.len()]);
 
@@ -62,10 +69,10 @@ impl<T: Number> MaxOps<T> for CPU {
                 }
             }
         }
-        (y, 1, x.cols()).into()
+        (out, 1, x.cols()).into()
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let data = x.as_slice();
         let mut y = Cache::get(self, x.rows(), x.node.idx);
 
@@ -89,31 +96,31 @@ impl<T: Number> MaxOps<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> MaxOps<T> for CLDevice {
-    fn max(&self, x: &Matrix<T>) -> T {
+impl<T: CDatatype> MaxOps<T> for OpenCL {
+    fn max(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.max(x))
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.max_rows(x))
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.max_cols(x))
     }
 }
 
 #[cfg(feature = "cuda")]
-impl<T: Number> MaxOps<T> for CudaDevice {
-    fn max(&self, x: &Matrix<T>) -> T {
-        cu_to_cpu_scalar(self, x, |cpu, x| cpu.max(&x))
+impl<T: Number> MaxOps<T> for CUDA {
+    fn max(&self, x: &Matrix<T, CUDA>) -> T {
+        cu_to_cpu_scalar(x, |cpu, x| cpu.max(&x))
     }
 
-    fn max_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.max_rows(&x))
     }
 
-    fn max_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn max_cols(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.max_cols(&x))
     }
 }

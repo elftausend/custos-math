@@ -1,6 +1,6 @@
-use custos::{devices::cpu::CPU, number::Float, range, Alloc, Buffer, VecRead};
+use custos::{devices::cpu::CPU, number::Float, range, Buffer, Read};
 #[cfg(feature = "opencl")]
-use custos::{devices::opencl::CLDevice, set_count};
+use custos::{devices::opencl::OpenCL, set_count};
 use custos_math::Matrix;
 /*
 #[test]
@@ -13,7 +13,7 @@ fn add() -> Result<(), OCLError> {
 
     let native = lhs + rhs;
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let lhs = Buffer::from((&device, [4., 1., 2.,]));
     let rhs = Buffer::from((&device, [4., 1., 2.,]));
@@ -25,17 +25,18 @@ fn add() -> Result<(), OCLError> {
 }
 */
 
-pub fn read<T, D: Alloc<T>>(device: D, buf: Buffer<T>) -> Vec<T>
+pub fn read<'a, T, D>(device: D, buf: Buffer<T, D>) -> Vec<T>
 where
-    D: VecRead<T>,
+    D: Read<T, D>,
+    T: Clone + Default,
 {
-    device.read(&buf)
+    device.read_to_vec(&buf)
 }
 
 #[cfg(feature = "opencl")]
 #[test]
 fn test_element_wise_add_cl() {
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -74,9 +75,9 @@ fn test_ew_add_cpu() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_add_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -89,9 +90,9 @@ fn test_ew_add_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_add_large_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 1000), [1.; 1000]));
     let b = Matrix::from((&device, (1, 1000), [1.5; 1000]));
@@ -104,7 +105,7 @@ fn test_ew_add_large_cuda() -> custos::Result<()> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_add_cl() {
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -117,7 +118,7 @@ fn test_ew_add_cl() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_add_cl_f64() {
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
     let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
@@ -140,7 +141,7 @@ fn test_ew_sub_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_ew_sub_cl() {
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -152,9 +153,9 @@ fn test_ew_sub_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_sub_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
     let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
@@ -177,7 +178,7 @@ fn test_ew_mul_cpu_a_cl() {
         assert_eq!(vec![1, 16, 4, 81], device.read(c.as_buf()));
     }
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -191,9 +192,9 @@ fn test_ew_mul_cpu_a_cl() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_ew_mul_cuda() {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0).unwrap();
+    let device = CUDA::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -213,7 +214,7 @@ fn test_gemm_cpu() {
     let b = Matrix::from((&device, (4, 1), [5., 4., 2., 9.]));
 
     for _ in range(500) {
-        let c2 = a.gemm(&b);
+        let c2: Matrix<f64> = a.gemm(&b);
         assert_eq!(c2.read(), vec![106.])
     }
 }
@@ -228,15 +229,15 @@ fn test_gemm() {
     let a = Matrix::from((&cpu, (1, 4), [1., 4., 2., 9.]));
     let b = Matrix::from((&cpu, (4, 1), [5., 4., 2., 9.]));
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a_cl = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
     let b_cl = Matrix::from((&device, (4, 1), [5., 4., 2., 9.]));
 
     for _ in range(500) {
-        let c1 = cpu.gemm(&a, &b);
+        let c1: Matrix = cpu.gemm(&a, &b);
         let c3 = device.gemm(&a_cl, &b_cl);
-        let c2 = a.gemm(&b);
+        let c2: Matrix<f32, CPU, ()> = a.gemm(&b);
 
         assert_eq!(cpu.read(c1.as_buf()), cpu.read(c2.as_buf()));
         assert_eq!(cpu.read(c1.as_buf()), device.read(c3.as_buf()));
@@ -281,7 +282,7 @@ fn test_larger_gemm_cl_f64() {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -295,6 +296,8 @@ fn test_larger_gemm_cl_f64() {
 #[test]
 fn test_larger_gemm_cl() {
     //5x7
+
+    use custos_math;
     let arr1 = [
         9., 1., 3., 6., 7., 3., 63f32, 93., 51., 23., 36., 87., 3., 63., 9., 1., 43., 46.3, 7., 3.,
         63., 9., 15., 73., 6.3, 7., 53., 63., 69., 1., 3., 6., 7., 43., 63.,
@@ -316,7 +319,7 @@ fn test_larger_gemm_cl() {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -355,14 +358,14 @@ fn test_larger_gemm() {
     let a = Matrix::from((&cpu, (5, 7), arr1));
     let b = Matrix::from((&cpu, (7, 10), arr2));
 
-    let cpu_c = a.gemm(&b);
+    let cpu_c: Matrix = a.gemm(&b);
     roughly_equals(&cpu.read(cpu_c.as_buf()), &should, 1e-3);
 }
 
 #[cfg(feature = "cuda")]
 #[test]
 fn test_larger_gemm_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
     //5x7
     let arr1 = [
@@ -386,7 +389,7 @@ fn test_larger_gemm_cuda() -> custos::Result<()> {
         2737.0, 1893.33, 666.29376, 3528.0, 7964.7417, 6913.5303, 1971.35, 1986.0, 8522.0, 22406.0,
     ];
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let a = Matrix::from((&device, (5, 7), arr1));
     let b = Matrix::from((&device, (7, 10), arr2));
@@ -406,7 +409,7 @@ fn test_cuda_gemm_speed() -> custos::Result<()> {
     const ROWS: usize = 4000;
     const COLS: usize = ROWS;
 
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let stream = create_stream()?;
     unsafe { cublasSetStream_v2(device.handle().0, stream.0) }.to_result()?;
@@ -429,9 +432,9 @@ fn test_cuda_gemm_speed() -> custos::Result<()> {
 fn test_small_gemm_cl() -> Result<(), custos::Error> {
     use custos_math::cl_gemm;
 
-    let device = CLDevice::new(0)?;
-    let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8, 5]));
-    let rhs = Buffer::<i16>::from((&device, [3, 2, 7, 1, 9, 20]));
+    let device = OpenCL::new(0)?;
+    let lhs = Buffer::<i16, OpenCL>::from((&device, [15, 30, 21, 5, 8, 5]));
+    let rhs = Buffer::<i16, OpenCL>::from((&device, [3, 2, 7, 1, 9, 20]));
 
     let out = cl_gemm(&device, 2, 3, 2, &rhs, &lhs)?;
     assert_eq!(device.read(&out), vec![444, 480, 116, 118]);

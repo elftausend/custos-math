@@ -2,7 +2,10 @@
 use std::ptr::null_mut;
 
 use crate::Matrix;
-use custos::{cpu::CPU, get_device, CDatatype, Cache};
+use custos::{CDatatype, Device, MainMemory, Shape};
+
+#[cfg(feature = "cpu")]
+use custos::{Cache, CPU};
 
 #[cfg(feature = "cuda")]
 use custos::{
@@ -10,7 +13,7 @@ use custos::{
     CUdeviceptr,
 };
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 use crate::cl_transpose;
 
 pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) {
@@ -25,28 +28,32 @@ pub fn slice_transpose<T: Copy>(rows: usize, cols: usize, a: &[T], b: &mut [T]) 
     }
 }
 
-impl<'a, T: CDatatype + CudaTranspose> Matrix<'a, T> {
+impl<'a, T, IS: Shape, D: Device> Matrix<'a, T, D, IS> {
     #[allow(non_snake_case)]
-    pub fn T(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), TransposeOp<T>).transpose(self)
+    pub fn T<OS: Shape>(&self) -> Matrix<'a, T, D, OS>
+    where
+        D: TransposeOp<T, IS, OS>,
+    {
+        self.device().transpose(self)
     }
 }
 
-pub trait TransposeOp<T> {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait TransposeOp<T, IS: Shape = (), OS: Shape = (), D: Device = Self>: Device {
+    fn transpose(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS>;
 }
 
-impl<T: Default + Copy> TransposeOp<T> for CPU {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
-        let mut out = Cache::get(self, x.len, x.node.idx);
+#[cfg(feature = "cpu")]
+impl<T: Default + Copy, D: MainMemory, IS: Shape, OS: Shape> TransposeOp<T, IS, OS, D> for CPU {
+    fn transpose(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS> {
+        let mut out = Cache::get(self, x.len(), x.node.idx);
         slice_transpose(x.rows(), x.cols(), x.as_slice(), out.as_mut_slice());
         (out, x.cols(), x.rows()).into()
     }
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> TransposeOp<T> for custos::CLDevice {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: CDatatype> TransposeOp<T> for custos::OpenCL {
+    fn transpose(&self, x: &Matrix<T, custos::OpenCL>) -> Matrix<T, custos::OpenCL> {
         Matrix {
             data: cl_transpose(self, x, x.rows(), x.cols()).unwrap(),
             dims: (x.cols(), x.rows()),
@@ -55,10 +62,10 @@ impl<T: CDatatype> TransposeOp<T> for custos::CLDevice {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CudaTranspose> TransposeOp<T> for custos::CudaDevice {
-    fn transpose(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: CudaTranspose> TransposeOp<T> for custos::CUDA {
+    fn transpose(&self, x: &Matrix<T, custos::CUDA>) -> Matrix<T, custos::CUDA> {
         let out = Cache::get(self, x.len(), x.node.idx);
-        T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.2, out.ptr.2).unwrap();
+        T::transpose(&self.handle(), x.rows(), x.cols(), x.ptr.ptr, out.ptr.ptr).unwrap();
         (out, x.cols(), x.rows()).into()
     }
 }

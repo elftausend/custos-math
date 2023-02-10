@@ -1,43 +1,62 @@
 use crate::Matrix;
-use custos::{get_device, number::Number, CDatatype, Cache, CPU};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape, CPU};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
+
+#[cfg(feature = "cpu")]
+use custos::Cache;
 
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
+impl<'a, T, IS: Shape, D: SumOps<T, IS>> Matrix<'a, T, D, IS> {
     pub fn sum(&self) -> T {
-        get_device!(self.device(), SumOps<T>).sum(self)
+        self.device().sum(self)
     }
 
     pub fn mean(&self) -> T {
-        get_device!(self.device(), SumOps<T>).mean(self)
-    }
-
-    pub fn sum_rows(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), SumOps<T>).sum_rows(self)
-    }
-
-    pub fn sum_cols(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), SumOps<T>).sum_cols(self)
+        self.device().mean(self)
     }
 }
 
-pub trait SumOps<T> {
-    fn sum(&self, x: &Matrix<T>) -> T;
-    fn mean(&self, x: &Matrix<T>) -> T;
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T>;
+impl<'a, T, D: Device, IS: Shape> Matrix<'a, T, D, IS> {
+    pub fn sum_rows<OS: Shape>(&self) -> Matrix<'a, T, D, OS>
+    where
+        D: SumOverOps<T, IS, OS>,
+    {
+        self.device().sum_rows(self)
+    }
+
+    pub fn sum_cols<OS: Shape>(&self) -> Matrix<'a, T, D, OS>
+    where
+        D: SumOverOps<T, IS, OS>,
+    {
+        self.device().sum_cols(self)
+    }
 }
 
-impl<T: Number> SumOps<T> for CPU {
-    fn sum(&self, x: &Matrix<T>) -> T {
+pub trait SumOps<T, IS: Shape = (), D: Device = Self>: Device {
+    fn sum(&self, x: &Matrix<T, D, IS>) -> T;
+    fn mean(&self, x: &Matrix<T, D, IS>) -> T;
+}
+
+pub trait SumOverOps<T, IS: Shape = (), OS: Shape = (), D: Device = Self>: Device {
+    fn sum_rows(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS>;
+    fn sum_cols(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS>;
+}
+
+#[cfg(feature = "cpu")]
+#[impl_stack]
+impl<T: Number, D: MainMemory, IS: Shape> SumOps<T, IS, D> for CPU {
+    fn sum(&self, x: &Matrix<T, D, IS>) -> T {
         x.iter().copied().sum()
         /*let mut sum = T::default();
         for value in x.as_slice() {
@@ -46,12 +65,17 @@ impl<T: Number> SumOps<T> for CPU {
         sum*/
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
+    fn mean(&self, x: &Matrix<T, D, IS>) -> T {
         let sum = self.sum(x);
         sum / T::from_usize(x.size())
     }
+}
 
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+#[cfg(feature = "cpu")]
+impl<T: Copy + Default + core::ops::AddAssign, D: MainMemory, IS: Shape, OS: Shape>
+    SumOverOps<T, IS, OS, D> for CPU
+{
+    fn sum_rows(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS> {
         let mut out = Cache::get(self, x.cols(), x.node.idx);
 
         let data = x.as_slice();
@@ -72,7 +96,7 @@ impl<T: Number> SumOps<T> for CPU {
         (out, 1, x.cols()).into()
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    fn sum_cols(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS> {
         let mut out = Cache::get(self, x.rows(), x.node.idx);
 
         let data = x.as_slice();
@@ -93,39 +117,53 @@ impl<T: Number> SumOps<T> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> SumOps<T> for CLDevice {
-    fn sum(&self, x: &Matrix<T>) -> T {
+impl<T: Number> SumOps<T> for OpenCL {
+    #[inline]
+    fn sum(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.sum(x))
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
+    #[inline]
+    fn mean(&self, x: &Matrix<T, Self>) -> T {
         cl_to_cpu_scalar(self, x, |device, x| device.mean(x))
     }
+}
 
-    fn sum_rows<'a>(&'a self, x: &Matrix<T>) -> Matrix<'a, T> {
+#[cfg(feature = "opencl")]
+impl<T: CDatatype> SumOverOps<T> for OpenCL {
+    #[inline]
+    fn sum_rows<'a>(&'a self, x: &Matrix<T, Self>) -> Matrix<'a, T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_rows(x))
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn sum_cols(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_cols(x))
     }
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> SumOps<T> for CudaDevice {
-    fn sum(&self, x: &Matrix<T>) -> T {
-        cu_to_cpu_scalar(self, x, |device, x| device.sum(&x))
+impl<T: CDatatype> SumOps<T> for CUDA {
+    #[inline]
+    fn sum(&self, x: &Matrix<T, CUDA>) -> T {
+        cu_to_cpu_scalar(x, |device, x| device.sum(&x))
     }
 
-    fn mean(&self, x: &Matrix<T>) -> T {
-        cu_to_cpu_scalar(self, x, |device, x| device.mean(&x))
+    #[inline]
+    fn mean(&self, x: &Matrix<T, CUDA>) -> T {
+        cu_to_cpu_scalar(x, |device, x| device.mean(&x))
     }
+}
 
-    fn sum_rows(&self, x: &Matrix<T>) -> Matrix<T> {
+#[cfg(feature="cuda")]
+impl<T: CDatatype> SumOverOps<T> for CUDA {
+    #[inline]
+    fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
     }
 
-    fn sum_cols(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn sum_cols(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_cols(&x))
     }
 }

@@ -2,17 +2,20 @@
 use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
-use custos::{cache::Cache, cpu::CPU, get_device, CDatatype};
+use custos::CUDA;
+use custos::{CDatatype, Device, MainMemory};
+
+#[cfg(feature = "cpu")]
+use custos::{cache::Cache, cpu::CPU};
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
-    pub fn diagflat(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), DiagflatOp<T>).diagflat(self)
+impl<'a, T, D: DiagflatOp<T>> Matrix<'a, T, D> {
+    pub fn diagflat(&self) -> Matrix<'a, T, D> {
+        self.device().diagflat(self)
     }
 }
 
@@ -22,31 +25,34 @@ pub fn diagflat<T: Copy>(a: &[T], b: &mut [T]) {
     }
 }
 
-pub trait DiagflatOp<T> {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T>;
+pub trait DiagflatOp<T, D: Device = Self>: Device {
+    fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T, Self>;
 }
 
-impl<T: Default + Copy> DiagflatOp<T> for CPU {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+#[cfg(feature = "cpu")]
+impl<T: Default + Copy, D: MainMemory> DiagflatOp<T, D> for CPU {
+    fn diagflat(&self, x: &Matrix<T, D>) -> Matrix<T> {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
 
-        let mut y = Cache::get(self, size * size, x.node.idx);
-        diagflat(x.as_slice(), y.as_mut_slice());
-        (y, (size, size)).into()
+        let mut out = Cache::get(self, size * size, x.node.idx);
+        diagflat(x, &mut out);
+        (out, (size, size)).into()
     }
 }
 
 #[cfg(feature = "cuda")]
-impl<T: Copy + Default> DiagflatOp<T> for CudaDevice {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: Copy + Default> DiagflatOp<T> for CUDA {
+    #[inline]
+    fn diagflat(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_s(self, x, |cpu, x| cpu.diagflat(&x))
     }
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> DiagflatOp<T> for CLDevice {
-    fn diagflat(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: CDatatype> DiagflatOp<T> for OpenCL {
+    #[inline]
+    fn diagflat(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(x))
     }
 }

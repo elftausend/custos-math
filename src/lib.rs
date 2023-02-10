@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "no-std", no_std)]
+
 pub mod cpu;
 #[cfg(feature = "cuda")]
 pub mod cuda;
@@ -19,3 +21,10 @@ pub use cuda::*;
 #[cfg(feature = "opencl")]
 pub use opencl::*;
 pub use ops::*;
+
+pub mod matrix_multiply;
+
+pub mod custos {
+    pub use custos::*;
+}
+

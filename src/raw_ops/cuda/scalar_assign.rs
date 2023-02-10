@@ -1,8 +1,8 @@
-use custos::{CDatatype, CudaDevice, Buffer, cuda::launch_kernel1d};
+use custos::{cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, CUDA};
 
 pub fn cu_assign_scalar<'a, T: CDatatype>(
-    device: &'a CudaDevice,
-    lhs: &Buffer<T>,
+    device: &'a CUDA,
+    lhs: &CUBuffer<T>,
     rhs: T,
     op: &str,
 ) -> custos::Result<()> {
@@ -20,11 +20,11 @@ pub fn cu_assign_scalar<'a, T: CDatatype>(
     );
 
     launch_kernel1d(
-        lhs.len,
+        lhs.len(),
         device,
         &src,
         "scalar_assign",
-        &[&lhs, &rhs, &lhs.len],
+        &[&lhs, &rhs, &lhs.len()],
     )?;
     Ok(())
 }

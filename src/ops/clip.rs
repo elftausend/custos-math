@@ -1,47 +1,51 @@
-use custos::{cache::Cache, get_device, number::Number, CDatatype, CPU};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape, CPU};
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
 use crate::Matrix;
 #[cfg(feature = "cuda")]
-use custos::{cuda::launch_kernel1d, Buffer, CudaDevice};
+use custos::{cuda::launch_kernel1d, Buffer, CUDA};
 
-impl<'a, T: CDatatype> Matrix<'a, T> {
-    pub fn clip(&self, min: T, max: T) -> Matrix<T> {
-        get_device!(self.device(), ClipOp<T>).clip(self, min, max)
+impl<'a, T, S: Shape, D: ClipOp<T, S>> Matrix<'a, T, D, S> {
+    pub fn clip(&self, min: T, max: T) -> Matrix<T, D, S> {
+        self.device().clip(self, min, max)
     }
 }
 
-pub trait ClipOp<T> {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T>;
+pub trait ClipOp<T, S: Shape = (), D: Device = Self>: Device {
+    fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S>;
 }
 
-impl<T: Number> ClipOp<T> for CPU {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
-        let mut y = Cache::get::<T, CPU>(self, x.size(), x.node.idx);
-        let y_slice = y.as_mut_slice();
+#[impl_stack]
+impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, S, D> for CPU {
+    fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S> {
+        let mut out = self.retrieve(x.size(), x.node.idx);
+        let out_slice = &mut out[..];
 
-        for (idx, value) in x.as_slice().iter().enumerate() {
+        for (idx, value) in x.iter().enumerate() {
             if *value < min {
-                y_slice[idx] = min;
+                out_slice[idx] = min;
             } else if *value > max {
-                y_slice[idx] = max;
+                out_slice[idx] = max;
             } else {
-                y_slice[idx] = *value;
+                out_slice[idx] = *value;
             }
         }
-        (y, x.dims()).into()
+        (out, x.dims()).into()
     }
 }
 
 #[cfg(feature = "opencl")]
 fn cl_clip<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Matrix<T>,
+    device: &'a OpenCL,
+    x: &Matrix<T, OpenCL>,
     min: T,
     max: T,
-) -> custos::Result<Matrix<'a, T>> {
+) -> custos::Result<Matrix<'a, T, OpenCL>> {
     use custos::opencl::enqueue_kernel;
 
     let src = format!(
@@ -63,25 +67,25 @@ fn cl_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.size(), x.node.idx);
+    let out = device.retrieve::<T, ()>(x.size(), x.node.idx);
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> ClipOp<T> for CLDevice {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+impl<T: CDatatype> ClipOp<T> for OpenCL {
+    fn clip(&self, x: &Matrix<T, Self>, min: T, max: T) -> Matrix<T, Self> {
         cl_clip(self, x, min, max).unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
 pub fn cu_clip<'a, T: CDatatype>(
-    device: &'a CudaDevice,
-    x: &Buffer<T>,
+    device: &'a CUDA,
+    x: &Buffer<T, CUDA>,
     min: T,
     max: T,
-) -> custos::Result<Buffer<'a, T>> {
+) -> custos::Result<Buffer<'a, T, CUDA>> {
     let src = format!(
         r#"extern "C" __global__ void clip({datatype}* lhs, {datatype} min, {datatype} max, {datatype}* out, int numElements)
             {{
@@ -102,20 +106,20 @@ pub fn cu_clip<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, x.len(), x.node.idx);
+    let out = device.retrieve::<T, ()>(x.len(), x);
     launch_kernel1d(
         x.len(),
         device,
         &src,
         "clip",
-        &[x, &min, &max, &out, &x.len],
+        &[x, &min, &max, &out, &x.len()],
     )?;
     Ok(out)
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ClipOp<T> for CudaDevice {
-    fn clip(&self, x: &Matrix<T>, min: T, max: T) -> Matrix<T> {
+impl<T: CDatatype> ClipOp<T> for CUDA {
+    fn clip(&self, x: &Matrix<T, CUDA>, min: T, max: T) -> Matrix<T, CUDA> {
         let buf = cu_clip(self, x, min, max).unwrap();
         (buf, x.dims()).into()
     }

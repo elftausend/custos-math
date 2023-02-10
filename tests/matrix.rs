@@ -1,6 +1,6 @@
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
-use custos::{devices::cpu::CPU, VecRead};
+use custos::OpenCL;
+use custos::{devices::cpu::CPU, Read};
 use custos_math::Matrix;
 
 #[test]
@@ -23,7 +23,7 @@ fn test_matrix_read() {
 #[test]
 fn test_each_op() {
     use custos_math::each_op;
-    CLDevice::new(0).unwrap();
+    OpenCL::new(0).unwrap();
     let device = CPU::new();
 
     let x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
@@ -53,7 +53,7 @@ fn test_sub_assign_cpu() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_sub_assign_cl() -> custos::Result<()> {
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -66,9 +66,9 @@ fn test_sub_assign_cl() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_sub_assign_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));
@@ -81,9 +81,9 @@ fn test_sub_assign_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_add_assign_cuda() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let mut x = Matrix::from((&device, (2, 3), [1, 2, 3, 4, 5, 6]));
     let y = Matrix::from((&device, (2, 3), [3, 4, 5, 6, 7, 8]));

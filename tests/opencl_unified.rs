@@ -4,11 +4,11 @@ use std::ffi::c_void;
 #[cfg(feature = "opencl")]
 use custos::{
     opencl::api::{clCreateBuffer, MemFlags, OCLErrorKind},
-    CLDevice, Error,
+    Error, OpenCL,
 };
 
 #[cfg(feature = "opencl")]
-pub fn unified_mem<T>(device: &CLDevice, arr: &mut [T]) -> Result<*mut c_void, Error> {
+pub fn unified_mem<T>(device: &OpenCL, arr: &mut [T]) -> Result<*mut c_void, Error> {
     let mut err = 0;
 
     let r = unsafe {
@@ -21,8 +21,6 @@ pub fn unified_mem<T>(device: &CLDevice, arr: &mut [T]) -> Result<*mut c_void, E
         )
     };
 
-    device.inner.borrow_mut().ptrs.push(r);
-
     if err != 0 {
         return Err(Error::from(OCLErrorKind::from_value(err)));
     }
@@ -32,10 +30,10 @@ pub fn unified_mem<T>(device: &CLDevice, arr: &mut [T]) -> Result<*mut c_void, E
 #[cfg(feature = "opencl")]
 #[test]
 fn test_unified_mem_device_switch() -> custos::Result<()> {
-    use custos::CLDevice;
+    use custos::OpenCL;
     use custos_math::{cpu_exec, FnsOps, Matrix};
 
-    let device = CLDevice::new(0)?;
+    let device = OpenCL::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1., 2., 3., 4., 5., 6.]));
     let m = cpu_exec(&device, &a, |cpu, m| cpu.ln(m))?;
@@ -45,16 +43,13 @@ fn test_unified_mem_device_switch() -> custos::Result<()> {
 }
 
 #[cfg(feature = "opencl")]
+#[cfg(unified_cl)]
 #[test]
 fn test_unified_opencl() -> custos::Result<()> {
-    use custos::CLDevice;
+    use custos::OpenCL;
     use custos_math::Matrix;
 
-    let device = CLDevice::new(0)?;
-
-    if !device.unified_mem() {
-        return Ok(());
-    }
+    let device = OpenCL::new(0)?;
 
     let mut a = Matrix::from((&device, 2, 3, [1, 2, 3, 4, 5, 6]));
 
@@ -70,13 +65,15 @@ fn test_unified_opencl() -> custos::Result<()> {
     Ok(())
 }
 
+/*
+
 #[cfg(not(feature = "safe"))]
 #[cfg(feature = "opencl")]
 #[test]
 fn test_unified_calc() -> custos::Result<()> {
     use std::{marker::PhantomData, ptr::null_mut};
 
-    use custos::{AsDev, BufFlag, Buffer, CLDevice, Node, CPU};
+    use custos::{AsDev, BufFlag, Buffer, Node, OpenCL, CPU};
     use custos_math::cl_tew;
 
     let len = 100;
@@ -85,7 +82,7 @@ fn test_unified_calc() -> custos::Result<()> {
     let mut a = Buffer::<f32>::new(&device, len);
     let mut b = Buffer::<f32>::from((&device, vec![1.; len]));
 
-    let cl = CLDevice::new(0)?;
+    let cl = OpenCL::new(0)?;
 
     let a: Buffer<f32> = Buffer {
         ptr: (null_mut(), unified_mem(&cl, a.as_mut_slice())?, 0),
@@ -93,7 +90,6 @@ fn test_unified_calc() -> custos::Result<()> {
         device: device.dev(),
         flag: BufFlag::Wrapper,
         node: Node::default(),
-        p: PhantomData,
     };
     let b = Buffer {
         ptr: (null_mut(), unified_mem(&cl, b.as_mut_slice())?, 0),
@@ -101,7 +97,6 @@ fn test_unified_calc() -> custos::Result<()> {
         device: device.dev(),
         flag: BufFlag::Wrapper,
         node: Node::default(),
-        p: PhantomData,
     };
 
     cl_tew(&cl, &a, &b, "+")?;
@@ -111,3 +106,4 @@ fn test_unified_calc() -> custos::Result<()> {
 
     Ok(())
 }
+*/

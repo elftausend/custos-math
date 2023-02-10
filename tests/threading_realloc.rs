@@ -1,9 +1,9 @@
 #[cfg(feature = "realloc")]
-use custos::{devices::cpu::CPU, range, VecRead};
+use custos::{devices::cpu::CPU, range, Read};
 
 #[cfg(feature = "realloc")]
 #[cfg(feature = "opencl")]
-use custos::devices::opencl::CLDevice;
+use custos::devices::opencl::OpenCL;
 
 #[cfg(feature = "realloc")]
 #[test]
@@ -109,10 +109,10 @@ fn test_threading_cpu() {
 fn test_threading_cl_a() {
     use custos_math::Matrix;
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let th1_cl = std::thread::spawn(|| {
-        let device = CLDevice::new(0).unwrap();
+        let device = OpenCL::new(0).unwrap();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));

@@ -2,9 +2,9 @@
 #[cfg(feature = "opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
-    use custos::{get_count, range, CLDevice, VecRead};
+    use custos::{get_count, range, OpenCL, Read};
     use custos_math::Matrix;
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1i32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
@@ -42,10 +42,10 @@ fn test_use_range_for_ew_add() {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_use_range_for_ew_add() {
-    use custos::{range, AsDev, CLDevice, VecRead};
+    use custos::{range, AsDev, OpenCL, VecRead};
     use custos_math::Matrix;
 
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (1, 4), [1i32, 4, 2, 9]));
     let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));

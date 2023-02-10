@@ -12,7 +12,7 @@ pub fn bench_gemm(c: &mut Criterion) {
 
     let device = custos::CPU::new().select();
 
-    //let device = custos::CLDevice::get(0).unwrap().select();
+    //let device = custos::OpenCL::get(0).unwrap().select();
     let a = Matrix::<f32>::from((&device, (ROWS, COLS), vec![2.3; ROWS*COLS]));
     let b = Matrix::<f32>::from((&device, (COLS, ROWS), vec![4.3; COLS*ROWS]));
 

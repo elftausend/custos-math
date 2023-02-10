@@ -1,9 +1,9 @@
 #[cfg(not(feature = "realloc"))]
-use custos::{devices::cpu::CPU, range, VecRead};
+use custos::{devices::cpu::CPU, range, Read};
 
 #[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
-use custos::devices::opencl::CLDevice;
+use custos::devices::opencl::OpenCL;
 
 #[cfg(not(feature = "realloc"))]
 #[test]
@@ -109,10 +109,10 @@ fn test_threading_cpu() {
 #[test]
 fn test_threading_cl_a() {
     use custos_math::Matrix;
-    let device = CLDevice::new(0).unwrap();
+    let device = OpenCL::new(0).unwrap();
 
     let th1_cl = std::thread::spawn(|| {
-        let device = CLDevice::new(0).unwrap();
+        let device = OpenCL::new(0).unwrap();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -202,14 +202,14 @@ fn test_threading_cl_a() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {
-    use custos::CudaDevice;
+    use custos::CUDA;
     use custos_math::Matrix;
     use std::thread::JoinHandle;
 
-    let device = CudaDevice::new(0)?;
+    let device = CUDA::new(0)?;
 
     let th1: JoinHandle<Result<(), custos::Error>> = std::thread::spawn(|| {
-        let device = CudaDevice::new(0)?;
+        let device = CUDA::new(0)?;
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));
@@ -237,7 +237,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
     });
 
     let th1_cuda = std::thread::spawn(|| {
-        let device = CudaDevice::new(0).unwrap();
+        let device = CUDA::new(0).unwrap();
 
         let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));
         let b = Matrix::from((&device, (2, 3), [1., 3., 2., 6., 5., 4.]));

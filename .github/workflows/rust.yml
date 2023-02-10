@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose --no-default-features
+      run: cargo build --verbose --no-default-features --features cpu,fastrand
   
   test:
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run tests
-      run: cargo test --verbose --no-default-features
+      run: cargo test --verbose --no-default-features --features cpu,fastrand
       
   test-realloc:
     runs-on: ubuntu-latest
@@ -33,4 +33,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run 'realloc' tests
-      run: cargo test --verbose --no-default-features --features realloc
+      run: cargo test --verbose --no-default-features --features realloc,cpu,fastrand

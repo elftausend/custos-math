@@ -10,14 +10,14 @@ fn test_transpose_cpu() {
 
     let a = Matrix::from((&device, (2, 3), [1., 2., 3., 4., 5., 6.]));
 
-    let res = a.T();
+    let res = a.T::<()>();
     assert_eq!(vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0], res.read());
 }
 
 #[cfg(feature = "opencl")]
 #[test]
 fn test_transpose_cl() {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
 
@@ -29,7 +29,7 @@ fn test_transpose_cl() {
 #[cfg(not(target_os = "macos"))]
 #[test]
 fn test_transpose_cl_f64() {
-    let device = custos::CLDevice::new(0).unwrap();
+    let device = custos::OpenCL::new(0).unwrap();
 
     let a = Matrix::from((&device, (2, 3), [6f64, 5., 4., 3., 2., 1.]));
     let res = a.T();
@@ -40,7 +40,7 @@ fn test_transpose_cl_f64() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_transpose_cuda() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let a = Matrix::from((&device, 2, 3, [1f32, 2., 3., 4., 5., 6.]));
     let out = device.transpose(&a);
@@ -52,7 +52,7 @@ fn test_transpose_cuda() -> custos::Result<()> {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_transpose_selected_cuda() -> custos::Result<()> {
-    let device = custos::CudaDevice::new(0)?;
+    let device = custos::CUDA::new(0)?;
 
     let a = Matrix::from((&device, (2, 3), [6f32, 5., 4., 3., 2., 1.]));
     let res = a.T();

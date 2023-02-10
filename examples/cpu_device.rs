@@ -1,4 +1,4 @@
-use custos::{VecRead, CPU};
+use custos::{Read, CPU};
 use custos_math::{BaseOps, Matrix};
 
 fn main() {

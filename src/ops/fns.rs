@@ -1,116 +1,165 @@
-use custos::{cpu::CPU, get_device, number::Float, CDatatype};
+use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
+
+#[cfg(feature = "cpu")]
+use custos::CPU;
+
+#[cfg(feature = "stack")]
+use custos::Stack;
 
 use crate::{each_op, Matrix};
 
 #[cfg(feature = "cuda")]
 use crate::cu_str_op;
 #[cfg(feature = "cuda")]
-use custos::CudaDevice;
+use custos::CUDA;
 
 #[cfg(feature = "opencl")]
 use crate::opencl::cl_str_op_mat;
 #[cfg(feature = "opencl")]
-use custos::CLDevice;
+use custos::OpenCL;
 
-impl<'a, T: CDatatype + Float> Matrix<'a, T> {
-    pub fn exp(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).exp(self)
+impl<'a, T: Float, S: Shape, D: FnsOps<T, S, D>> Matrix<'a, T, D, S> {
+    #[inline]
+    pub fn exp(&self) -> Self {
+        self.device().exp(self)
     }
 
-    pub fn ln(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).ln(self)
+    #[inline]
+    pub fn ln(&self) -> Self {
+        self.device().ln(self)
     }
 
-    pub fn neg(&self) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).neg(self)
+    #[inline]
+    pub fn neg(&self) -> Self {
+        self.device().neg(self)
     }
 
-    pub fn powf(&self, rhs: T) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).powf(self, rhs)
+    #[inline]
+    pub fn powf(&self, rhs: T) -> Self {
+        self.device().powf(self, rhs)
     }
 
-    pub fn powi(&self, rhs: i32) -> Matrix<'a, T> {
-        get_device!(self.device(), FnsOps<T>).powi(self, rhs)
+    #[inline]
+    pub fn powi(&self, rhs: i32) -> Self {
+        self.device().powi(self, rhs)
     }
 }
 
-pub trait FnsOps<T> {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T>;
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T>;
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T>;
+pub trait FnsOps<T, S: Shape = (), D: Device = Self>: Device {
+    fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn ln(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn neg(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+    fn powf(&self, x: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn powi(&self, x: &Matrix<T, D, S>, rhs: i32) -> Matrix<T, Self, S>;
 }
 
-impl<T: Float> FnsOps<T> for CPU {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+#[impl_stack]
+impl<T, D, S> FnsOps<T, S, D> for CPU
+where
+    T: Float,
+    D: MainMemory,
+    S: Shape,
+{
+    #[inline]
+    fn exp(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.exp())
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn ln(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.ln())
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn neg(&self, x: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         each_op(self, x, |x| -x)
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    #[inline]
+    fn powf(&self, x: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.powf(rhs))
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    #[inline]
+    fn powi(&self, x: &Matrix<T, D, S>, rhs: i32) -> Matrix<T, Self, S> {
         each_op(self, x, |x| x.powi(rhs))
     }
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> FnsOps<T> for CLDevice {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: CDatatype> FnsOps<T> for OpenCL {
+    #[inline]
+    fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "exp(x)").unwrap()
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn ln(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "log(x)").unwrap()
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn neg(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "-x").unwrap()
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    #[inline]
+    fn powf(&self, x: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    #[inline]
+    fn powi(&self, x: &Matrix<T, Self>, rhs: i32) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, &format!("pow(x, {rhs})")).unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> FnsOps<T> for CudaDevice {
-    fn exp(&self, x: &Matrix<T>) -> Matrix<T> {
+impl<T: CDatatype> FnsOps<T> for CUDA {
+    #[inline]
+    fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "exp(x)").unwrap();
         (out, x.dims()).into()
     }
 
-    fn ln(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn ln(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "logf(x)").unwrap();
         (out, x.dims()).into()
     }
 
-    fn neg(&self, x: &Matrix<T>) -> Matrix<T> {
+    #[inline]
+    fn neg(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "-x").unwrap();
         (out, x.dims()).into()
     }
 
-    fn powf(&self, x: &Matrix<T>, rhs: T) -> Matrix<T> {
+    #[inline]
+    fn powf(&self, x: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
     }
 
-    fn powi(&self, x: &Matrix<T>, rhs: i32) -> Matrix<T> {
+    #[inline]
+    fn powi(&self, x: &Matrix<T, Self>, rhs: i32) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, &format!("powf(x, {rhs})")).unwrap();
         (out, x.dims()).into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[cfg(feature = "stack")]
+    #[test]
+    fn test_stack_impl() {
+        use custos::{Buffer, Stack};
+
+        use crate::Matrix;
+
+        let data = Buffer::from((Stack, &[3., 1., 5.]));
+        let mat = Matrix { data, dims: (1, 3) };
+
+        mat.ln();
     }
 }

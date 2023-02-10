@@ -1,124 +1,140 @@
 //mod switching;
 //pub use switching::*;
 
-use std::fmt::Debug;
 use custos::{
-    devices::opencl::cl_device::CLDevice,
+    devices::opencl::cl_device::OpenCL,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
     },
-    Buffer, CDatatype, Error, CPU, GraphReturn, VecRead, WriteBuf,
+    prelude::CLBuffer,
+    CDatatype, Device, Error, GraphReturn, WriteBuf, CPU,
 };
+use std::fmt::Debug;
 
 use crate::{cl_scalar_op, cl_str_op, Matrix};
 
 #[inline]
 pub fn cl_str_op_mat<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Matrix<T>,
+    device: &'a OpenCL,
+    x: &Matrix<T, OpenCL>,
     op: &str,
-) -> Result<Matrix<'a, T>, Error> {
-    let out = cl_str_op(device, x, op)?;
+) -> Result<Matrix<'a, T, OpenCL>, Error> {
+    let mut out: CLBuffer<T> = device.retrieve(x.len(), x.node.idx);
+    cl_str_op(device, x, &mut out, op)?;
     Ok((out, x.dims()).into())
 }
 
 pub fn cl_scalar_op_mat<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    x: &Matrix<T>,
+    device: &'a OpenCL,
+    x: &Matrix<T, OpenCL>,
     scalar: T,
     op: &str,
-) -> Result<Matrix<'a, T>, Error> {
+) -> Result<Matrix<'a, T, OpenCL>, Error> {
     let out = cl_scalar_op(device, x, scalar, op)?;
     Ok((out, x.dims()).into())
 }
 
-pub fn cl_write<T>(device: &CLDevice, x: &mut Buffer<T>, data: &[T]) {
-    let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.1, data, true).unwrap() };
+pub fn cl_write<T>(device: &OpenCL, x: &mut CLBuffer<T>, data: &[T]) {
+    let event = unsafe { enqueue_write_buffer(&device.queue(), x.ptr.ptr, data, true).unwrap() };
     wait_for_event(event).unwrap();
 }
 
-impl<'a, T> AsClCvoidPtr for Matrix<'a, T> {
+impl<'a, T> AsClCvoidPtr for Matrix<'a, T, OpenCL> {
     fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
-        self.ptr.1
+        self.ptr.ptr
     }
 }
 
-impl<'a, T> AsClCvoidPtr for &Matrix<'a, T> {
+impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
     fn as_cvoid_ptr(&self) -> *const std::ffi::c_void {
-        self.ptr.1
+        self.ptr.ptr
     }
 }
-
 
 /// Compute operations on the CPU even though the matrix was created with an OpenCL device.
 /// There were some optimizations implemented regarding unified memory architectures.
 ///
 /// # Example
 /// ```
-/// use custos::{CLDevice, VecRead};
+/// use custos::{OpenCL, Read};
 /// use custos_math::{Matrix, opencl::cpu_exec, FnsOps};
 ///
 /// fn main() -> custos::Result<()> {
-///     let device = CLDevice::new(0)?;
-///     let a = Matrix::<f32>::from((&device, 2, 2, [1., 2., 3., 4.]));
+///     let device = OpenCL::new(0)?;
+///     let a = Matrix::from((&device, 2, 2, [1f32, 2., 3., 4.]));
 ///     let res = cpu_exec(&device, &a, |cpu, x| cpu.neg(x))?;
-///     assert_eq!(device.read(&res), vec![-1., -2., -3., -4.]);
+///     assert_eq!(res.read(), vec![-1., -2., -3., -4.]);
 ///     Ok(())
 /// }
 /// ```
-pub fn cpu_exec<'c, 'a, 'o, T, F>(
-    device: &'o CLDevice,
-    matrix: &Matrix<'a, T>,
+pub fn cpu_exec<'a, 'o, T, F>(
+    device: &'o OpenCL,
+    matrix: &Matrix<'a, T, OpenCL>,
     f: F,
-) -> custos::Result<Matrix<'o, T>>
+) -> custos::Result<Matrix<'o, T, OpenCL>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
 {
+    // TODO: use compile time unified_cl flag -> get from custos?
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
-        // Using a CPU stored in a CLDevice in order to get a (correct) cache entry.
+        // Using a CPU stored in a OpenCL in order to get a (correct) cache entry.
         // Due to the (new) caching architecture, using a new CPU isn't possible,
         // as the cache would be newly created every iteration.
         // host ptr matrix
-        let no_drop = f(&device.cpu, matrix);
+        let no_drop = f(
+            &device.cpu,
+            &Matrix::from((matrix.ptr.host_ptr, matrix.dims)),
+        );
 
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx) }
-            .map(|buf| (buf, dims).into());
+        return unsafe {
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx)
+        }
+        .map(|buf| (buf, dims).into());
     }
 
     let cpu = CPU::new();
 
+    // TODO: fix
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, matrix))));
+        return Ok(Matrix::from((
+            device,
+            f(&cpu, &Matrix::from((matrix.ptr.host_ptr, matrix.dims))),
+        )));
     }
 
     // convert an OpenCL buffer to a cpu buffer
-    let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
     let mut convert = Matrix::from((device, mat));
-    convert.node = device.graph().add(convert.len, matrix.node.idx);
+    convert.node = device.graph().add(convert.len(), matrix.node.idx);
     Ok(convert)
 }
 
-pub fn cpu_exec_mut<T, F>(device: &CLDevice, matrix: &mut Matrix<T>, f: F) -> custos::Result<()>
+pub fn cpu_exec_mut<T, F>(
+    device: &OpenCL,
+    matrix: &mut Matrix<T, OpenCL>,
+    f: F,
+) -> custos::Result<()>
 where
     F: Fn(&CPU, &mut Matrix<T>),
     T: Copy + Default,
 {
     let cpu = CPU::new();
 
+    
     // uses same memory as CPU
     if device.unified_mem() {
-        return Ok(f(&cpu, matrix));
+        return Ok(f(&cpu, &mut Matrix::from((matrix.ptr.host_ptr, matrix.dims))));
     }
-
+    
     //convert an OpenCL buffer to a cpu matrix
-    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let mut cpu_matrix = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     f(&cpu, &mut cpu_matrix);
     // write result as slice back to OpenCL Matrix
     device.write(matrix, &cpu_matrix);
@@ -126,11 +142,11 @@ where
 }
 
 pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
-    device: &'o CLDevice,
-    lhs: &Matrix<'a, T>,
-    rhs: &Matrix<'a, T>,
+    device: &'o OpenCL,
+    lhs: &Matrix<'a, T, OpenCL>,
+    rhs: &Matrix<'a, T, OpenCL>,
     f: F,
-) -> custos::Result<Matrix<'o, T>>
+) -> custos::Result<Matrix<'o, T, OpenCL>>
 where
     F: for<'b> Fn(&'b CPU, &Matrix<T>, &Matrix<T>) -> Matrix<'b, T>,
     T: Copy + Default + Debug,
@@ -139,35 +155,48 @@ where
 
     #[cfg(not(feature = "realloc"))]
     if device.unified_mem() {
-        let no_drop = f(&device.cpu, lhs, rhs);
+        let no_drop = f(
+            &device.cpu,
+            &Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+            &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+        );
 
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
-        return unsafe { custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx)) }
-            .map(|buf| (buf, no_drop_dims).into());
+        return unsafe {
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx))
+        }
+        .map(|buf| (buf, no_drop_dims).into());
     }
 
     #[cfg(feature = "realloc")]
     if device.unified_mem() {
-        return Ok(Matrix::from((device, f(&cpu, lhs, rhs))));
+        return Ok(Matrix::from((
+            device,
+            f(
+                &cpu,
+                &Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+                &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+            ),
+        )));
     }
 
     // convert an OpenCL buffer to a cpu buffer
-    let lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
-    let rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
+    let lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
+    let rhs = Matrix::from((&cpu, rhs.dims(), rhs.read()));
 
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
     convert.node = device
         .graph()
-        .add(convert.len, (lhs.node.idx, rhs.node.idx));
+        .add(convert.len(), (lhs.node.idx, rhs.node.idx));
 
     Ok(convert)
 }
 
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
-    device: &CLDevice,
-    lhs: &mut Matrix<T>,
-    rhs: &Matrix<T>,
+    device: &OpenCL,
+    lhs: &mut Matrix<T, OpenCL>,
+    rhs: &Matrix<T, OpenCL>,
     f: F,
 ) -> custos::Result<()>
 where
@@ -178,12 +207,16 @@ where
 
     // uses same memory as CPU
     if device.unified_mem() {
-        return Ok(f(&cpu, lhs, rhs));
+        return Ok(f(
+            &cpu,
+            &mut Matrix::from((lhs.ptr.host_ptr, lhs.dims)),
+            &Matrix::from((rhs.ptr.host_ptr, rhs.dims)),
+        ));
     }
 
     //convert OpenCL matrix to cpu matrix
-    let mut cpu_lhs = Matrix::from((&cpu, lhs.dims(), device.read(lhs)));
-    let cpu_rhs = Matrix::from((&cpu, rhs.dims(), device.read(rhs)));
+    let mut cpu_lhs = Matrix::from((&cpu, lhs.dims(), lhs.read()));
+    let cpu_rhs = Matrix::from((&cpu, rhs.dims(), rhs.read()));
     f(&cpu, &mut cpu_lhs, &cpu_rhs);
 
     // write result as slice back to OpenCL Matrix
@@ -191,18 +224,19 @@ where
     Ok(())
 }
 
-pub fn cpu_exec_scalar<T, F>(device: &CLDevice, matrix: &Matrix<T>, f: F) -> T
+pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,
     T: Copy + Default,
 {
     let cpu = CPU::new();
+
     if device.unified_mem() {
-        return f(&cpu, matrix);
+        return f(&cpu, &Matrix::from((matrix.ptr.host_ptr, matrix.dims)));
     }
 
     // convert an OpenCL buffer to a cpu buffer
-    let cpu_buf = Matrix::from((&cpu, matrix.dims(), device.read(matrix)));
+    let cpu_buf = Matrix::from((&cpu, matrix.dims(), matrix.read()));
 
     f(&cpu, &cpu_buf)
 }

@@ -1,16 +1,16 @@
-use custos::{cache::Cache, opencl::enqueue_kernel, Buffer, CDatatype, CLDevice, Error};
+use custos::{opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, Device, Error, OpenCL};
 use std::fmt::Write;
 
 /// OpenCL matrix multiplication of two buffers / matrices.
 /// # Example
 /// ```
-/// use custos::{CLDevice, Buffer, VecRead};
+/// use custos::{OpenCL, Buffer, Read};
 /// use custos_math::cl_gemm;
 ///
 /// fn main() -> Result<(), custos::Error> {
-///     let device = CLDevice::new(0)?;
-///     let lhs = Buffer::<i16>::from((&device, [15, 30, 21, 5, 8, 5]));
-///     let rhs = Buffer::<i16>::from((&device, [3, 2, 7, 1, 9, 20]));
+///     let device = OpenCL::new(0)?;
+///     let lhs = Buffer::from((&device, [15i16, 30, 21, 5, 8, 5]));
+///     let rhs = Buffer::from((&device, [3i16, 2, 7, 1, 9, 20]));
 ///     
 ///     let out = cl_gemm(&device, 2, 3, 2, &rhs, &lhs)?;
 ///     assert_eq!(device.read(&out), vec![444, 480, 116, 118]);
@@ -18,13 +18,13 @@ use std::fmt::Write;
 /// }
 /// ```
 pub fn cl_gemm<'a, T: CDatatype>(
-    device: &'a CLDevice,
+    device: &'a OpenCL,
     m: usize,
     k: usize,
     n: usize,
-    lhs: &Buffer<T>,
-    rhs: &Buffer<T>,
-) -> Result<Buffer<'a, T>, Error> {
+    lhs: &CLBuffer<T>,
+    rhs: &CLBuffer<T>,
+) -> Result<CLBuffer<'a, T>, Error> {
     let mut mw = 1;
     for x in &[16, 8, 4, 2, 1] {
         if m % x == 0 {
@@ -112,7 +112,7 @@ pub fn cl_gemm<'a, T: CDatatype>(
 
     let gws = [f, s, 0];
 
-    let out = Cache::get::<T, _>(device, n * m, (lhs.node.idx, rhs.node.idx));
+    let out: CLBuffer<T> = device.retrieve(n * m, (lhs.node.idx, rhs.node.idx));
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }

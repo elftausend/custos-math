@@ -1,25 +1,52 @@
+use crate::{AdditionalOps, BaseOps, Matrix, SumOps};
+#[cfg(feature = "opencl")]
+use custos::{opencl::enqueue_kernel, OpenCL};
+use custos::{prelude::Number, CDatatype, IsShapeIndep, Shape};
 
-#[cfg(feature="opencl")]
-use custos::{opencl::enqueue_kernel, CLDevice, Cache};
-use custos::CDatatype;
-use crate::Matrix;
+#[inline]
+pub fn mse<'a, T, D, S>(
+    preds: &Matrix<'a, T, D, S>,
+    targets: &Matrix<'a, T, D>,
+) -> (T, Matrix<'a, T, D>)
+where
+    T: Number,
+    D: IsShapeIndep + BaseOps<T> + SumOps<T> + AdditionalOps<T>,
+    S: Shape,
+{
+    let preds = preds.as_dims();
+    (mse_loss(preds, targets), mse_grad(preds, targets))
+}
 
-pub fn mse<T: CDatatype>(preds: &Matrix<T>, targets: &Matrix<T>) -> T {
+pub fn mse_loss<T, D, S>(preds: &Matrix<T, D, S>, targets: &Matrix<T, D, S>) -> T
+where
+    D: BaseOps<T, S> + SumOps<T, S>,
+    S: Shape,
+{
     let x = preds - targets;
     (&x * &x).mean()
 }
 
-pub fn mse_grad<'a, T: CDatatype>(preds: &Matrix<'a, T>, targets: &Matrix<'a, T>) -> Matrix<'a, T> {
+pub fn mse_grad<'a, T, D, S>(
+    preds: &Matrix<'a, T, D, S>,
+    targets: &Matrix<'a, T, D, S>,
+) -> Matrix<'a, T, D, S>
+where
+    T: Number,
+    D: BaseOps<T, S> + SumOps<T, S> + AdditionalOps<T, S>,
+    S: Shape,
+{
     let x = preds - targets;
     (&x * T::two() / T::from_usize(preds.cols())) / T::from_usize(preds.rows())
 }
 
-#[cfg(feature="opencl")]
+#[cfg(feature = "opencl")]
 pub fn mse_grad_cl<'a, T: CDatatype>(
-    device: &'a CLDevice,
-    preds: &Matrix<'a, T>,
-    targets: &Matrix<'a, T>,
-) -> Matrix<'a, T> {
+    device: &'a OpenCL,
+    preds: &Matrix<'a, T, OpenCL>,
+    targets: &Matrix<'a, T, OpenCL>,
+) -> Matrix<'a, T, OpenCL> {
+    use custos::Device;
+
     let src = format!(
         "
         __kernel void mse_grad(__global const {datatype}* preds, 
@@ -37,11 +64,12 @@ pub fn mse_grad_cl<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out = Cache::get::<T, _>(device, preds.len, (preds.node.idx, targets.node.idx));
+    let out: custos::Buffer<T, OpenCL> =
+        device.retrieve(preds.len(), (preds.node.idx, targets.node.idx));
     enqueue_kernel(
         device,
         &src,
-        [preds.len, 0, 0],
+        [preds.len(), 0, 0],
         None,
         &[
             preds,
