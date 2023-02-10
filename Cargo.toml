@@ -1,6 +1,6 @@
 [package]
 name = "custos-math"
-version = "0.6.0"
+version = "0.6.1"
 edition = "2021"
 license = "MIT"
 categories = ["mathematics", "science", "no-std"]
@@ -54,3 +54,6 @@ required-features = ["realloc"]
 [[test]]
 name = "realloc"
 required-features = ["realloc"]
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
