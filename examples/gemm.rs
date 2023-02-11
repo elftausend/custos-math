@@ -1,5 +1,4 @@
-use custos::CPU;
-use custos_math::Matrix;
+use custos_math::{custos::CPU, Matrix};
 
 fn main() {
     let device = CPU::new();

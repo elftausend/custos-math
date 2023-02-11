@@ -4,7 +4,7 @@ use custos_math::{ClipOp, Matrix};
 #[cfg(feature = "opencl")]
 use custos::opencl::OpenCL;
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_clip_cpu() {
     let device = CPU::new();

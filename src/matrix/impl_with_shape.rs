@@ -16,7 +16,7 @@ where
 
 //impl<'a, T, D>
 
-/* 
+/*
 #[cfg(test)]
 mod tests {
 

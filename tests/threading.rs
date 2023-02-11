@@ -1,5 +1,5 @@
 #[cfg(not(feature = "realloc"))]
-use custos::{CPU, range, Read};
+use custos::{range, Read, CPU};
 
 #[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]

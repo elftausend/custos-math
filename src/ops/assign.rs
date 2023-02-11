@@ -120,7 +120,7 @@ impl<T: CDatatype> AssignOps<T> for custos::CUDA {
     fn sub_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "-").unwrap();
     }
-    
+
     #[inline]
     fn mul_assign(&self, lhs: &mut Buffer<T, Self, ()>, rhs: &Buffer<T, Self, ()>) {
         cu_ew_self(self, lhs, rhs, "*").unwrap();

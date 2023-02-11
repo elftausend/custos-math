@@ -13,7 +13,7 @@ pub fn roughly_equals<T: Float>(lhs: &[T], rhs: &[T], diff: T) {
     }
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_fns_cpu() {
     let device = CPU::new();

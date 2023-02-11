@@ -1,7 +1,7 @@
 use custos::CPU;
 use custos_math::{row_op, Matrix, RowOp};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_row_op() {
     let device = CPU::new();
@@ -41,7 +41,7 @@ fn test_row_op_cu() -> custos::Result<()> {
     Ok(())
 }
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_row_op_mut() {
     let device = CPU::new();

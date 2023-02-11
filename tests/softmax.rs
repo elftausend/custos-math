@@ -1,7 +1,7 @@
 use custos::{range, CPU};
 use custos_math::{nn::SoftmaxOps, Matrix};
 
-#[cfg(feature="cpu")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_softmax_cpu() {
     let device = CPU::new();

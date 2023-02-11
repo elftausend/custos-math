@@ -1,7 +1,7 @@
 # custos-math
 
 [![Crates.io version](https://img.shields.io/crates/v/custos-math.svg)](https://crates.io/crates/custos-math)
-[![Docs](https://docs.rs/custos-math/badge.svg?version=0.6.2)](https://docs.rs/custos-math/0.6.2/custos-math/)
+[![Docs](https://docs.rs/custos-math/badge.svg?version=0.6.3)](https://docs.rs/custos-math/0.6.3/custos-math/)
 
 This crate provides CUDA, OpenCL, CPU (and Stack) based matrix operations using [custos].
 
@@ -13,10 +13,10 @@ Add "custos-math" as a dependency:
 You will also need [custos], if you want to run an example.
 ```toml
 [dependencies]
-custos-math = "0.6.2"
+custos-math = "0.6.3"
 
 # to disable the default features (cuda, opencl) and use an own set of features:
-#custos-math = { version="0.6.2", default-features = false, features=["opencl"]}
+#custos-math = { version="0.6.3", default-features = false, features=["opencl"]}
 ```
 
 `custos-math` supports no-std via the `no-std` feature. This activates the "stack" feature, providing a `Stack` device.
@@ -26,8 +26,7 @@ custos-math = "0.6.2"
 ## Example
 
 ```rust
-use custos::CPU;
-use custos_math::Matrix;
+use custos_math::{Matrix, custos::CPU};
 
 fn main() {
     let device = CPU::new();

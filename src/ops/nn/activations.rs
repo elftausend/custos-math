@@ -8,7 +8,7 @@ use custos::CPU;
 use custos::Stack;
 
 #[cfg(feature = "opencl")]
-use crate::{opencl::cl_str_op_mat, cl_str_op_mut};
+use crate::{cl_str_op_mut, opencl::cl_str_op_mat};
 #[cfg(feature = "opencl")]
 use custos::OpenCL;
 
