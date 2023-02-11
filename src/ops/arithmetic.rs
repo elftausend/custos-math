@@ -20,7 +20,8 @@ use crate::cu_ew;
 /// Element-wise +, -, *, / operations for matrices.
 ///
 /// # Examples
-/// ```
+#[cfg_attr(feature = "cpu", doc = "```")]
+#[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
 /// use custos::CPU;
 /// use custos_math::Matrix;
 ///
@@ -38,7 +39,8 @@ use crate::cu_ew;
 pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
     /// Element-wise addition
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -53,7 +55,8 @@ pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
 
     /// Element-wise subtraction
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///
@@ -68,7 +71,8 @@ pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
 
     /// Element-wise multiplication
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///
@@ -83,7 +87,8 @@ pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
 
     /// Element-wise division
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::{Matrix, BaseOps};
     ///

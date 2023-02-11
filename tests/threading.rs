@@ -1,10 +1,11 @@
 #[cfg(not(feature = "realloc"))]
-use custos::{devices::cpu::CPU, range, Read};
+use custos::{CPU, range, Read};
 
 #[cfg(not(feature = "realloc"))]
 #[cfg(feature = "opencl")]
 use custos::devices::opencl::OpenCL;
 
+#[cfg(feature = "cpu")]
 #[cfg(not(feature = "realloc"))]
 #[test]
 fn test_threading_cpu() {

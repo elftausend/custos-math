@@ -27,7 +27,8 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 
 [features] 
 #default = ["no-std"]
-default = ["blas", "fastrand", "cpu", "opencl", "static-api", "cuda"]
+default = []
+#default = ["blas", "fastrand", "static-api"]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
 static-api = ["custos/static-api"]
@@ -40,8 +41,31 @@ no-std = ["custos/no-std", "stack"]
 blas = ["custos/blas"]
 
 [[example]]
+name = "cpu_cache"
+required-features = ["cpu"]
+
+[[example]]
+name = "cpu_device"
+required-features = ["cpu"]
+
+[[example]]
+name = "gemm"
+required-features = ["cpu"]
+
+
+
+
+[[example]]
 name = "simple"
 required-features = ["opencl"]
+
+[[test]]
+name = "matrix"
+required-features = ["cpu"]
+
+[[test]]
+name = "math"
+required-features = ["cpu"]
 
 [[test]]
 name = "switching"

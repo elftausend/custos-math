@@ -1,6 +1,7 @@
-use custos::cpu::CPU;
+use custos::CPU;
 use custos_math::{ColOp, Matrix};
 
+#[cfg(feature="cpu")]
 #[test]
 fn test_col_op() {
     let device = CPU::new();

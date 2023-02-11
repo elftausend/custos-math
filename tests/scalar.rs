@@ -1,4 +1,4 @@
-use custos::{cpu::CPU, number::Float};
+use custos::{CPU, number::Float};
 use custos_math::{scalar_apply, Matrix};
 
 #[cfg(feature = "cuda")]
@@ -33,6 +33,7 @@ fn test_scalar() {
     roughly_equals(&res.read(), &[0.69, 4.12, 3., 7., 6.], 1E-5);
 }
 
+#[cfg(feature="cpu")]
 #[test]
 fn test_scalar_apply() {
     let device = CPU::new();

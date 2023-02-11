@@ -1,6 +1,7 @@
 use custos::CPU;
 use custos_math::{Matrix, MaxOps};
 
+#[cfg(feature = "cpu")]
 #[test]
 fn test_max_ops() {
     let device = CPU::new();

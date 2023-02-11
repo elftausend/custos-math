@@ -1,6 +1,7 @@
 use custos::CPU;
 use custos_math::{Matrix, SumOps, SumOverOps};
 
+#[cfg(feature = "cpu")]
 #[test]
 fn test_sum_ops() {
     let device = CPU::new();

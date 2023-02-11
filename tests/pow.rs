@@ -1,6 +1,7 @@
 use custos::CPU;
 use custos_math::Matrix;
 
+#[cfg(feature="cpu")]
 #[test]
 fn test_pow() {
     let device = CPU::new();

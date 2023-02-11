@@ -1,6 +1,8 @@
 use custos::{Buffer, CPU};
 #[cfg(feature = "cuda")]
 use custos::{Read, CUDA};
+
+#[cfg(feature = "fastrand")]
 use custos_math::RandOp;
 
 #[cfg(feature = "cuda")]
@@ -16,6 +18,8 @@ fn test_rand_cuda() -> custos::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "fastrand")]
+#[cfg(feature = "cpu")]
 #[test]
 fn test_rand() -> custos::Result<()> {
     use custos_math::Matrix;
