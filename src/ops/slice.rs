@@ -5,6 +5,9 @@ use custos::{impl_stack, number::Number, CopySlice, Device, Shape, CPU};
 #[cfg(feature = "stack")]
 use custos::Stack;
 
+#[cfg(any(feature = "cuda", feature = "opencl"))]
+use custos::CDatatype;
+
 use crate::Matrix;
 
 pub trait SliceOps<T, S: Shape = (), D: Device = Self>: Device + CopySlice<T> {
@@ -36,7 +39,58 @@ impl<T: Number> SliceOps<T> for CPU
 where
     Self: CopySlice<T>,
 {
-    fn slice<R, C>(&self, source: &Matrix<T, CPU, ()>, rows: R, cols: C) -> Matrix<T, CPU, ()>
+    fn slice<R, C>(&self, source: &Matrix<T, Self, ()>, rows: R, cols: C) -> Matrix<T, Self, ()>
+    where
+        R: RangeBounds<usize>,
+        C: RangeBounds<usize>,
+    {
+        let rows = to_range(rows, source.rows());
+        let cols = to_range(cols, source.cols());
+
+        let num_rows = rows.end - rows.start;
+        let num_cols = cols.end - cols.start;
+
+        if num_cols == source.cols() {
+            let offset = rows.start * num_cols;
+            let size = num_rows * num_cols;
+            let buffer = self.copy_slice(source.as_buf(), offset..(offset + size));
+            (buffer, (num_rows, num_cols)).into()
+        } else {
+            todo!()
+        }
+    }
+}
+
+#[cfg(feature = "opencl")]
+impl<T: CDatatype> SliceOps<T> for custos::opencl::OpenCL
+where
+    Self: CopySlice<T>,
+{
+    fn slice<R, C>(&self, source: &Matrix<T, Self, ()>, rows: R, cols: C) -> Matrix<T, Self, ()>
+    where
+        R: RangeBounds<usize>,
+        C: RangeBounds<usize>,
+    {
+        let rows = to_range(rows, source.rows());
+        let cols = to_range(cols, source.cols());
+
+        let num_rows = rows.end - rows.start;
+        let num_cols = cols.end - cols.start;
+
+        if num_cols == source.cols() {
+            let offset = rows.start * num_cols;
+            let size = num_rows * num_cols;
+            let buffer = self.copy_slice(source.as_buf(), offset..(offset + size));
+            (buffer, (num_rows, num_cols)).into()
+        } else {
+            todo!()
+        }
+    }
+}
+
+#[cfg(feature = "cuda")]
+impl<T: CDatatype> SliceOps<T> for custos::CUDA {
+    fn slice<R, C>(&self, source: &Matrix<T, Self, ()>, rows: R, cols: C) -> Matrix<T, Self, ()>
     where
         R: RangeBounds<usize>,
         C: RangeBounds<usize>,
