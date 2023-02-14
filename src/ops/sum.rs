@@ -155,7 +155,7 @@ impl<T: CDatatype> SumOps<T> for CUDA {
     }
 }
 
-#[cfg(feature="cuda")]
+#[cfg(feature = "cuda")]
 impl<T: CDatatype> SumOverOps<T> for CUDA {
     #[inline]
     fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {

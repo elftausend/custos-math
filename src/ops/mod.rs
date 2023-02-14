@@ -11,6 +11,7 @@ mod max;
 mod row_op;
 mod scalar;
 mod scalar_assign;
+mod slice;
 mod sum;
 mod transpose;
 
@@ -28,6 +29,7 @@ pub use max::*;
 pub use row_op::*;
 pub use scalar::*;
 pub use scalar_assign::*;
+pub use slice::*;
 pub use sum::*;
 pub use transpose::*;
 

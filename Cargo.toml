@@ -16,8 +16,8 @@ rust-version = "1.65"
 [dependencies]
 
 #custos = {git = "https://github.com/elftausend/custos"}
-#custos = { path = "../custos", default-features = false, features=["macro"] }
-custos = { version = "0.6.1", default-features = false, features=["macro"] }
+custos = { path = "../custos", default-features = false, features=["macro"] }
+#custos = { version = "0.6.1", default-features = false, features=["macro"] }
 
 fastrand = {version="1.8.0", optional=true}
 matrixmultiply = { version="0.3.2", default-features=false, optional = true }
