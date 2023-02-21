@@ -27,7 +27,6 @@ pub trait SliceOps<T, S: Shape = (), D: Device = Self>: Device + CopySlice<T> {
     /// assert_eq!(device.slice(&x, ..1, ..).read(), vec![1, 2, 3]);
     /// assert_eq!(device.slice(&x, .., 1..3).read(), vec![2, 3, 5, 6]);
     /// ```
-
     fn slice<'a, R, C>(
         &'a self,
         source: &'a Matrix<T, D, S>,
@@ -119,7 +118,7 @@ fn slice<'a, T, S, D, R, C>(
 ) -> Matrix<'a, T, D, ()>
 where
     S: Shape,
-    D: Alloc<'a, T> + SliceOps<T, S, D>,
+    D: for<'b> Alloc<'b, T> + SliceOps<T, S, D>,
     R: RangeBounds<usize>,
     C: RangeBounds<usize>,
 {

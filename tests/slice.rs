@@ -1,11 +1,11 @@
-use custos::cpu::CPU;
 use custos_math::Matrix;
-
-#[cfg(feature = "cuda")]
 use custos_math::SliceOps;
 
+#[cfg(feature = "cpu")]
 #[test]
 fn test_slice_cpu() {
+    use custos::CPU;
+
     let device = CPU::new();
 
     let source = Matrix::from((&device, (3, 2), [1., 2., 3., 4., 5., 6.]));
