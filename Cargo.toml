@@ -1,6 +1,6 @@
 [package]
 name = "custos-math"
-version = "0.6.0"
+version = "0.6.3"
 edition = "2021"
 license = "MIT"
 categories = ["mathematics", "science", "no-std"]
@@ -17,9 +17,9 @@ rust-version = "1.65"
 
 #custos = {git = "https://github.com/elftausend/custos"}
 custos = { path = "../custos", default-features = false, features=["macro"] }
-#custos = { version = "0.6.1", default-features = false, features=["macro"] }
 
-fastrand = {version="1.8.0", optional=true}
+
+fastrand = {version="1.9.0", optional=true}
 matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 
 [build-dependencies]
@@ -34,14 +34,37 @@ static-api = ["custos/static-api"]
 cpu = ["custos/cpu"]
 stack = ["custos/stack"]
 opencl = ["custos/opencl", "cpu"]
-cuda = ["custos/cuda"]
+cuda = ["custos/cuda", "cpu"]
 realloc = ["custos/realloc"]
 no-std = ["custos/no-std", "stack"]
 blas = ["custos/blas"]
 
 [[example]]
+name = "cpu_cache"
+required-features = ["cpu"]
+
+[[example]]
+name = "cpu_device"
+required-features = ["cpu"]
+
+[[example]]
+name = "gemm"
+required-features = ["cpu"]
+
+
+
+
+[[example]]
 name = "simple"
 required-features = ["opencl"]
+
+[[test]]
+name = "matrix"
+required-features = ["cpu"]
+
+[[test]]
+name = "math"
+required-features = ["cpu"]
 
 [[test]]
 name = "switching"
@@ -54,3 +77,6 @@ required-features = ["realloc"]
 [[test]]
 name = "realloc"
 required-features = ["realloc"]
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]

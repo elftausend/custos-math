@@ -1,9 +1,10 @@
-use custos::cpu::CPU;
+use custos::CPU;
 use custos_math::Matrix;
 
 #[cfg(feature = "cuda")]
 use custos_math::TransposeOp;
 
+#[cfg(feature = "cpu")]
 #[test]
 fn test_transpose_cpu() {
     let device = CPU::new();

@@ -1,5 +1,7 @@
-use custos::{Read, CPU};
-use custos_math::{BaseOps, Matrix};
+use custos_math::{
+    custos::{Read, CPU},
+    BaseOps, Matrix,
+};
 
 fn main() {
     let device = CPU::new();

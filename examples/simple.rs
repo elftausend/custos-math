@@ -1,8 +1,7 @@
-use custos::{
-    devices::{cpu::CPU, opencl::OpenCL},
-    Read,
+use custos_math::{
+    custos::{OpenCL, Read, CPU},
+    BaseOps, Matrix,
 };
-use custos_math::{BaseOps, Matrix};
 
 fn main() -> custos::Result<()> {
     //select() ... sets CPU as 'global device'

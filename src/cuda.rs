@@ -1,6 +1,7 @@
 use crate::Matrix;
 use custos::{
-    cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, Read, WriteBuf, CPU, CUDA, Device,
+    cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, Device, Read, WriteBuf, CPU,
+    CUDA,
 };
 
 pub fn cu_scalar_op<'a, T: CDatatype>(

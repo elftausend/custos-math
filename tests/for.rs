@@ -72,6 +72,7 @@ fn test_use_range_for_ew_add() {
     }
 }
 
+#[cfg(feature = "cpu")]
 #[cfg(not(feature = "realloc"))]
 #[test]
 fn test_nested_for() {

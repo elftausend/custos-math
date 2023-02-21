@@ -19,7 +19,8 @@ mod impl_with_shape;
 /// A matrix using [Buffer] described with rows and columns
 /// # Example
 /// The following example creates a zeroed (or values set to default) Matrix with the given dimensions.
-/// ```
+#[cfg_attr(feature = "cpu", doc = "```")]
+#[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
 /// use custos::CPU;
 /// use custos_math::Matrix;
 ///
@@ -39,7 +40,8 @@ pub struct Matrix<'a, T = f32, D: Device = CPU, S: Shape = ()> {
 impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Returns an empty matrix with the specified dimensions (rows, cols).
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -75,7 +77,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
 
     /// Returns a reference to the underlying buffer.
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::{CPU, Read};
     /// use custos_math::Matrix;
     ///
@@ -113,7 +116,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Returns the row count of the matrix.
     ///
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -129,7 +133,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Returns the column count of the matrix.
     ///
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -145,7 +150,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Returns the number of elements in the matrix: rows * cols
     ///
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -197,7 +203,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Uses VecRead and current global device to read Matrix
     ///
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -217,7 +224,8 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Uses VecRead and current global device to read Matrix
     ///
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///

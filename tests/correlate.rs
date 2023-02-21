@@ -27,6 +27,7 @@ fn test_rotate_kernel() {
     assert_eq!(rot, vec![9., 8., 7., 6., 5., 4., 3., 2., 1.,]);
 }
 
+#[cfg(feature = "cpu")]
 #[test]
 fn test_add_padding() {
     let device = CPU::new();

@@ -17,7 +17,8 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 
 /// Assignment operations
 /// # Examples
-/// ```
+#[cfg_attr(feature = "cpu", doc = "```")]
+#[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
 /// use custos::{CPU, Read};
 /// use custos_math::{Matrix, AssignOps};
 ///
@@ -34,7 +35,8 @@ use crate::{assign_to_lhs, element_wise_op_mut, Matrix};
 pub trait AssignOps<T, S: Shape = (), D: Device = Self>: Device {
     /// Add assign
     /// # Examples
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::{CPU, Read};
     /// use custos_math::{Matrix, AssignOps};
     ///
@@ -118,7 +120,7 @@ impl<T: CDatatype> AssignOps<T> for custos::CUDA {
     fn sub_assign(&self, lhs: &mut Buffer<T, custos::CUDA>, rhs: &Buffer<T, custos::CUDA>) {
         cu_ew_self(self, lhs, rhs, "-").unwrap();
     }
-    
+
     #[inline]
     fn mul_assign(&self, lhs: &mut Buffer<T, Self, ()>, rhs: &Buffer<T, Self, ()>) {
         cu_ew_self(self, lhs, rhs, "*").unwrap();

@@ -47,7 +47,8 @@ impl<
 impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
     /// Matrix multiplication. Uses current global device.
     /// # Example
-    /// ```
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
     /// use custos::CPU;
     /// use custos_math::Matrix;
     ///
@@ -111,7 +112,8 @@ impl<'a, T, D: Device, LS: Shape> Matrix<'a, T, D, LS> {
 
 /// Matrix multiplication. Uses provided device.
 /// # Example
-/// ```
+#[cfg_attr(feature = "cpu", doc = "```")]
+#[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
 /// use custos::{CPU, Read};
 /// use custos_math::{Matrix, Gemm};
 ///

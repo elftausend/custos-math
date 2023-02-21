@@ -4,8 +4,7 @@ use crate::{
     ops::{cl_to_cpu_lr, cl_to_cpu_s},
 };
 use crate::{
-    matrix_multiply::MatrixMultiply, ColOp, FnsOps, Matrix, MaxOps, SumOverOps,
-    TransposeOp,
+    matrix_multiply::MatrixMultiply, ColOp, FnsOps, Matrix, MaxOps, SumOverOps, TransposeOp,
 };
 use custos::{number::Float, range, Device, GenericBlas, CPU};
 #[cfg(feature = "opencl")]

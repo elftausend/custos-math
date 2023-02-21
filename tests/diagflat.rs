@@ -1,4 +1,4 @@
-use custos::cpu::CPU;
+use custos::CPU;
 use custos_math::{DiagflatOp, Matrix};
 
 #[cfg(feature = "opencl")]
@@ -6,6 +6,7 @@ use custos::OpenCL;
 #[cfg(feature = "opencl")]
 use custos_math::cl_diagflat;
 
+#[cfg(feature = "opencl")]
 #[test]
 fn test_diagflat_cpu() {
     let device = CPU::new();
