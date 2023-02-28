@@ -1,4 +1,4 @@
-use core::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, Mul, MulAssign, Rem, Sub, SubAssign};
 
 use crate::{AdditionalOps, AssignOps, BaseOps};
 
@@ -793,7 +793,7 @@ impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Mul<T> for &Matrix<'a, T, D, S> {
     }
 }
 
-// div
+//-------------Div-------------
 
 impl<'a, T, S: Shape, D: BaseOps<T, S>> Div<Self> for &Matrix<'a, T, D, S> {
     type Output = Matrix<'a, T, D, S>;
@@ -819,6 +819,42 @@ impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Div<T> for &Matrix<'a, T, D, S> {
     }
 }
 
+//-------------Rem-------------
+
+impl<'a, T, S: Shape, D: BaseOps<T, S>> Rem<Self> for Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.device().rem(&self, &rhs)
+    }
+}
+
+impl<'a, T, S: Shape, D: BaseOps<T, S>> Rem<Self> for &Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.device().rem(&self, &rhs)
+    }
+}
+
+impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Rem<T> for Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
+
+    fn rem(self, rhs: T) -> Self::Output {
+        self.rems(rhs)
+    }
+}
+
+impl<'a, T, S: Shape, D: AdditionalOps<T, S>> Rem<T> for &Matrix<'a, T, D, S> {
+    type Output = Matrix<'a, T, D, S>;
+
+    fn rem(self, rhs: T) -> Self::Output {
+        self.rems(rhs)
+    }
+}
+
+//-------------AddAssign-------------
+
 impl<T, D, S: Shape> AddAssign<&Self> for Matrix<'_, T, D, S>
 where
     D: AssignOps<T, S, D>,
@@ -837,6 +873,8 @@ where
     }
 }
 
+//-------------MulAssign-------------
+
 impl<T, D, S: Shape> MulAssign<&Self> for Matrix<'_, T, D, S>
 where
     D: AssignOps<T, S, D>,
@@ -854,6 +892,8 @@ where
         rhs.device().mul_assign(self, &rhs)
     }
 }
+
+//-------------SubAssign-------------
 
 impl<T, D, S: Shape> SubAssign<&Matrix<'_, T, D, S>> for &mut Matrix<'_, T, D, S>
 where

@@ -100,6 +100,22 @@ pub trait BaseOps<T, S: Shape = (), D: Device = Self>: Device {
     /// assert_eq!(div.read(), vec![0, 1, 2, 8, -2, -4]);
     /// ```
     fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
+
+    /// Element-wise modulo
+    /// # Example
+    #[cfg_attr(feature = "cpu", doc = "```")]
+    #[cfg_attr(not(feature = "cpu"), doc = "```ignore")]
+    /// use custos::CPU;
+    /// use custos_math::{Matrix, BaseOps};
+    ///
+    /// let device = CPU::new();
+    /// let a = Matrix::from((&device, 2, 3, [4, 5, 17, 8, 10, 13]));
+    /// let b = Matrix::from((&device, 2, 3, [2, 4, 5, 1, -5, -3]));
+    ///
+    /// let rem = device.rem(&a, &b);
+    /// assert_eq!(rem.read(), vec![0, 1, 2, 0, 0, 1]);
+    /// ```
+    fn rem(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S>;
 }
 
 #[impl_stack]
@@ -124,6 +140,10 @@ where
     fn div(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
         ew_op(self, lhs, rhs, |x, y| x / y)
     }
+
+    fn rem(&self, lhs: &Matrix<T, D, S>, rhs: &Matrix<T, D, S>) -> Matrix<T, Self, S> {
+        ew_op(self, lhs, rhs, |x, y| x % y)
+    }
 }
 
 #[cfg(feature = "opencl")]
@@ -147,6 +167,11 @@ impl<T: CDatatype> BaseOps<T> for OpenCL {
         let buf = cl_tew(self, lhs, rhs, "/").unwrap();
         (buf, lhs.dims()).into()
     }
+
+    fn rem(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self, ()> {
+        let buf = cl_tew(self, lhs, rhs, "%").unwrap();
+        (buf, lhs.dims()).into()
+    }
 }
 
 #[cfg(feature = "cuda")]
@@ -168,6 +193,11 @@ impl<T: CDatatype> BaseOps<T> for custos::CUDA {
 
     fn div(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         let buf = cu_ew(self, lhs, rhs, "/").unwrap();
+        (buf, lhs.dims()).into()
+    }
+
+    fn rem(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
+        let buf = cu_ew(self, lhs, rhs, "%").unwrap();
         (buf, lhs.dims()).into()
     }
 

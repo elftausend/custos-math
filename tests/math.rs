@@ -205,6 +205,44 @@ fn test_ew_mul_cuda() {
     }
 }
 
+#[test]
+fn test_ew_rem_cpu() {
+    let device = CPU::new();
+
+    let a = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
+    let b = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
+
+    let c = a % b;
+    assert_eq!(vec![0, 0, 0, 0], c.read());
+}
+
+#[cfg(feature = "opencl")]
+#[test]
+fn test_ew_rem_cl() {
+    let device = OpenCL::new(0).unwrap();
+
+    let a = Matrix::from((&device, (1, 4), [1u32, 4, 2, 9]));
+    let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
+
+    let c = a % b;
+    assert_eq!(vec![0, 0, 0, 0], c.read());
+}
+
+#[cfg(feature = "cuda")]
+#[test]
+fn test_ew_rem_cuda() -> custos::Result<()> {
+    use custos::CUDA;
+
+    let device = CUDA::new(0)?;
+
+    let a = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
+    let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
+
+    let c = a % b;
+    assert_eq!(vec![0., 0., 0., 0.], c.read());
+    Ok(())
+}
+
 #[cfg(any(not(target_os = "macos"), not(feature = "opencl")))]
 #[test]
 fn test_gemm_cpu() {
