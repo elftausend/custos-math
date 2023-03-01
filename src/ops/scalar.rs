@@ -44,7 +44,7 @@ where
 
     #[inline]
     pub fn rems(&self, rhs: T) -> Self {
-        self.device().divs(self, rhs)
+        self.device().rems(self, rhs)
     }
 }
 
