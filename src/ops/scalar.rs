@@ -41,6 +41,11 @@ where
     pub fn divs(&self, rhs: T) -> Self {
         self.device().divs(self, rhs)
     }
+
+    #[inline]
+    pub fn rems(&self, rhs: T) -> Self {
+        self.device().rems(self, rhs)
+    }
 }
 
 pub trait AdditionalOps<T, S: Shape = (), D: Device = Self>: Device {
@@ -48,6 +53,7 @@ pub trait AdditionalOps<T, S: Shape = (), D: Device = Self>: Device {
     fn subs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
     fn muls(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
     fn divs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
+    fn rems(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S>;
 }
 
 #[cfg(feature = "cuda")]
@@ -67,8 +73,14 @@ impl<T: CDatatype> AdditionalOps<T> for CUDA {
         (cu_scalar_op(self, lhs, rhs, "/").unwrap(), lhs.dims()).into()
     }
 
+    #[inline]
     fn subs(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self, ()> {
         (cu_scalar_op(self, lhs, rhs, "-").unwrap(), lhs.dims()).into()
+    }
+
+    #[inline]
+    fn rems(&self, lhs: &Matrix<T, Self, ()>, rhs: T) -> Matrix<T, Self, ()> {
+        (cu_scalar_op(self, lhs, rhs, "%").unwrap(), lhs.dims()).into()
     }
 }
 
@@ -93,6 +105,11 @@ impl<T: CDatatype> AdditionalOps<T> for OpenCL {
     fn divs(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "/").unwrap()
     }
+
+    #[inline]
+    fn rems(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
+        cl_scalar_op_mat(self, lhs, rhs, "%").unwrap()
+    }
 }
 
 #[impl_stack]
@@ -115,5 +132,10 @@ impl<T: Number, D: MainMemory, S: Shape> AdditionalOps<T, S, D> for CPU {
     #[inline]
     fn divs(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
         scalar_apply(self, lhs, rhs, |c, a, b| *c = a / b)
+    }
+
+    #[inline]
+    fn rems(&self, lhs: &Matrix<T, D, S>, rhs: T) -> Matrix<T, Self, S> {
+        scalar_apply(self, lhs, rhs, |c, a, b| *c = a % b)
     }
 }
