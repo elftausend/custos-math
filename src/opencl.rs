@@ -1,6 +1,7 @@
 //mod switching;
 //pub use switching::*;
 
+use custos::number::Number;
 use custos::{
     devices::opencl::cl_device::OpenCL,
     opencl::{
@@ -25,7 +26,7 @@ pub fn cl_str_op_mat<'a, T: CDatatype>(
     Ok((out, x.dims()).into())
 }
 
-pub fn cl_scalar_op_mat<'a, T: CDatatype>(
+pub fn cl_scalar_op_mat<'a, T: CDatatype + Number>(
     device: &'a OpenCL,
     x: &Matrix<T, OpenCL>,
     scalar: T,

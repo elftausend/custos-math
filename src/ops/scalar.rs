@@ -57,7 +57,7 @@ pub trait AdditionalOps<T, S: Shape = (), D: Device = Self>: Device {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> AdditionalOps<T> for CUDA {
+impl<T: CDatatype + Number> AdditionalOps<T> for CUDA {
     #[inline]
     fn adds(&self, lhs: &Matrix<T, CUDA>, rhs: T) -> Matrix<T, CUDA> {
         (cu_scalar_op(self, lhs, rhs, "+").unwrap(), lhs.dims()).into()
@@ -85,7 +85,7 @@ impl<T: CDatatype> AdditionalOps<T> for CUDA {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> AdditionalOps<T> for OpenCL {
+impl<T: CDatatype + Number> AdditionalOps<T> for OpenCL {
     #[inline]
     fn adds(&self, lhs: &Matrix<T, Self>, rhs: T) -> Matrix<T, Self> {
         cl_scalar_op_mat(self, lhs, rhs, "+").unwrap()

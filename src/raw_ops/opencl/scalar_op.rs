@@ -1,4 +1,6 @@
-use custos::{opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, Device, OpenCL};
+use custos::{
+    number::Number, opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, Device, OpenCL,
+};
 
 pub fn cl_scalar_op<'a, T>(
     device: &'a OpenCL,
@@ -7,7 +9,7 @@ pub fn cl_scalar_op<'a, T>(
     op: &str,
 ) -> custos::Result<CLBuffer<'a, T>>
 where
-    T: CDatatype,
+    T: CDatatype + Number,
 {
     let src = format!("
     __kernel void scalar_r_op(__global const {datatype}* x, const {datatype} scalar, __global {datatype}* out) {{

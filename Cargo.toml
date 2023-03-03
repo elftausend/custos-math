@@ -15,8 +15,8 @@ rust-version = "1.65"
 
 [dependencies]
 
-custos = {git = "https://github.com/elftausend/custos", default-features = false, features=["macro"] }
-#custos = { path = "../custos", default-features = false, features=["macro"] }
+#custos = {git = "https://github.com/elftausend/custos", default-features = false, features=["macro"] }
+custos = { path = "../custos", default-features = false, features=["macro"] }
 #custos = { version = "0.6.3", default-features = false, features=["macro"] }
 
 

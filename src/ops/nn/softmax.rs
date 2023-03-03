@@ -6,7 +6,7 @@ use crate::{
 use crate::{
     matrix_multiply::MatrixMultiply, ColOp, FnsOps, Matrix, MaxOps, SumOverOps, TransposeOp,
 };
-use custos::{number::Float, range, Device, GenericBlas, CPU};
+use custos::{number::{Float, Number}, range, Device, GenericBlas, CPU};
 #[cfg(feature = "opencl")]
 use custos::{CDatatype, OpenCL};
 
@@ -150,7 +150,7 @@ impl<T: GenericBlas + MatrixMultiply + Float> SoftmaxOps<T> for OpenCL {
 }
 
 #[cfg(feature = "opencl")]
-pub fn cl_softmax<'a, T: CDatatype>(
+pub fn cl_softmax<'a, T: CDatatype + Number>(
     device: &'a OpenCL,
     mut activated: Matrix<T, OpenCL>,
     grads: &Matrix<T, OpenCL>,

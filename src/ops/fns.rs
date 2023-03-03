@@ -1,4 +1,4 @@
-use custos::{impl_stack, number::Float, CDatatype, Device, MainMemory, Shape};
+use custos::{impl_stack, number::Float, number::Number, CDatatype, Device, MainMemory, Shape};
 
 #[cfg(feature = "cpu")]
 use custos::CPU;
@@ -87,7 +87,7 @@ where
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> FnsOps<T> for OpenCL {
+impl<T: CDatatype + Number> FnsOps<T> for OpenCL {
     #[inline]
     fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_str_op_mat(self, x, "exp(x)").unwrap()
@@ -115,7 +115,7 @@ impl<T: CDatatype> FnsOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> FnsOps<T> for CUDA {
+impl<T: CDatatype + Number> FnsOps<T> for CUDA {
     #[inline]
     fn exp(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         let out = cu_str_op(self, x, "exp(x)").unwrap();

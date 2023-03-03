@@ -57,7 +57,7 @@ impl<T: Number, D: MainMemory, LS: Shape, RS: Shape> RowOp<T, LS, RS, D> for CPU
 
 // TODO: Implement add_ro_mut (for cuda as well)
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> RowOp<T> for OpenCL {
+impl<T: CDatatype + Number> RowOp<T> for OpenCL {
     #[inline]
     fn add_row(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
@@ -71,7 +71,7 @@ impl<T: CDatatype> RowOp<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> RowOp<T> for CUDA {
+impl<T: CDatatype + Number> RowOp<T> for CUDA {
     #[inline]
     fn add_row(&self, lhs: &Matrix<T, CUDA>, rhs: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))

@@ -40,7 +40,7 @@ impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, S, D> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-fn cl_clip<'a, T: CDatatype>(
+fn cl_clip<'a, T: CDatatype + Number>(
     device: &'a OpenCL,
     x: &Matrix<T, OpenCL>,
     min: T,
@@ -73,14 +73,14 @@ fn cl_clip<'a, T: CDatatype>(
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> ClipOp<T> for OpenCL {
+impl<T: CDatatype + Number> ClipOp<T> for OpenCL {
     fn clip(&self, x: &Matrix<T, Self>, min: T, max: T) -> Matrix<T, Self> {
         cl_clip(self, x, min, max).unwrap()
     }
 }
 
 #[cfg(feature = "cuda")]
-pub fn cu_clip<'a, T: CDatatype>(
+pub fn cu_clip<'a, T: CDatatype + Number>(
     device: &'a CUDA,
     x: &Buffer<T, CUDA>,
     min: T,
@@ -118,7 +118,7 @@ pub fn cu_clip<'a, T: CDatatype>(
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ClipOp<T> for CUDA {
+impl<T: CDatatype + Number> ClipOp<T> for CUDA {
     fn clip(&self, x: &Matrix<T, CUDA>, min: T, max: T) -> Matrix<T, CUDA> {
         let buf = cu_clip(self, x, min, max).unwrap();
         (buf, x.dims()).into()
