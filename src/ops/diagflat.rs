@@ -3,7 +3,7 @@ use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
-use custos::{CDatatype, Device, MainMemory};
+use custos::{CDatatype, Device, MainMemory, number::Number};
 
 #[cfg(feature = "cpu")]
 use custos::{cache::Cache, cpu::CPU};
@@ -50,7 +50,7 @@ impl<T: Copy + Default> DiagflatOp<T> for CUDA {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> DiagflatOp<T> for OpenCL {
+impl<T: CDatatype + Number> DiagflatOp<T> for OpenCL {
     #[inline]
     fn diagflat(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.diagflat(x))

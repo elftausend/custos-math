@@ -1,6 +1,6 @@
 use crate::{assign_to_lhs_scalar, Matrix};
 use core::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
-use custos::{impl_stack, CDatatype, Device, MainMemory, Shape, CPU};
+use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape, CPU};
 
 #[cfg(feature = "stack")]
 use custos::Stack;
@@ -82,7 +82,7 @@ where
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> ScalarAssign<T> for OpenCL {
+impl<T: CDatatype + Number> ScalarAssign<T> for OpenCL {
     #[inline]
     fn adds_assign(&self, lhs: &mut Matrix<T, Self>, rhs: T) {
         cl_assign_scalar(self, lhs, rhs, "+").unwrap();
@@ -103,7 +103,7 @@ impl<T: CDatatype> ScalarAssign<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> ScalarAssign<T> for CUDA {
+impl<T: CDatatype + Number> ScalarAssign<T> for CUDA {
     #[inline]
     fn adds_assign(&self, lhs: &mut Matrix<T, CUDA>, rhs: T) {
         cu_assign_scalar(self, lhs, rhs, "+").unwrap();

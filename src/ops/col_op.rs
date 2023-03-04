@@ -31,7 +31,7 @@ impl<T: Number, D: MainMemory> ColOp<T, D> for CPU {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: custos::CDatatype> ColOp<T> for OpenCL {
+impl<T: custos::CDatatype + Number> ColOp<T> for OpenCL {
     #[inline]
     fn add_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cl_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))
@@ -53,7 +53,7 @@ use crate::cu_to_cpu_lr;
 use custos::CUDA;
 
 #[cfg(feature = "cuda")]
-impl<T: custos::CDatatype> ColOp<T> for CUDA {
+impl<T: custos::CDatatype + Number> ColOp<T> for CUDA {
     #[inline]
     fn add_col(&self, lhs: &Matrix<T, Self>, rhs: &Matrix<T, Self>) -> Matrix<T, Self> {
         cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_col(lhs, rhs))

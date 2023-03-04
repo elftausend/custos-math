@@ -1,4 +1,4 @@
-use custos::{opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, OpenCL};
+use custos::{number::Number, opencl::enqueue_kernel, prelude::CLBuffer, CDatatype, OpenCL};
 
 pub fn cl_assign_scalar<'a, T>(
     device: &'a OpenCL,
@@ -7,7 +7,7 @@ pub fn cl_assign_scalar<'a, T>(
     op: &str,
 ) -> custos::Result<()>
 where
-    T: CDatatype,
+    T: CDatatype + Number,
 {
     let src = format!(
         "

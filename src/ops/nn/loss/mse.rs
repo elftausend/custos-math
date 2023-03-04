@@ -40,7 +40,7 @@ where
 }
 
 #[cfg(feature = "opencl")]
-pub fn mse_grad_cl<'a, T: CDatatype>(
+pub fn mse_grad_cl<'a, T: CDatatype + Number>(
     device: &'a OpenCL,
     preds: &Matrix<'a, T, OpenCL>,
     targets: &Matrix<'a, T, OpenCL>,
@@ -66,6 +66,7 @@ pub fn mse_grad_cl<'a, T: CDatatype>(
 
     let out: custos::Buffer<T, OpenCL> =
         device.retrieve(preds.len(), (preds.node.idx, targets.node.idx));
+
     enqueue_kernel(
         device,
         &src,
@@ -80,5 +81,6 @@ pub fn mse_grad_cl<'a, T: CDatatype>(
         ],
     )
     .unwrap();
+
     (out, preds.dims()).into()
 }

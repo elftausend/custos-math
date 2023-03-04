@@ -130,7 +130,7 @@ impl<T: Number> SumOps<T> for OpenCL {
 }
 
 #[cfg(feature = "opencl")]
-impl<T: CDatatype> SumOverOps<T> for OpenCL {
+impl<T: CDatatype + Number> SumOverOps<T> for OpenCL {
     #[inline]
     fn sum_rows<'a>(&'a self, x: &Matrix<T, Self>) -> Matrix<'a, T, Self> {
         cl_to_cpu_s(self, x, |device, x| device.sum_rows(x))
@@ -143,7 +143,7 @@ impl<T: CDatatype> SumOverOps<T> for OpenCL {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> SumOps<T> for CUDA {
+impl<T: CDatatype + Number> SumOps<T> for CUDA {
     #[inline]
     fn sum(&self, x: &Matrix<T, CUDA>) -> T {
         cu_to_cpu_scalar(x, |device, x| device.sum(&x))
@@ -156,7 +156,7 @@ impl<T: CDatatype> SumOps<T> for CUDA {
 }
 
 #[cfg(feature = "cuda")]
-impl<T: CDatatype> SumOverOps<T> for CUDA {
+impl<T: CDatatype + Number> SumOverOps<T> for CUDA {
     #[inline]
     fn sum_rows(&self, x: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
         cu_to_cpu_s(self, x, |device, x| device.sum_rows(&x))
