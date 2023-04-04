@@ -284,12 +284,13 @@ where
     }
 }
 
-/*impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
+impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Converts a (non stack allocated) `Buffer` with no shape to a `Buffer` with shape `O`.
     #[inline]
     pub fn to_dims<O: Shape>(self) -> Matrix<'a, T, D, O>
     where
         D: ToDim<T, S, O>,
+        D::Ptr<T, S>: ShallowCopy
     {
         let data = self.data.to_dims();
 
@@ -298,7 +299,7 @@ where
             dims: self.dims,
         }
     }
-}*/
+}
 
 impl<T, D: IsShapeIndep, S: Shape> Matrix<'_, T, D, S> {
     #[inline]
@@ -1008,11 +1009,10 @@ mod tests {
     #[cfg(feature = "cpu")]
     #[test]
     fn test_to_dims() {
-        use custos::{Dim1, ToDim, CPU};
+        use custos::{Dim1, CPU};
 
         let device = CPU::new();
         let a = Matrix::from((&device, 1, 1000, [1; 1000]));
-        //ToDim::<i32, (), Dim1<1000>>::to_dim(&device, a.data.ptr);
-        //let b: custos::cpu::CPUPtr<i32> = a.device().to_dim(a.ptr);
+        a.to_dims::<Dim1<1000>>();
     }
 }
