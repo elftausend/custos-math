@@ -1,16 +1,16 @@
-use custos::{cache::Cache, cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, CUDA};
+use custos::{cuda::launch_kernel1d, prelude::CUBuffer, CDatatype, CUDA, Device};
 
 /// Element-wise operations. The op/operation is usually "+", "-", "*", "/".
 ///
 /// # Example
 /// ```
-/// use custos::{CUDA, Buffer, VecRead};
+/// use custos::{CUDA, cuda::CUBuffer, Read};
 /// use custos_math::cu_ew;
 ///
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CUDA::new(0)?;
-///     let lhs = Buffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
-///     let rhs = Buffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
+///     let lhs = CUBuffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
+///     let rhs = CUBuffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
 ///
 ///     let result = cu_ew(&device, &lhs, &rhs, "+")?;
 ///     assert_eq!(vec![25, 39, 29, 11, 11], device.read(&result));
@@ -36,7 +36,7 @@ pub fn cu_ew<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out: CUBuffer<T> = Cache::get(device, lhs.len(), (lhs, rhs));
+    let out: CUBuffer<T> = device.retrieve(lhs.len(), (lhs, rhs));
 
     launch_kernel1d(lhs.len(), device, &src, "ew", &[lhs, rhs, &out, &lhs.len()])?;
 
@@ -60,13 +60,13 @@ pub fn cu_ew<'a, T: CDatatype>(
 ///
 /// # Example
 /// ```
-/// use custos::{CUDA, Buffer, VecRead};
+/// use custos::{CUDA, cuda::CUBuffer, Read};
 /// use custos_math::cu_ew_self;
 ///
 /// fn main() -> Result<(), custos::Error> {
 ///     let device = CUDA::new(0)?;
-///     let mut lhs = Buffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
-///     let rhs = Buffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
+///     let mut lhs = CUBuffer::<i32>::from((&device, [15, 30, 21, 5, 8]));
+///     let rhs = CUBuffer::<i32>::from((&device, [10, 9, 8, 6, 3]));
 ///
 ///     cu_ew_self(&device, &mut lhs, &rhs, "+")?;
 ///     assert_eq!(vec![25, 39, 29, 11, 11], device.read(&lhs));

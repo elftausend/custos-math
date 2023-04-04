@@ -1,4 +1,4 @@
-use custos::{impl_stack, Device, Dim2, GenericBlas, MainMemory, MayDim2, Shape, CPU};
+use custos::{impl_stack, Device, GenericBlas, MainMemory, Shape, CPU};
 
 #[cfg(feature = "stack")]
 use custos::Stack;
@@ -223,12 +223,12 @@ impl<T: GenericBlas> Gemm<T> for custos::CUDA {
         lhs: &Matrix<T, custos::CUDA>,
         rhs: &Matrix<T, custos::CUDA>,
     ) -> Matrix<T, custos::CUDA> {
-        use custos::CacheBuf;
         assert!(
             lhs.cols() == rhs.rows(),
             "wrong dims for matrix multiplication"
         );
-        let out = self.cached(lhs.rows() * rhs.cols());
+
+        let out = self.retrieve(lhs.rows() * rhs.cols(), (lhs.as_buf(), rhs.as_buf()));
         T::cugemm(
             self.handle(),
             lhs.rows(),

@@ -28,7 +28,7 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 
 [features] 
 #default = ["no-std"]
-default = ["blas", "fastrand", "cpu", "opencl", "static-api"]
+default = ["blas", "fastrand", "cpu", "opencl", "static-api", "cuda"]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
 static-api = ["custos/static-api"]

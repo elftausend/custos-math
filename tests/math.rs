@@ -235,11 +235,11 @@ fn test_ew_rem_cuda() -> custos::Result<()> {
 
     let device = CUDA::new(0)?;
 
-    let a = Matrix::from((&device, (1, 4), [1f32, 4., 2., 9.]));
-    let b = Matrix::from((&device, (1, 4), [1., 4., 2., 9.]));
+    let a = Matrix::from((&device, (1, 4), [1i32, 4, 2, 9]));
+    let b = Matrix::from((&device, (1, 4), [1, 4, 2, 9]));
 
     let c = a % b;
-    assert_eq!(vec![0., 0., 0., 0.], c.read());
+    assert_eq!(vec![0, 0, 0, 0], c.read());
     Ok(())
 }
 

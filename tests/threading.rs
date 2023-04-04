@@ -205,7 +205,7 @@ fn test_threading_cl_a() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {
-    use custos::CUDA;
+    use custos::{CUDA, CacheReturn};
     use custos_math::Matrix;
     use std::thread::JoinHandle;
 
@@ -221,7 +221,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        assert_eq!(device.cache().nodes.len(), 1);
+        assert_eq!(device.cache().nodes.len(), 1 + 2);
 
         for _ in range(100) {
             let c = &a - &b;
@@ -229,13 +229,13 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        assert_eq!(device.cache().nodes.len(), 8);
+        assert_eq!(device.cache().nodes.len(), 8+ 2);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        assert_eq!(device.cache().nodes.len(), 8);
+        assert_eq!(device.cache().nodes.len(), 8+ 2);
         Ok(())
     });
 
@@ -249,7 +249,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let c = &a * &b;
             assert_eq!(device.read(&c.as_buf()), vec![3., 6., 2., 30., 30., 16.]);
         }
-        assert_eq!(device.cache().nodes.len(), 1);
+        assert_eq!(device.cache().nodes.len(), 1 + 2);
     });
 
     let th2 = std::thread::spawn(|| {
@@ -264,7 +264,7 @@ fn test_threading_cuda_a() -> custos::Result<()> {
         let d = &a * &b * &c;
         let _ = &d + &c - (&b + &a * &d);
 
-        assert_eq!(device.cache().nodes.len(), 7);
+        assert_eq!(device.cache().nodes.len(), 7 + 2);
     });
 
     let a = Matrix::from((&device, (3, 2), [3f32, 2., 1., 5., 6., 4.]));

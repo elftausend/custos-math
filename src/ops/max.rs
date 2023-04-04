@@ -1,9 +1,6 @@
 use crate::Matrix;
 use custos::{number::Number, CDatatype, Device, MainMemory, CPU};
 
-#[cfg(feature = "cpu")]
-use custos::cache::Cache;
-
 #[cfg(feature = "cuda")]
 use crate::{cu_to_cpu_s, cu_to_cpu_scalar};
 #[cfg(feature = "cuda")]

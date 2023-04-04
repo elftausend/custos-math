@@ -6,7 +6,7 @@ use custos::CUDA;
 use custos::{CDatatype, Device, MainMemory, number::Number};
 
 #[cfg(feature = "cpu")]
-use custos::{cache::Cache, cpu::CPU};
+use custos::cpu::CPU;
 
 #[cfg(feature = "opencl")]
 use super::cl_to_cpu_s;
