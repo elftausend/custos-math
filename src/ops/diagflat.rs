@@ -35,7 +35,7 @@ impl<T: Default + Copy, D: MainMemory> DiagflatOp<T, D> for CPU {
         assert!(x.dims().0 == 1 || x.dims().1 == 1);
         let size = x.size();
 
-        let mut out = Cache::get(self, size * size, x.node.idx);
+        let mut out = self.retrieve(size * size, x.as_buf());
         diagflat(x, &mut out);
         (out, (size, size)).into()
     }

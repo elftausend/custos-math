@@ -152,7 +152,7 @@ where
 
         debug_assert!(k == rhs.rows());
 
-        let mut out = self.retrieve(m * n, (lhs.node.idx, rhs.node.idx));
+        let mut out = self.retrieve(m * n, (lhs.as_buf(), rhs.as_buf()));
         T::gemm(m, n, k, lhs, rhs, &mut out);
         (out, m, n).into()
     }

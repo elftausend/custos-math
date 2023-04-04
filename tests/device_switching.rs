@@ -31,7 +31,7 @@ fn test_device_switching() -> Result<(), custos::Error> {
 #[cfg(feature = "opencl")]
 #[test]
 fn test_device_switching_s() -> Result<(), custos::Error> {
-    use custos::cache::Cache;
+    use custos::{cache::Cache, Device};
     use custos_math::{BaseOps, Matrix};
 
     let device = OpenCL::new(0)?;
@@ -44,7 +44,7 @@ fn test_device_switching_s() -> Result<(), custos::Error> {
     let c = Matrix::from((&cpu, c.dims(), c.read()));
     let d_cpu = cpu.add(&c, &c);
 
-    let out = Cache::get::<f32, ()>(&device, d_cpu.size(), c.node.idx);
+    let out = device.retrieve::<f32, ()>(d_cpu.size(), c.as_buf());
     let event = unsafe {
         enqueue_write_buffer(
             &device.queue(),

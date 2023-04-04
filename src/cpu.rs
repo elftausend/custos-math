@@ -14,7 +14,7 @@ where
     S: Shape,
     Host: for<'b> Alloc<'b, T, S> + MainMemory,
 {
-    let mut out = device.retrieve(lhs.len(), lhs.node.idx);
+    let mut out = device.retrieve(lhs.len(), lhs.as_buf());
     scalar_apply_slice(lhs, &mut out, scalar, f);
     (out, lhs.dims()).into()
 }
@@ -73,7 +73,7 @@ where
 {
     assert!(rhs.rows() == 1 && rhs.cols() == lhs.cols());
 
-    let mut out = device.retrieve(lhs.len(), [lhs.node.idx, rhs.node.idx]);
+    let mut out = device.retrieve(lhs.len(), (lhs.as_buf(), rhs.as_buf()));
     row_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
     (out, lhs.dims()).into()
 }
@@ -90,7 +90,7 @@ where
     D: MainMemory,
     Host: for<'b> Alloc<'b, T> + MainMemory,
 {
-    let mut out = device.retrieve(lhs.len(), [lhs.node.idx, rhs.node.idx]);
+    let mut out = device.retrieve(lhs.len(), (lhs.as_buf(), rhs.as_buf()));
     col_op_slice_mut(lhs, lhs.rows(), lhs.cols(), rhs, &mut out, f);
     (out, lhs.dims()).into()
 }
@@ -123,7 +123,7 @@ where
     Host: for<'b> Alloc<'b, T, S> + MainMemory,
     S: Shape,
 {
-    let mut out = device.retrieve(x.len(), x.node.idx);
+    let mut out = device.retrieve(x.len(), x.as_buf());
     each_op_slice(x, &mut out, f);
     (out, x.dims()).into()
 }

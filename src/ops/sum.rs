@@ -4,9 +4,6 @@ use custos::{impl_stack, number::Number, CDatatype, Device, MainMemory, Shape, C
 #[cfg(feature = "stack")]
 use custos::Stack;
 
-#[cfg(feature = "cpu")]
-use custos::Cache;
-
 #[cfg(feature = "opencl")]
 use super::{cl_to_cpu_s, cl_to_cpu_scalar};
 #[cfg(feature = "opencl")]
@@ -76,7 +73,7 @@ impl<T: Copy + Default + core::ops::AddAssign, D: MainMemory, IS: Shape, OS: Sha
     SumOverOps<T, IS, OS, D> for CPU
 {
     fn sum_rows(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS> {
-        let mut out = Cache::get(self, x.cols(), x.node.idx);
+        let mut out = self.retrieve(x.cols(), x.as_buf());
 
         let data = x.as_slice();
         let sum_slice = out.as_mut_slice();
@@ -97,7 +94,7 @@ impl<T: Copy + Default + core::ops::AddAssign, D: MainMemory, IS: Shape, OS: Sha
     }
 
     fn sum_cols(&self, x: &Matrix<T, D, IS>) -> Matrix<T, Self, OS> {
-        let mut out = Cache::get(self, x.rows(), x.node.idx);
+        let mut out = self.retrieve(x.rows(), x.as_buf());
 
         let data = x.as_slice();
         let sum_slice = out.as_mut_slice();

@@ -3,7 +3,7 @@
 
 use custos::number::Number;
 use custos::{
-    devices::opencl::cl_device::OpenCL,
+    devices::opencl::OpenCL,
     opencl::{
         api::{enqueue_write_buffer, wait_for_event},
         AsClCvoidPtr,
@@ -21,7 +21,7 @@ pub fn cl_str_op_mat<'a, T: CDatatype>(
     x: &Matrix<T, OpenCL>,
     op: &str,
 ) -> Result<Matrix<'a, T, OpenCL>, Error> {
-    let mut out: CLBuffer<T> = device.retrieve(x.len(), x.node.idx);
+    let mut out: CLBuffer<T> = device.retrieve(x.len(), x.as_buf());
     cl_str_op(device, x, &mut out, op)?;
     Ok((out, x.dims()).into())
 }
@@ -69,6 +69,7 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
 ///     Ok(())
 /// }
 /// ```
+#[deprecated(since = "0.7.0", note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function.")]
 pub fn cpu_exec<'a, 'o, T, F>(
     device: &'o OpenCL,
     matrix: &Matrix<'a, T, OpenCL>,
@@ -93,7 +94,7 @@ where
         let dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
         return unsafe {
-            custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.node.idx)
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), matrix.as_buf())
         }
         .map(|buf| (buf, dims).into());
     }
@@ -113,10 +114,11 @@ where
     let cpu_buf: Matrix<T> = Matrix::from((&cpu, matrix.dims(), matrix.read()));
     let mat: Matrix<T> = f(&cpu, &cpu_buf);
     let mut convert = Matrix::from((device, mat));
-    convert.node = device.graph().add(convert.len(), matrix.node.idx);
+    //convert.node = device.graph().add(convert.len(), matrix.node.idx);
     Ok(convert)
 }
 
+#[deprecated(since = "0.7.0", note = "cpu_exec_mut was moved to custos. This is useable via a macro! or a pre-definied function.")]
 pub fn cpu_exec_mut<T, F>(
     device: &OpenCL,
     matrix: &mut Matrix<T, OpenCL>,
@@ -144,6 +146,7 @@ where
     Ok(())
 }
 
+#[deprecated(since = "0.7.0", note = "cpu_exec_lhs_rhs was moved to custos. This is useable via a macro! or a pre-definied function.")]
 pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
     device: &'o OpenCL,
     lhs: &Matrix<'a, T, OpenCL>,
@@ -167,7 +170,7 @@ where
         let no_drop_dims = no_drop.dims();
         // convert host ptr / CPU matrix into a host ptr + OpenCL ptr matrix
         return unsafe {
-            custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.node.idx, rhs.node.idx))
+            custos::opencl::construct_buffer(device, no_drop.to_buf(), (lhs.as_buf(), rhs.as_buf()))
         }
         .map(|buf| (buf, no_drop_dims).into());
     }
@@ -189,13 +192,14 @@ where
     let rhs = Matrix::from((&cpu, rhs.dims(), rhs.read()));
 
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
-    convert.node = device
-        .graph()
-        .add(convert.len(), (lhs.node.idx, rhs.node.idx));
+    // convert.node = device
+        // .graph()
+        // .add(convert.len(), (lhs.node.idx, rhs.node.idx));
 
     Ok(convert)
 }
 
+#[deprecated(since = "0.7.0", note = "cpu_exec_lhs_rhs_mut was moved to custos. This is useable via a macro! or a pre-definied function.")]
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
     device: &OpenCL,
     lhs: &mut Matrix<T, OpenCL>,
@@ -227,6 +231,7 @@ where
     Ok(())
 }
 
+#[deprecated(since = "0.7.0", note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function.")]
 pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,

@@ -68,7 +68,7 @@ where
     S: Shape,
     Host: for<'b> Alloc<'b, T, S> + MainMemory,
 {
-    let mut out = device.retrieve(lhs.size(), (lhs.node.idx, rhs.node.idx));
+    let mut out = device.retrieve(lhs.size(), (lhs.as_buf(), rhs.as_buf()));
     element_wise_op_mut(lhs, rhs, &mut out, f);
     (out, lhs.dims()).into()
 }

@@ -52,7 +52,7 @@ impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
     }
 
     fn max_rows(&self, x: &Matrix<T, D>) -> Matrix<T> {
-        let mut out = Cache::get(self, x.cols(), x.node.idx);
+        let mut out = self.retrieve(x.cols(), x.as_buf());
 
         let data = x.as_slice();
         let max_rows = out.as_mut_slice();
@@ -74,9 +74,9 @@ impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
 
     fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let data = x.as_slice();
-        let mut y = Cache::get(self, x.rows(), x.node.idx);
-
-        let max_cols = y.as_mut_slice();
+        let mut out = self.retrieve(x.rows(), x.as_buf());
+        
+        let max_cols = out.as_mut_slice();
 
         for (idx, max_cols_val) in max_cols.iter_mut().enumerate().take(x.rows()) {
             let index = idx * x.cols();
@@ -91,7 +91,7 @@ impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
             }
             *max_cols_val = max;
         }
-        (y, x.rows(), 1).into()
+        (out, x.rows(), 1).into()
     }
 }
 

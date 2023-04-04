@@ -17,10 +17,10 @@ fn test_use_range_for_ew_add() {
         let d = &c + &z;
         assert_eq!(vec![3, 10, 7, 22], device.read(d.as_buf()));
 
-        assert!(get_count() == 2);
+        assert_eq!(get_count(), 2 + 3); // 2 .. from operations, 3 .. from buffer init
     }
 
-    assert!(get_count() == 0);
+    assert_eq!(get_count(), 3);
 
     let a = Matrix::from((&device, (1, 5), [1, 4, 2, 9, 1]));
     let b = Matrix::from((&device, (1, 5), [1, 4, 2, 9, 1]));
@@ -33,9 +33,9 @@ fn test_use_range_for_ew_add() {
         let d = &c + &z;
         assert_eq!(vec![3, 10, 7, 22, 7], device.read(d.as_buf()));
 
-        assert!(get_count() == 2);
+        assert!(get_count() == 2 + 6);
     }
-    assert!(get_count() == 0);
+    assert!(get_count() == 0 + 6);
 }
 
 #[cfg(feature = "safe")]
@@ -88,17 +88,17 @@ fn test_nested_for() {
         for _ in range(200) {
             let d = &c + &b;
             let e = &a + &b + &c + &d;
-            assert!(get_count() == 5);
+            assert!(get_count() == 5 + 2); // 5 .. from operations, 2 from buffer init
 
             for _ in range(10) {
                 let _ = &d + &e;
-                assert!(get_count() == 6);
+                assert!(get_count() == 6 + 2);
             }
         }
-        assert!(get_count() == 1)
+        assert!(get_count() == 1 + 2)
     }
 
-    assert!(get_count() == 0);
+    assert!(get_count() == 2);
 }
 
 #[cfg(feature = "safe")]

@@ -112,7 +112,7 @@ pub fn cl_gemm<'a, T: CDatatype>(
 
     let gws = [f, s, 0];
 
-    let out: CLBuffer<T> = device.retrieve(n * m, (lhs.node.idx, rhs.node.idx));
+    let out: CLBuffer<T> = device.retrieve(n * m, (lhs, rhs));
     enqueue_kernel(device, &src, gws, None, &[lhs, rhs, &out])?;
     Ok(out)
 }

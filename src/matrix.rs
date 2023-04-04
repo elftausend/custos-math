@@ -216,7 +216,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     pub fn read(&'a self) -> D::Read<'a>
     where
         T: Default + Copy,
-        D: Read<T, D, S>,
+        D: Read<T, S, D>,
     {
         self.device().read(self.as_buf())
     }
@@ -238,7 +238,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     pub fn read_to_vec(&self) -> Vec<T>
     where
         T: Default + Copy,
-        D: Read<T, D, S>,
+        D: Read<T, S, D>,
     {
         self.device().read_to_vec(self.as_buf())
     }
@@ -284,7 +284,7 @@ where
     }
 }
 
-impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
+/*impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     /// Converts a (non stack allocated) `Buffer` with no shape to a `Buffer` with shape `O`.
     #[inline]
     pub fn to_dims<O: Shape>(self) -> Matrix<'a, T, D, O>
@@ -298,7 +298,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
             dims: self.dims,
         }
     }
-}
+}*/
 
 impl<T, D: IsShapeIndep, S: Shape> Matrix<'_, T, D, S> {
     #[inline]
@@ -932,9 +932,9 @@ where
 }
 
 #[cfg(not(feature = "no-std"))]
-impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T, D>> core::fmt::Debug for Matrix<'a, T, D>
+impl<'a, T: Default + Copy + core::fmt::Debug, D: Read<T>> core::fmt::Debug for Matrix<'a, T, D>
 where
-    D: Read<T, D> + 'a,
+    D: Read<T> + 'a,
     //for<'b> <D as Read<T, D>>::Read<'b>: Iterator,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -1012,7 +1012,7 @@ mod tests {
 
         let device = CPU::new();
         let a = Matrix::from((&device, 1, 1000, [1; 1000]));
-        ToDim::<i32, (), Dim1<1000>>::to_dim(&device, a.data.ptr);
+        //ToDim::<i32, (), Dim1<1000>>::to_dim(&device, a.data.ptr);
         //let b: custos::cpu::CPUPtr<i32> = a.device().to_dim(a.ptr);
     }
 }

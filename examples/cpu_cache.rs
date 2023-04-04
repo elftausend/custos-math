@@ -1,3 +1,4 @@
+use custos::CacheReturn;
 use custos_math::{
     custos::{Ident, CPU},
     Matrix,
@@ -11,7 +12,7 @@ fn main() {
 
     let out = a + b;
     let ptr = {
-        let cache = device.cache.borrow();
+        let cache = device.cache();
         let mut node = Ident::new(100 * 100);
         node.idx = 0;
         cache.nodes.get(&node).unwrap().ptr

@@ -41,11 +41,9 @@ where
 
     #[cfg(not(feature = "safe"))]
     fn softmax_grad(&self, activated: &Matrix<T>, grads: &Matrix<T>) -> Matrix<T> {
-        use custos::Cache;
-
         use crate::{BaseOps, Gemm};
 
-        let mut data: Matrix<T> = (Cache::get(self, grads.len(), ()), grads.dims()).into();
+        let mut data: Matrix<T> = (self.retrieve(grads.len(), ()), grads.dims()).into();
 
         let rows = grads.rows();
         let cols = grads.cols();

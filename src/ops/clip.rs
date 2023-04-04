@@ -23,7 +23,7 @@ pub trait ClipOp<T, S: Shape = (), D: Device = Self>: Device {
 #[impl_stack]
 impl<T: Number, D: MainMemory, S: Shape> ClipOp<T, S, D> for CPU {
     fn clip(&self, x: &Matrix<T, D, S>, min: T, max: T) -> Matrix<T, Self, S> {
-        let mut out = self.retrieve(x.size(), x.node.idx);
+        let mut out = self.retrieve(x.size(), x.as_buf());
         let out_slice = &mut out[..];
 
         for (idx, value) in x.iter().enumerate() {
@@ -67,7 +67,7 @@ fn cl_clip<'a, T: CDatatype + Number>(
         datatype = T::as_c_type_str()
     );
 
-    let out = device.retrieve::<T, ()>(x.size(), x.node.idx);
+    let out = device.retrieve::<T, ()>(x.size(), x.as_buf());
     enqueue_kernel(device, &src, [x.size(), 0, 0], None, &[x, &out])?;
     Ok((out, x.dims()).into())
 }

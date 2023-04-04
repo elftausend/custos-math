@@ -27,6 +27,8 @@ fn test_gemm_trans() {
 #[cfg(feature = "blas")]
 #[test]
 fn test_gemm_trans_perf() {
+    use custos::Device;
+
     let device = CPU::new();
 
     let mat = Matrix::<f32>::from((&device, 100, 300, vec![1.; 100 * 300]));
@@ -41,13 +43,13 @@ fn test_gemm_trans_perf() {
     let start = Instant::now();
 
     for _ in range(0..10) {
-        let mut out = Cache::get::<f32, ()>(&device, mat.rows() * mat.rows(), ());
+        let mut out = device.retrieve::<f32, ()>(mat.rows() * mat.rows(), ());
         GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
     }
 
     println!("trans blas elapsed: {:?}", start.elapsed());
 
-    let mut out: custos::Buffer<f32> = Cache::get(&device, mat.rows() * mat.rows(), ());
+    let mut out = device.retrieve::<f32, ()>(mat.rows() * mat.rows(), ());
     GenericBlas::gemmT(mat.rows(), mat.rows(), mat.cols(), &mat, &mat, &mut out);
 
     let trans_mat = mat.T::<()>();

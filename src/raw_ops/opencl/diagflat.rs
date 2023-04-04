@@ -17,7 +17,7 @@ pub fn cl_diagflat<'a, T: CDatatype>(
         datatype = T::as_c_type_str()
     );
 
-    let out: CLBuffer<T> = device.retrieve(len * len * batch_size, x.node.idx);
+    let out: CLBuffer<T> = device.retrieve(len * len * batch_size, x);
     enqueue_kernel(
         device,
         &src,

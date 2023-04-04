@@ -27,7 +27,7 @@ fn add() -> Result<(), OCLError> {
 
 pub fn read<'a, T, D>(device: D, buf: Buffer<T, D>) -> Vec<T>
 where
-    D: Read<T, D>,
+    D: Read<T>,
     T: Clone + Default,
 {
     device.read_to_vec(&buf)
@@ -44,7 +44,7 @@ fn test_element_wise_add_cl() {
     for _ in 0..500 {
         let c = &a + &b;
         assert_eq!(vec![2, 8, 4, 18], device.read(c.as_buf()));
-        set_count(0);
+        unsafe { set_count(2) };
     }
 }
 
