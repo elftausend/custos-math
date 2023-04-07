@@ -230,7 +230,7 @@ impl<T: GenericBlas> Gemm<T> for custos::CUDA {
 
         let out = self.retrieve(lhs.rows() * rhs.cols(), (lhs.as_buf(), rhs.as_buf()));
         T::cugemm(
-            self.handle(),
+            self.cublas_handle(),
             lhs.rows(),
             rhs.cols(),
             lhs.cols(),
