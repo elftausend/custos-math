@@ -178,7 +178,8 @@ impl<T: CDatatype> ActivationOps<T> for CUDA {
 
     #[inline]
     fn tanh_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
-        let out = cu_str_op(self, x, "1.0 - pow(tanh(x), 2)").unwrap();
+        // TODO: this only works for floats (not doubles)?
+        let out = cu_str_op(self, x, "1.0f - pow(tanh(x), 2.0f)").unwrap();
         (out, x.dims()).into()
     }
 

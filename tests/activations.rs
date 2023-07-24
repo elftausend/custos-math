@@ -76,3 +76,18 @@ fn test_relu_cuda() {
     let res = device.relu_grad(&x);
     assert_eq!(res.read(), [0., 1., 0., 1., 1.]);
 }
+
+
+#[cfg(feature = "cuda")]
+#[test]
+fn test_tanh_cuda() {
+    use custos_math::{nn::ActivationOps, Matrix};
+
+    let device = custos::CUDA::new(0).unwrap();
+
+    let x = Matrix::from((&device, (1, 5), [-1.31f32, 2.12, -0.68, 5., 4.]));
+    let _res = device.tanh(&x);
+
+    let _res = device.tanh_grad(&x);
+
+}

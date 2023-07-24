@@ -12,7 +12,7 @@ use custos::{
 };
 
 #[cfg(feature = "cuda")]
-use custos::{cuda::api::cu_write, CUDA};
+use custos::CUDA;
 
 mod impl_with_shape;
 
@@ -480,8 +480,9 @@ impl<'a, T: Clone, const N: usize> From<(usize, usize, [T; N])> for Matrix<'a, T
 #[cfg(feature = "cuda")]
 impl<'a, 'b, T> From<(&'a CUDA, Matrix<'b, T>)> for Matrix<'a, T, CUDA> {
     fn from(device_matrix: (&'a CUDA, Matrix<'b, T>)) -> Self {
-        let dst = device_matrix.0.retrieve(device_matrix.1.size(), ());
-        cu_write(dst.ptr.ptr, &device_matrix.1).unwrap();
+        let mut dst = device_matrix.0.retrieve(device_matrix.1.size(), ());
+
+        dst.write(&device_matrix.1);
         Matrix::from((dst, device_matrix.1.dims()))
     }
 }

@@ -450,7 +450,7 @@ fn test_cuda_gemm_speed() -> custos::Result<()> {
     let device = custos::CUDA::new(0)?;
 
     let stream = create_stream()?;
-    unsafe { cublasSetStream_v2(device.handle().0, stream.0) }.to_result()?;
+    unsafe { cublasSetStream_v2(device.cublas_handle().0, stream.0) }.to_result()?;
 
     let a = Matrix::from((&device, (ROWS, COLS), vec![2.3f32; ROWS * COLS]));
     let b = Matrix::from((&device, (COLS, ROWS), vec![1.9; ROWS * COLS]));
