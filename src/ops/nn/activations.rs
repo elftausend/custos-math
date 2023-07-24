@@ -178,8 +178,15 @@ impl<T: CDatatype> ActivationOps<T> for CUDA {
 
     #[inline]
     fn tanh_grad(&self, x: &Matrix<T, Self>) -> Matrix<T, Self> {
-        // TODO: this only works for floats (not doubles)?
-        let out = cu_str_op(self, x, "1.0f - pow(tanh(x), 2.0f)").unwrap();
+        let out = cu_str_op(
+            self,
+            x,
+            &format!(
+                "{dtype} (1.0 - pow((double) tanh(x), 2.0))",
+                dtype = T::as_c_type_str()
+            ),
+        )
+        .unwrap();
         (out, x.dims()).into()
     }
 

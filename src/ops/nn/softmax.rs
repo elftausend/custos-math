@@ -6,7 +6,10 @@ use crate::{
 use crate::{
     matrix_multiply::MatrixMultiply, ColOp, FnsOps, Matrix, MaxOps, SumOverOps, TransposeOp,
 };
-use custos::{number::{Float, Number}, range, Device, GenericBlas, CPU};
+use custos::{
+    number::{Float, Number},
+    range, Device, GenericBlas, CPU,
+};
 #[cfg(feature = "opencl")]
 use custos::{CDatatype, OpenCL};
 

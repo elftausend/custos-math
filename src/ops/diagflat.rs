@@ -3,7 +3,7 @@ use crate::cu_to_cpu_s;
 use crate::Matrix;
 #[cfg(feature = "cuda")]
 use custos::CUDA;
-use custos::{CDatatype, Device, MainMemory, number::Number};
+use custos::{number::Number, CDatatype, Device, MainMemory};
 
 #[cfg(feature = "cpu")]
 use custos::cpu::CPU;

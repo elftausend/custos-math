@@ -69,7 +69,10 @@ impl<'a, T> AsClCvoidPtr for &Matrix<'a, T, OpenCL> {
 ///     Ok(())
 /// }
 /// ```
-#[deprecated(since = "0.7.0", note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function.")]
+#[deprecated(
+    since = "0.7.0",
+    note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function."
+)]
 pub fn cpu_exec<'a, 'o, T, F>(
     device: &'o OpenCL,
     matrix: &Matrix<'a, T, OpenCL>,
@@ -118,7 +121,10 @@ where
     Ok(convert)
 }
 
-#[deprecated(since = "0.7.0", note = "cpu_exec_mut was moved to custos. This is useable via a macro! or a pre-definied function.")]
+#[deprecated(
+    since = "0.7.0",
+    note = "cpu_exec_mut was moved to custos. This is useable via a macro! or a pre-definied function."
+)]
 pub fn cpu_exec_mut<T, F>(
     device: &OpenCL,
     matrix: &mut Matrix<T, OpenCL>,
@@ -146,7 +152,10 @@ where
     Ok(())
 }
 
-#[deprecated(since = "0.7.0", note = "cpu_exec_lhs_rhs was moved to custos. This is useable via a macro! or a pre-definied function.")]
+#[deprecated(
+    since = "0.7.0",
+    note = "cpu_exec_lhs_rhs was moved to custos. This is useable via a macro! or a pre-definied function."
+)]
 pub fn cpu_exec_lhs_rhs<'a, 'o, T, F>(
     device: &'o OpenCL,
     lhs: &Matrix<'a, T, OpenCL>,
@@ -193,13 +202,16 @@ where
 
     let mut convert = Matrix::from((device, f(&cpu, &lhs, &rhs)));
     // convert.node = device
-        // .graph()
-        // .add(convert.len(), (lhs.node.idx, rhs.node.idx));
+    // .graph()
+    // .add(convert.len(), (lhs.node.idx, rhs.node.idx));
 
     Ok(convert)
 }
 
-#[deprecated(since = "0.7.0", note = "cpu_exec_lhs_rhs_mut was moved to custos. This is useable via a macro! or a pre-definied function.")]
+#[deprecated(
+    since = "0.7.0",
+    note = "cpu_exec_lhs_rhs_mut was moved to custos. This is useable via a macro! or a pre-definied function."
+)]
 pub fn cpu_exec_lhs_rhs_mut<T, F>(
     device: &OpenCL,
     lhs: &mut Matrix<T, OpenCL>,
@@ -231,7 +243,10 @@ where
     Ok(())
 }
 
-#[deprecated(since = "0.7.0", note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function.")]
+#[deprecated(
+    since = "0.7.0",
+    note = "cpu_exec was moved to custos. This is useable via a macro! or a pre-definied function."
+)]
 pub fn cpu_exec_scalar<T, F>(device: &OpenCL, matrix: &Matrix<T, OpenCL>, f: F) -> T
 where
     F: Fn(&CPU, &Matrix<T>) -> T,

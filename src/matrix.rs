@@ -290,7 +290,7 @@ impl<'a, T, D: Device, S: Shape> Matrix<'a, T, D, S> {
     pub fn to_dims<O: Shape>(self) -> Matrix<'a, T, D, O>
     where
         D: ToDim<T, S, O>,
-        D::Ptr<T, S>: ShallowCopy
+        D::Ptr<T, S>: ShallowCopy,
     {
         let data = self.data.to_dims();
 

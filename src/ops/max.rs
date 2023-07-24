@@ -72,7 +72,7 @@ impl<T: Copy + PartialOrd, D: MainMemory> MaxOps<T, D> for CPU {
     fn max_cols(&self, x: &Matrix<T, D>) -> Matrix<T> {
         let data = x.as_slice();
         let mut out = self.retrieve(x.rows(), x.as_buf());
-        
+
         let max_cols = out.as_mut_slice();
 
         for (idx, max_cols_val) in max_cols.iter_mut().enumerate().take(x.rows()) {

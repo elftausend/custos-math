@@ -205,7 +205,7 @@ fn test_threading_cl_a() {
 #[cfg(feature = "cuda")]
 #[test]
 fn test_threading_cuda_a() -> custos::Result<()> {
-    use custos::{CUDA, CacheReturn};
+    use custos::{CacheReturn, CUDA};
     use custos_math::Matrix;
     use std::thread::JoinHandle;
 
@@ -229,13 +229,13 @@ fn test_threading_cuda_a() -> custos::Result<()> {
             let e = &a * &b - &c + &d * &d - &a;
             assert_eq!(34., e.read()[0]);
         }
-        assert_eq!(device.cache().nodes.len(), 8+ 2);
+        assert_eq!(device.cache().nodes.len(), 8 + 2);
 
         let c = &a - &b;
         let d = &a + &b + &c;
         let e = &a * &b - &c + &d * &d - &a;
         assert_eq!(34., e.read()[0]);
-        assert_eq!(device.cache().nodes.len(), 8+ 2);
+        assert_eq!(device.cache().nodes.len(), 8 + 2);
         Ok(())
     });
 

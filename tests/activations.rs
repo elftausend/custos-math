@@ -77,7 +77,6 @@ fn test_relu_cuda() {
     assert_eq!(res.read(), [0., 1., 0., 1., 1.]);
 }
 
-
 #[cfg(feature = "cuda")]
 #[test]
 fn test_tanh_cuda() {
@@ -89,5 +88,5 @@ fn test_tanh_cuda() {
     let _res = device.tanh(&x);
 
     let _res = device.tanh_grad(&x);
-
+    println!("res: {_res:?}");
 }
