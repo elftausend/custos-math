@@ -26,6 +26,9 @@ matrixmultiply = { version="0.3.2", default-features=false, optional = true }
 [build-dependencies]
 #custos = { path = "../custos", default-features = false, optional=true }
 
+[dev-dependencies]
+criterion = "0.5"
+
 [features] 
 #default = ["no-std"]
 default = ["blas", "fastrand", "cpu", "opencl", "static-api", "cuda"]
@@ -52,9 +55,6 @@ required-features = ["cpu"]
 name = "gemm"
 required-features = ["cpu"]
 
-
-
-
 [[example]]
 name = "simple"
 required-features = ["opencl"]
@@ -62,6 +62,11 @@ required-features = ["opencl"]
 [[test]]
 name = "matrix"
 required-features = ["cpu"]
+
+[[bench]]
+name = "add_to_row"
+harness = false
+required-features = ["cuda"]
 
 [[test]]
 name = "math"

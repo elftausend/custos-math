@@ -74,13 +74,18 @@ impl<T: CDatatype + Number> RowOp<T> for OpenCL {
 impl<T: CDatatype + Number> RowOp<T> for CUDA {
     #[inline]
     fn add_row(&self, lhs: &Matrix<T, CUDA>, rhs: &Matrix<T, CUDA>) -> Matrix<T, CUDA> {
-        cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
+        // cu_to_cpu_lr(self, lhs, rhs, |device, lhs, rhs| device.add_row(lhs, rhs))
+        let mut out = self.retrieve(lhs.len(), (lhs.as_buf(), rhs.as_buf()));
+        crate::add_to_row_cu_2dim(self, lhs, lhs.rows(), lhs.cols(), rhs, &mut out).unwrap();
+        (out, lhs.dims()).into()
     }
 
     #[inline]
     fn add_row_mut(&self, lhs: &mut Matrix<T, CUDA>, rhs: &Matrix<T, CUDA>) {
-        cu_to_cpu_lr_mut(self, lhs, rhs, |device, lhs, rhs| {
+        let (m, n) = lhs.dims();
+        crate::add_to_row_cu_in_place(self, lhs, m, n, rhs).unwrap()
+        /*cu_to_cpu_lr_mut(self, lhs, rhs, |device, lhs, rhs| {
             device.add_row_mut(lhs, rhs)
-        })
+        })*/
     }
 }
