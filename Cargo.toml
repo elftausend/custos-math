@@ -15,8 +15,8 @@ rust-version = "1.65"
 
 [dependencies]
 
-#custos = {git = "https://github.com/elftausend/custos", default-features = false, features=["macro"] }
-custos = { path = "../custos", default-features = false, features=["macro"] }
+custos = {git = "https://github.com/elftausend/custos", branch = "custos-0.7", default-features = false, features=["macro"] }
+# custos = { path = "../custos", default-features = false, features=["macro"] }
 #custos = { version = "0.6.3", default-features = false, features=["macro"] }
 
 
@@ -31,7 +31,7 @@ criterion = "0.5"
 
 [features] 
 #default = ["no-std"]
-default = ["blas", "fastrand", "cpu", "opencl", "static-api", "cuda"]
+default = ["blas", "fastrand", "cpu", "opencl", "static-api",]
 #default = ["fastrand", "stack", "cpu", "matrixmultiply"]
 #matrixmultiply = ["dep:matrixmultiply"]
 static-api = ["custos/static-api"]
